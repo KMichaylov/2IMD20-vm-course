@@ -1,8 +1,8 @@
-# VM Course 2024 () Reference Implementation
+# VM Course 2024 (2IMD20) Reference Implementation
 
 This repository contains the _reference implementation_ (RI) for the programming language that you will have to develop in the project.
 
-The RI is based on GraalVM's [Simple Language](). The implementation in this repository is almost entirely identical to the GraalVM's original code, with only minor modifications.
+The RI is based on GraalVM's [Simple Language](https://github.com/graalvm/simplelanguage). The implementation in this repository is almost entirely identical to the GraalVM's original code, with only minor modifications.
 
 # Setup
 
