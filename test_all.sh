@@ -3,6 +3,13 @@
 # Folder containing the input files
 folder="./tests"
 
+if [ -e "$1" ] && [ -x "$1" ]; then
+  sl="$1"
+else
+  echo "The file '$1' either does not exist or is not executable."
+  exit -1
+fi
+
 ok=0
 fail=0
 
@@ -17,7 +24,7 @@ for file in "$folder"/*.sl; do
   error_file="${file}.output.error"
 
   # Execute the sl command and capture output and error
-  output=$(./sl < "$file.sl" 2> >(tee /dev/stderr))
+  output=$($sl < "$file.sl" 2> >(tee /dev/stderr))
 
   # Check if the command was successful (exit code 0)
   if [ $? -eq 0 ]; then
