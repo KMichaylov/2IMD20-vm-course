@@ -45,7 +45,3 @@ else
 fi
 
 "$JAVA_HOME/bin/java" "${JAVA_ARGS[@]}" -jar "${DIR}/target/vm-1.0-SNAPSHOT.jar" "${PROGRAM_ARGS[@]}"
-
-#"$JAVA_HOME/bin/java" "${JAVA_ARGS[@]}" -jar "${DIR}/target/vm-1.0-SNAPSHOT.jar" nl.tue.vmcourse.toy.ToyLauncher "${PROGRAM_ARGS[@]}"
-#"$JAVA_HOME/bin/java" "${JAVA_ARGS[@]}" --module-path "${DIR}/target/vm-1.0-SNAPSHOT.jar" -m nl.tue.vmcourse.toy/nl.tue.vmcourse.toy.ToyLauncher "${PROGRAM_ARGS[@]}"
-#"$JAVA_HOME/bin/java" "${JAVA_ARGS[@]}" -p "${DIR}/modules" -m ToyLauncher "${PROGRAM_ARGS[@]}"
