@@ -1,6 +1,2 @@
-function main() {
-  counter = 4
-  if(counter % 2 == 0){
-    break;
-  }
-}
+Error(s) parsing script:
+-- line 4 col 5: break used outside of loop

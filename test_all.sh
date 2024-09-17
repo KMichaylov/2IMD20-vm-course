@@ -30,7 +30,8 @@ for file in "$folder"/*.sl; do
   if [ $? -eq 0 ]; then
     # If successful, compare the output with the .output file
     if [ -f "$output_file" ]; then
-      diff <(echo "$output") "$output_file" > /dev/null
+      # Normalize line endings to avoid issues with CRLF vs LF
+      diff <(echo "$output" | tr -d '\r') <(cat "$output_file" | tr -d '\r') > /dev/null
       if [ $? -eq 0 ]; then
         echo "[OK] Output for $file matches expected output."
         ((ok++))
@@ -38,9 +39,9 @@ for file in "$folder"/*.sl; do
         echo "[ERROR] Output for $file does not match expected output!"
         ((fail++))
         echo "--- Got ---"
-        echo $output
+        echo "$output"
         echo "--- Expected ---"
-        cat $output_file
+        cat "$output_file"
         exit -1
       fi
     else
@@ -50,7 +51,8 @@ for file in "$folder"/*.sl; do
   else
     # If the command failed, compare the error with the .error file
     if [ -f "$error_file" ]; then
-      diff <(echo "$output") "$error_file" > /dev/null
+      # Normalize line endings to avoid issues with CRLF vs LF
+      diff <(echo "$output" | tr -d '\r') <(cat "$error_file" | tr -d '\r') > /dev/null
       if [ $? -eq 0 ]; then
         echo "[OK] Error output for $file matches expected error."
         ((ok++))
@@ -58,14 +60,14 @@ for file in "$folder"/*.sl; do
         echo "[ERROR] Error output for $file does not match expected error!"
         ((fail++))
         echo "--- Got ---"
-        echo $output
+        echo "$output"
         echo "--- Expected ---"
-        cat $error_file
-        exit -1        
+        cat "$error_file"
+        exit -1
       fi
     else
       echo "!!!! FATAL !!!!!: Error file $error_file not found for $file."
-      exit -1 
+      exit -1
     fi
   fi
 done
