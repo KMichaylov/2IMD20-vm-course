@@ -1,0 +1,6 @@
+function main() {
+  counter = 4
+  if(counter % 2 == 0){
+    break;
+  }
+}
