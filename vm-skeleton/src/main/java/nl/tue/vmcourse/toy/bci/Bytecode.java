@@ -4,12 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Bytecode {
-    List<Instruction> listOfInstructions;
+    private final List<Instruction> instructions;
 
-    public Bytecode(List<Instruction> listOfInstructions) {
-        if (listOfInstructions == null) {
-            listOfInstructions = new ArrayList<Instruction>();
+    public Bytecode() {
+        this.instructions = new ArrayList<>();
+    }
+
+    public void addInstruction(Opcode opcode, int operand, int line) {
+        instructions.add(new Instruction(opcode, operand, line));
+    }
+
+    public Instruction getInstruction(int index) {
+        return instructions.get(index);
+    }
+
+    public int getSize() {
+        return instructions.size();
+    }
+
+    public void printBytecode() {
+        for (int i = 0; i < instructions.size(); i++) {
+            Instruction instr = instructions.get(i);
+            System.out.println("[" + i + "] " + instr.getOpcode() + " " + instr.getOperand() + " (line " + instr.getLine() + ")");
         }
-        this.listOfInstructions = listOfInstructions;
     }
 }

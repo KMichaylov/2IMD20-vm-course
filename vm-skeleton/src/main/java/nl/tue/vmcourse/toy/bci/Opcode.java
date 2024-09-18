@@ -1,5 +1,6 @@
 package nl.tue.vmcourse.toy.bci;
 
+//TODO: Look at this again, then move to the Instruction file and see how it can be useful.
 public enum Opcode {
     OP_LOAD((byte) 0x01),
     OP_RETURN((byte) 0x02),
@@ -23,8 +24,9 @@ public enum Opcode {
     OP_SUB((byte) 0x11),
     OP_MUL((byte) 0x12),
     OP_DIV((byte) 0x13),
+    OP_CONCAT((byte) 0x14),
     // Literals
-    OP_CONSTANT((byte) 0x14);
+    OP_CONSTANT((byte) 0x15);
 
     private final byte value;
 
