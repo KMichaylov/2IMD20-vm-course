@@ -10,8 +10,8 @@ public class Bytecode {
         this.instructions = new ArrayList<>();
     }
 
-    public void addInstruction(Opcode opcode, int operand, int line) {
-        instructions.add(new Instruction(opcode, operand, line));
+    public void addInstruction(Opcode opcode, int operand) {
+        instructions.add(new Instruction(opcode, operand));
     }
 
     public Instruction getInstruction(int index) {
@@ -25,7 +25,7 @@ public class Bytecode {
     public void printBytecode() {
         for (int i = 0; i < instructions.size(); i++) {
             Instruction instr = instructions.get(i);
-            System.out.println("[" + i + "] " + instr.getOpcode() + " " + instr.getOperand() + " (line " + instr.getLine() + ")");
+            System.out.println("[" + i + "] " + instr.getOpcode() + " " + instr.getOperand());
         }
     }
 }

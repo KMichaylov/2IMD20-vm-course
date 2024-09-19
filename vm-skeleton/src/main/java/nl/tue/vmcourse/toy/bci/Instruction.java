@@ -6,12 +6,10 @@ package nl.tue.vmcourse.toy.bci;
 public class Instruction {
     private final Opcode opcode;
     private final int operand;
-    private final int line;
 
-    public Instruction(Opcode opcode, int operand, int line) {
+    public Instruction(Opcode opcode, int operand) {
         this.opcode = opcode;
         this.operand = operand;
-        this.line = line;
     }
 
     public Opcode getOpcode() {
@@ -22,8 +20,5 @@ public class Instruction {
         return operand;
     }
 
-    public int getLine() {
-        return line;
-    }
 }
 
