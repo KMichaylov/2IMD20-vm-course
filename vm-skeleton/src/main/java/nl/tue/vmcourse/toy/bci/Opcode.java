@@ -25,7 +25,11 @@ public enum Opcode {
     OP_DIV((byte) 0x13),
     OP_CONCAT((byte) 0x14),
     // Literals
-    OP_CONSTANT((byte) 0x15);
+    OP_CONSTANT((byte) 0x15),
+
+    // For storing and calling functions
+    OP_STORE((byte) 0x16),
+    OP_CALL((byte) 0x17);
 
     private final byte value;
 
