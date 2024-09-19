@@ -10,8 +10,7 @@ public enum Opcode {
     OP_POP((byte) 0x06),
     OP_PUSH((byte) 0x07),
     // Comparisons
-    OP_NOT((byte) 0x08),
-    OP_NOT_EQUAL((byte) 0x09),
+    OP_NOT_EQUAL((byte) 0x08),
     OP_EQUAL((byte) 0x0A),
     OP_GREATER((byte) 0x0B),
     OP_LESS((byte) 0x0C),
