@@ -1,18 +1,15 @@
 package nl.tue.vmcourse.toy.bci;
 
 //TODO: Look at this again, then move to the Instruction file and see how it can be useful.
+//TODO: Look at the opcode and see what is necessary and what not. Check other resources and see what other people are doing
+//TODO: Add javadoc
 public enum Opcode {
     OP_RETURN((byte) 0x02),
     OP_PRINT((byte) 0x03),
     OP_LOOP((byte) 0x04),
     OP_JUMP((byte) 0x05),
-    OP_POP((byte) 0x06),
-    OP_PUSH((byte) 0x07),
     // Comparisons
-    OP_NOT_EQUAL((byte) 0x08),
-    OP_EQUAL((byte) 0x0A),
-    OP_GREATER((byte) 0x0B),
-    OP_LESS((byte) 0x0C),
+    OP_COMPARE((byte) 0x06),
     // Binary values
     OP_NULL((byte) 0x0D),
     OP_TRUE((byte) 0x0E),
@@ -25,12 +22,17 @@ public enum Opcode {
     OP_CONCAT((byte) 0x14),
     // Literals
     OP_CONSTANT((byte) 0x15),
-
     // For storing and calling functions
     OP_STORE((byte) 0x16),
     OP_LOAD((byte) 0x01),
-    OP_CALL((byte) 0x17);
+    OP_CALL((byte) 0x17),
 
+    // Conditionals for jumping
+    OP_JUMP_IF_TRUE((byte) 0x19),
+    OP_JUMP_IF_FALSE((byte) 0x1A),
+
+    // Idle operations
+    OP_NOP((byte) 0x1B);
     private final byte value;
 
     Opcode(byte value) {
