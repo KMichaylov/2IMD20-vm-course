@@ -8,6 +8,10 @@ public class ToyUnboxNode extends ToyExpressionNode {
         this.leftNode = leftNode;
     }
 
+    public ToyExpressionNode getLeftNode() {
+        return leftNode;
+    }
+
     @Override
     public String toString() {
         return "ToyUnboxNode{" +

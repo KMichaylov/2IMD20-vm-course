@@ -8,6 +8,10 @@ public class ToyReadLocalVariableNode extends ToyExpressionNode {
         this.frameSlot = frameSlot;
     }
 
+    public Integer getFrameSlot() {
+        return frameSlot;
+    }
+
     @Override
     public String toString() {
         return "ToyReadLocalVariableNode{" +

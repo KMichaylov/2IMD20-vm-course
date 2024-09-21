@@ -12,6 +12,14 @@ public class ToyInvokeNode extends ToyExpressionNode {
         this.toyExpressionNodes = toyExpressionNodes;
     }
 
+    public ToyExpressionNode getFunctionNode() {
+        return functionNode;
+    }
+
+    public ToyExpressionNode[] getToyExpressionNodes() {
+        return toyExpressionNodes;
+    }
+
     @Override
     public String toString() {
         return "ToyInvokeNode{" +
