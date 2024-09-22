@@ -5,6 +5,7 @@ import nl.tue.vmcourse.toy.lang.VirtualFrame;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
 
 public class ToyBciLoop extends ToyAbstractFunctionBody {
@@ -32,8 +33,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         int pc = 0;
 
 //        TODO: Idea: I think the general structure of the bytecode is problematic, currently, it does not make sense how things are organized and ordered. Check the whole logic
+        bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
-            bytecode.printBytecode();
             Instruction instr = bytecode.getInstruction(pc);
             Opcode opcode = instr.opcode();
             int operand = instr.operand();
@@ -88,6 +89,44 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 case OP_PRINT -> {
                     System.out.println(locals.getLast());
+                }
+                case OP_COMPARE -> {
+                    Object right = stack.pop();
+                    Object left = stack.pop();
+
+                    boolean result;
+                    // operand encodings:
+                    // 0 is for ==
+                    // 1 for <
+                    // 2 for >
+                    // 3 for <=
+                    // 4 for >=
+                    switch (operand) {
+                        case 0 -> {
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).intValue() == ((Number) right).intValue();
+                            } else {
+                                result = left.equals(right);
+                            }
+                        }
+                        case 2 -> {
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).intValue() > ((Number) right).intValue();
+                            } else {
+                                throw new RuntimeException("Cannot compare non-numeric values");
+                            }
+                        }
+                        case 1 -> {
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).intValue() < ((Number) right).intValue();
+                            } else {
+                                throw new RuntimeException("Cannot compare non-numeric values");
+                            }
+                        }
+                        default -> throw new RuntimeException("Unknown comparison type");
+                    }
+
+                    stack.push(result);
                 }
                 case OP_LOAD -> {
                     Object value = locals.get(operand);
