@@ -7,6 +7,10 @@ public class ToyBooleanLiteralNode extends ToyExpressionNode {
         this.value = value;
     }
 
+    public boolean isValue() {
+        return value;
+    }
+
     @Override
     public String toString() {
         return "ToyBooleanLiteralNode{" +

@@ -10,6 +10,10 @@ public class ToyBigIntegerLiteralNode extends ToyExpressionNode {
         this.bigInteger = bigInteger;
     }
 
+    public BigInteger getBigInteger() {
+        return bigInteger;
+    }
+
     @Override
     public String toString() {
         return "ToyBigIntegerLiteralNode{" +
