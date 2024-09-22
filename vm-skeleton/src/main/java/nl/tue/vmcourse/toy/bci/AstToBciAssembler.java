@@ -38,6 +38,7 @@ public class AstToBciAssembler {
      * @param node     The node for which we traverse the tree
      * @param bytecode The bytecode placeholder
      */
+//    TODO: Check the whole logic and see how AST changes when passed different expressions
     private static void generateBytecode(ToyNode node, Bytecode bytecode) {
         if (node instanceof ToyBlockNode blockNode) {
 //            If we have a block node, then we go through the statements and recursively call for each of them the function.
@@ -47,16 +48,15 @@ public class AstToBciAssembler {
 //            TODO: Go to the AST implementations and add methods there.
         } else if (node instanceof ToyWriteLocalVariableNode writeNode) {
             generateBytecode(writeNode.getValueNode(), bytecode);
-            bytecode.addInstruction(Opcode.OP_PUSH, 0);
             bytecode.addInstruction(Opcode.OP_STORE, writeNode.getFrameSlot());
         } else if (node instanceof ToyReadLocalVariableNode readNode) {
             bytecode.addInstruction(Opcode.OP_LOAD, readNode.getFrameSlot());
         } else if (node instanceof ToyAddNode addNode) {
-            binaryInstructionHelperGenerator(addNode, addNode, Opcode.OP_ADD, bytecode);
+            binaryInstructionHelperGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode);
         } else if (node instanceof ToySubNode subNode) {
-            binaryInstructionHelperGenerator(subNode, subNode, Opcode.OP_SUB, bytecode);
+            binaryInstructionHelperGenerator(subNode.getLeftUnboxed(), subNode.getRightUnboxed(), Opcode.OP_SUB, bytecode);
         } else if (node instanceof ToyDivNode divNode) {
-            binaryInstructionHelperGenerator(divNode, divNode, Opcode.OP_DIV, bytecode);
+            binaryInstructionHelperGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode);
         } else if (node instanceof ToyMulNode mulNode) {
             binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode);
         } else if (node instanceof ToyLongLiteralNode literalNode) {
@@ -69,9 +69,31 @@ public class AstToBciAssembler {
                 generateBytecode(arg, bytecode);
             }
 
-            bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+//            bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+        } else if (node instanceof ToyIfNode ifNode) {
+            generateBytecode(ifNode.getConditionNode(), bytecode);
+
+            int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, 0);
+
+            generateBytecode(ifNode.getThenPartNode(), bytecode);
+
+            if (ifNode.getElsePartNode() != null) {
+                int jumpToEndLocation = bytecode.addInstruction(Opcode.OP_JUMP, 0);
+
+                bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize());
+
+                generateBytecode(ifNode.getElsePartNode(), bytecode);
+
+                bytecode.patchInstruction(jumpToEndLocation, bytecode.getSize());
+            } else {
+                bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize());
+            }
         } else if (node instanceof ToyUnboxNode unboxNode) {
             generateBytecode(unboxNode.getLeftNode(), bytecode);
+        } else if (node instanceof ToyFunctionLiteralNode toyFunctionLiteralNode) {
+            if (toyFunctionLiteralNode.getName().equals("println")) {
+                bytecode.addInstruction(Opcode.OP_PRINT, 0);
+            }
         } else {
             System.out.println("Brrrrrrr");
 //            throw new RuntimeException("Unknown AST node type: " + node.getClass().getSimpleName());
