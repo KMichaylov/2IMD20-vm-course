@@ -1,4 +1,5 @@
 function main(){
-     a = 4 * 5;
-     println(a);
+
+    a = 5 * 10;
+    println(a);
 }
