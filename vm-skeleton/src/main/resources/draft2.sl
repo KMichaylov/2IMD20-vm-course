@@ -1,9 +1,7 @@
 function main(){
-     a = 4;
-     if(a == 4) {
-     println("Hello");
-     } else {
-     println(a);
-
-     }
+    a = 5 * 10;
+    if(a != 50) {
+    println("I am here");
+    }
+    else {println(a);}
 }
