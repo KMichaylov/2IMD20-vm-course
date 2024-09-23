@@ -8,9 +8,16 @@ public enum Opcode {
     OP_PRINT((byte) 0x03),
     OP_LOOP((byte) 0x04),
     OP_JUMP((byte) 0x05),
-    // Comparisons
+    // Comparison operators
     OP_COMPARE((byte) 0x06),
+    //    OP_EQUAL((byte) 0x06),
+//    OP_NOT_EQUAL((byte) 0x26),
+//    OP_LESS((byte) 0x27),
+//    OP_LESS_EQUAL((byte) 0x28),
+//    OP_GREATER((byte) 0x29),
+//    OP_GREATER_EQUAL((byte) 0x2A),
     // Binary values
+    OP_NOT((byte) 0x30),
     OP_NULL((byte) 0x0D),
     OP_TRUE((byte) 0x0E),
     OP_FALSE((byte) 0x0F),
@@ -21,7 +28,11 @@ public enum Opcode {
     OP_DIV((byte) 0x13),
     OP_CONCAT((byte) 0x14),
     // Literals
-    OP_CONSTANT((byte) 0x15),
+    OP_LITERAL_STRING((byte) 0x15),
+    OP_LITERAL_LONG((byte) 0x20),
+    OP_LITERAL_BOOLEAN((byte) 0x21),
+    OP_LITERAL_BIGINT((byte) 0x22),
+
     // For storing and calling functions
     OP_STORE((byte) 0x16),
     OP_LOAD((byte) 0x01),

@@ -2,13 +2,16 @@ package nl.tue.vmcourse.toy.bci;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 // TODO: add javadoc
 public class Bytecode {
     private final List<Instruction> instructions;
+    private final List<Object> constantPool;
 
     public Bytecode() {
         this.instructions = new ArrayList<>();
+        this.constantPool = new ArrayList<>();
     }
 
 
@@ -30,6 +33,24 @@ public class Bytecode {
 
     public int getSize() {
         return instructions.size();
+    }
+
+    public int addToConstantPool(Object element) {
+        if (element instanceof Object) {
+            constantPool.add(element);
+            return constantPool.size() - 1;
+        } else {
+            return -1;
+        }
+
+    }
+
+    public Object getElementFromConstantPool(int index) {
+        if (constantPool.get(index) != null) {
+            return constantPool.get(index);
+        } else {
+            return null;
+        }
     }
 
 
