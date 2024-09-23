@@ -10,6 +10,14 @@ public class ToyReadPropertyNode extends ToyExpressionNode {
         this.nameNode = nameNode;
     }
 
+    public ToyExpressionNode getReceiverNode() {
+        return receiverNode;
+    }
+
+    public ToyExpressionNode getNameNode() {
+        return nameNode;
+    }
+
     @Override
     public String toString() {
         return "ToyReadPropertyNode{" +

@@ -7,6 +7,10 @@ public class ToyReturnNode extends ToyStatementNode {
         this.valueNode = valueNode;
     }
 
+    public ToyExpressionNode getValueNode() {
+        return valueNode;
+    }
+
     @Override
     public String toString() {
         return "ToyReturnNode{" +

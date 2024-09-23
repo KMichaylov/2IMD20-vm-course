@@ -7,6 +7,10 @@ public class ToyReadArgumentNode extends ToyExpressionNode {
         this.parameterCount = parameterCount;
     }
 
+    public int getParameterCount() {
+        return parameterCount;
+    }
+
     @Override
     public String toString() {
         return "ToyReadArgumentNode{" +

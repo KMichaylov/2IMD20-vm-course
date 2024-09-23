@@ -8,6 +8,10 @@ public class ToyUnaryMinNode extends ToyExpressionNode {
         this.exp = exp;
     }
 
+    public ToyExpressionNode getExp() {
+        return exp;
+    }
+
     @Override
     public String toString() {
         return "ToyUnaryMinNode{" +

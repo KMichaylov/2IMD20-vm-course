@@ -12,6 +12,10 @@ public class ToyLogicalNotNode extends ToyExpressionNode {
         this.toyLessOrEqualNode = toyLessThanNode;
     }
 
+    public ToyExpressionNode getToyLessOrEqualNode() {
+        return toyLessOrEqualNode;
+    }
+
     @Override
     public String toString() {
         return "ToyLogicalNotNode{" +

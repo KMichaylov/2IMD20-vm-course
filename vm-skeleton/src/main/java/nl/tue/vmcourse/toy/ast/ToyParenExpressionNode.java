@@ -7,6 +7,10 @@ public class ToyParenExpressionNode extends ToyExpressionNode {
         this.expressionNode = expressionNode;
     }
 
+    public ToyExpressionNode getExpressionNode() {
+        return expressionNode;
+    }
+
     @Override
     public String toString() {
         return "ToyParenExpressionNode{" +

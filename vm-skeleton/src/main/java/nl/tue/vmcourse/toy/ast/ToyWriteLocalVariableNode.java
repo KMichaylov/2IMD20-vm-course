@@ -25,6 +25,14 @@ public class ToyWriteLocalVariableNode extends ToyExpressionNode {
         return frameSlot;
     }
 
+    public ToyExpressionNode getNameNode() {
+        return nameNode;
+    }
+
+    public boolean isNewVariable() {
+        return newVariable;
+    }
+
     @Override
     public List<ToyAstNode> getChildren() {
         return Arrays.asList(valueNode, nameNode);

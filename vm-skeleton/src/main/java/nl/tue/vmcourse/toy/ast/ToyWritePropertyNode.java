@@ -12,6 +12,18 @@ public class ToyWritePropertyNode extends ToyExpressionNode {
         this.valueNode = valueNode;
     }
 
+    public ToyExpressionNode getReceiverNode() {
+        return receiverNode;
+    }
+
+    public ToyExpressionNode getNameNode() {
+        return nameNode;
+    }
+
+    public ToyExpressionNode getValueNode() {
+        return valueNode;
+    }
+
     @Override
     public String toString() {
         return "ToyWritePropertyNode{" +

@@ -15,6 +15,10 @@ public class ToyFunctionBodyNode extends ToyAbstractFunctionBody {
         throw new RuntimeException("Cannot execute an AST node -- this is not an AST interpreter!");
     }
 
+    public ToyStatementNode getMethodBlock() {
+        return methodBlock;
+    }
+
     @Override
     public String toString() {
         return "ToyFunctionBodyNode{" +

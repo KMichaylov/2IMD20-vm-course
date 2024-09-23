@@ -10,6 +10,14 @@ public class ToyLogicalOrNode extends ToyExpressionNode {
         this.rightUnboxed = rightUnboxed;
     }
 
+    public ToyExpressionNode getLeftUnboxed() {
+        return leftUnboxed;
+    }
+
+    public ToyExpressionNode getRightUnboxed() {
+        return rightUnboxed;
+    }
+
     @Override
     public String toString() {
         return "ToyLogicalOrNode{" +
