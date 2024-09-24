@@ -49,14 +49,12 @@ public class AstToBciAssembler {
                 for (ToyStatementNode statement : blockNode.getStatements()) {
                     generateBytecode(statement, bytecode);
                 }
-//            TODO: Go to the AST implementations and add methods there.
             }
             case ToyWriteLocalVariableNode writeNode -> {
                 generateBytecode(writeNode.getValueNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_STORE, writeNode.getFrameSlot());
             }
-            case ToyReadLocalVariableNode readNode ->
-                    bytecode.addInstruction(Opcode.OP_LOAD, readNode.getFrameSlot());
+            case ToyReadLocalVariableNode readNode -> bytecode.addInstruction(Opcode.OP_LOAD, readNode.getFrameSlot());
             case ToyAddNode addNode ->
                     binaryInstructionHelperGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
             case ToySubNode subNode ->
@@ -65,89 +63,102 @@ public class AstToBciAssembler {
                     binaryInstructionHelperGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
             case ToyMulNode mulNode ->
                     binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
+
+            // For the comparisons we use the provided AST and in case we need > or >=, we just negate the results
             case ToyEqualNode equalNode -> {
                 generateBytecode(equalNode.getLeftUnboxed(), bytecode);
-
                 generateBytecode(equalNode.getRightUnboxed(), bytecode);
-
-                // operand encodings:
-                // 0 is for ==
-                // 1 for <
-                // 2 for >
-                // 3 for <=
-                // 4 for >=
                 bytecode.addInstruction(Opcode.OP_COMPARE, 0);
             }
-            // I use the following opcodes:
-            //0 for boolean
-            //1 for long
-            //2 for string
-            //3 for big integer
+
+            case ToyLessThanNode lessThanNode -> {
+                generateBytecode(lessThanNode.getLeftUnboxed(), bytecode);
+                generateBytecode(lessThanNode.getRightUnboxed(), bytecode);
+                bytecode.addInstruction(Opcode.OP_COMPARE, 1);
+            }
+
+            case ToyLessOrEqualNode lessOrEqualNode -> {
+                generateBytecode(lessOrEqualNode.getLeftUnboxed(), bytecode);
+                generateBytecode(lessOrEqualNode.getRightUnboxed(), bytecode);
+                bytecode.addInstruction(Opcode.OP_COMPARE, 2);
+            }
+
+            case ToyLogicalNotNode toyLogicalNotNode -> {
+                generateBytecode(toyLogicalNotNode.getToyLessOrEqualNode(), bytecode);
+                bytecode.addInstruction(Opcode.OP_NOT, 0);
+            }
             case ToyStringLiteralNode stringLiteralNode -> {
                 int indexOfString = bytecode.addToConstantPool(stringLiteralNode.getValue());
-                bytecode.addInstruction(Opcode.OP_CONSTANT, 2);
+                bytecode.addInstruction(Opcode.OP_LITERAL_STRING, indexOfString);
             }
-//            TODO: Implement these methods according to the new changes.
-            case ToyLongLiteralNode literalNode ->
-                    bytecode.addInstruction(Opcode.OP_CONSTANT, (int) literalNode.getValue());
+            case ToyLongLiteralNode literalNode -> {
+                int indexOfLong = bytecode.addToConstantPool(literalNode.getValue());
+                bytecode.addInstruction(Opcode.OP_LITERAL_LONG, indexOfLong);
+            }
             case ToyBooleanLiteralNode booleanLiteralNode -> {
-                bytecode.addInstruction(Opcode.OP_CONSTANT, 0);
+                int indexOfBoolean = bytecode.addToConstantPool(booleanLiteralNode.isValue());
+                bytecode.addInstruction(Opcode.OP_LITERAL_BOOLEAN, indexOfBoolean);
             }
             case ToyBigIntegerLiteralNode bigIntegerLiteralNode -> {
-                bytecode.addInstruction(Opcode.OP_CONSTANT, 0);
+                int indexOfBigInteger = bytecode.addToConstantPool(bigIntegerLiteralNode.getBigInteger());
+                bytecode.addInstruction(Opcode.OP_LITERAL_BIGINT, indexOfBigInteger);
             }
 
-
             case ToyInvokeNode invokeNode -> {
-                // Add information for function and the corresponding operations for it
+                // Generate bytecode for the function invocation (println)
                 generateBytecode(invokeNode.getFunctionNode(), bytecode);
 
+                // Add bytecode for each argument of the function
                 for (ToyExpressionNode arg : invokeNode.getToyExpressionNodes()) {
-                    generateBytecode(arg, bytecode);
+                    generateBytecode(arg, bytecode);  // Process the argument (either a literal or variable)
                 }
 
-//            bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+                // Add the OP_PRINT instruction for println (assuming println is a special function)
+                if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
+                    if (functionNode.getName().equals("println")) {
+                        bytecode.addInstruction(Opcode.OP_PRINT, 0);
+                    } else {
+                        bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+                    }
+                }
             }
             // TODO: Change, not sure if this is correct
             case ToyIfNode ifNode -> {
                 generateBytecode(ifNode.getConditionNode(), bytecode);
 
-                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, 0);
+                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1); // Placeholder -1 for offset
 
                 generateBytecode(ifNode.getThenPartNode(), bytecode);
 
+                int jumpToEndLocation = -1;
                 if (ifNode.getElsePartNode() != null) {
-                    int jumpToEndLocation = bytecode.addInstruction(Opcode.OP_JUMP, 0);
+                    jumpToEndLocation = bytecode.addInstruction(Opcode.OP_JUMP, -1); // Placeholder -1 for offset
+                }
 
-                    bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize());
+                int elseOrEndLocation = bytecode.getSize(); // This is the target for "jump if false"
+                bytecode.patchInstruction(jumpIfFalseLocation, elseOrEndLocation - jumpIfFalseLocation - 1);
 
+                if (ifNode.getElsePartNode() != null) {
                     generateBytecode(ifNode.getElsePartNode(), bytecode);
+                    int endLocation = bytecode.getSize();
+                    bytecode.patchInstruction(jumpToEndLocation, endLocation - jumpToEndLocation - 1);
+                }
+            }
 
-                    bytecode.patchInstruction(jumpToEndLocation, bytecode.getSize());
-                } else {
-                    bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize());
-                }
-            }
-            case ToyUnboxNode unboxNode -> generateBytecode(unboxNode.getLeftNode(), bytecode);
-            case ToyFunctionLiteralNode toyFunctionLiteralNode -> {
-                if (toyFunctionLiteralNode.getName().equals("println")) {
-                    bytecode.addInstruction(Opcode.OP_PRINT, 0);
-                }
-            }
-//        TODO: Change, not sure if this is correct
             case ToyWhileNode whileNode -> {
                 int loopStart = bytecode.getSize();
 
                 generateBytecode(whileNode.getConditionNode(), bytecode);
 
-                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, 0);
+                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1); // Placeholder -1 for offset
 
                 generateBytecode(whileNode.getBodyNode(), bytecode);
 
-                bytecode.addInstruction(Opcode.OP_JUMP, loopStart);
+                bytecode.addInstruction(Opcode.OP_JUMP, loopStart - bytecode.getSize() - 1); // Jump back to the start of the loop
 
-                bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize());
+                bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize() - jumpIfFalseLocation - 1);
             }
+            case ToyUnboxNode unboxNode -> generateBytecode(unboxNode.getLeftNode(), bytecode);
             case null, default -> System.out.println("Brrrrrrr");
 
 //            throw new RuntimeException("Unknown AST node type: " + node.getClass().getSimpleName());

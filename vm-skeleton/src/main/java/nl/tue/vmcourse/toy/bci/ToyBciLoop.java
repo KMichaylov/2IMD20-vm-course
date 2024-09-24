@@ -3,6 +3,7 @@ package nl.tue.vmcourse.toy.bci;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -37,23 +38,25 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             Instruction instr = bytecode.getInstruction(pc);
             Opcode opcode = instr.opcode();
             int operand = instr.operand();
-            pc++;
 // TODO: remove duplicates
+//            TODO: refactor the switch statement. Export common logic into separate methods
+            // TODO!!!!Currently, the mistake is in the JumpIfFalse construction, so the control flow.
+            // TODO: Fix throwing of errors with something else
             switch (opcode) {
                 case OP_LITERAL_STRING -> {
-                    Object stringLiteral = bytecode.getElementFromConstantPool(operand);
+                    String stringLiteral = (String) bytecode.getElementFromConstantPool(operand);
                     stack.push(stringLiteral);
                 }
                 case OP_LITERAL_LONG -> {
-                    Object longLiteral = bytecode.getElementFromConstantPool(operand);
+                    Long longLiteral = (Long) bytecode.getElementFromConstantPool(operand);
                     stack.push(longLiteral);
                 }
                 case OP_LITERAL_BOOLEAN -> {
-                    Object booleanLiteral = bytecode.getElementFromConstantPool(operand);
+                    Boolean booleanLiteral = (Boolean) bytecode.getElementFromConstantPool(operand);
                     stack.push(booleanLiteral);
                 }
                 case OP_LITERAL_BIGINT -> {
-                    Object bigIntegerLiteral = bytecode.getElementFromConstantPool(operand);
+                    BigInteger bigIntegerLiteral = (BigInteger) bytecode.getElementFromConstantPool(operand);
                     stack.push(bigIntegerLiteral);
                 }
                 case OP_ADD -> {
@@ -93,54 +96,88 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push(((Number) left).intValue() * ((Number) right).intValue());
                     }
                 }
-                case OP_JUMP -> pc = operand;
+//                Have a relative jump, based on the given bytecode
+                case OP_JUMP -> {
+                    pc += operand;
+                }
                 case OP_JUMP_IF_FALSE -> {
                     if (!((Boolean) stack.pop())) {
-                        pc = operand;
+                        pc += operand;
                     }
                 }
                 case OP_PRINT -> {
-                    System.out.println(locals.getLast());
+//                    System.out.println(locals.getLast());
+                    Object valueToPrint = stack.pop();
+                    System.out.println(valueToPrint);
                 }
-//                TODO: Change to new format
-//                case OP_COMPARE -> {
-//                    Object right = stack.pop();
-//                    Object left = stack.pop();
-//
-//                    boolean result;
-//                    // operand encodings:
-//                    // 0 is for ==
-//                    // 1 for <
-//                    // 2 for >
-//                    // 3 for <=
-//                    // 4 for >=
-//                    switch (operand) {
-//                        case 0 -> {
-//                            if (left instanceof Number && right instanceof Number) {
-//                                result = ((Number) left).intValue() == ((Number) right).intValue();
-//                            } else {
-//                                result = left.equals(right);
-//                            }
-//                        }
-//                        case 2 -> {
-//                            if (left instanceof Number && right instanceof Number) {
-//                                result = ((Number) left).intValue() > ((Number) right).intValue();
-//                            } else {
-//                                throw new RuntimeException("Cannot compare non-numeric values");
-//                            }
-//                        }
-//                        case 1 -> {
-//                            if (left instanceof Number && right instanceof Number) {
-//                                result = ((Number) left).intValue() < ((Number) right).intValue();
-//                            } else {
-//                                throw new RuntimeException("Cannot compare non-numeric values");
-//                            }
-//                        }
-//                        default -> throw new RuntimeException("Unknown comparison type");
-//                    }
-//
-//                    stack.push(result);
-//                }
+                case OP_COMPARE -> {
+                    Object right = stack.pop();
+                    Object left = stack.pop();
+
+                    boolean result = false;
+                    switch (operand) {
+                        case 0: // ==
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).longValue() == ((Number) right).longValue();
+                            } else if (left instanceof String && right instanceof String) {
+                                result = left.equals(right);
+                            } else {
+                                throw new RuntimeException("Invalid comparison types for '=='.");
+                            }
+                            break;
+                        case 1: // !=
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).longValue() != ((Number) right).longValue();
+                            } else if (left instanceof String && right instanceof String) {
+                                result = !left.equals(right);
+                            } else {
+                                throw new RuntimeException("Invalid comparison types for '!='.");
+                            }
+                            break;
+                        case 2: // <
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).longValue() < ((Number) right).longValue();
+                            } else {
+                                throw new RuntimeException("Cannot compare non-numeric values with '<'.");
+                            }
+                            break;
+                        case 3: // <=
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).longValue() <= ((Number) right).longValue();
+                            } else {
+                                throw new RuntimeException("Cannot compare non-numeric values with '<='.");
+                            }
+                            break;
+                        case 4: // >
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).longValue() > ((Number) right).longValue();
+                            } else {
+                                throw new RuntimeException("Cannot compare non-numeric values with '>'.");
+                            }
+                            break;
+                        case 5: // >=
+                            if (left instanceof Number && right instanceof Number) {
+                                result = ((Number) left).longValue() >= ((Number) right).longValue();
+                            } else {
+                                throw new RuntimeException("Cannot compare non-numeric values with '>='.");
+                            }
+                            break;
+                        default:
+                            throw new RuntimeException("Unknown comparison type");
+                    }
+
+                    stack.push(result);
+                }
+                case OP_NOT -> {
+                    if (!stack.isEmpty()) {
+                        Object value = stack.pop();
+                        // We just negate the boolean value
+                        if (value instanceof Boolean) {
+                            boolean negated = !(Boolean) value;
+                            stack.push(negated);
+                        }
+                    }
+                }
                 case OP_LOAD -> {
                     Object value = locals.get(operand);
                     stack.push(value);
@@ -157,7 +194,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     // TODO throw corresponding error:
                     throw new RuntimeException("TODO");
                 }
+
             }
+            pc++;
+
         }
         // return whatever;
         return null;
