@@ -38,8 +38,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             Instruction instr = bytecode.getInstruction(pc);
             Opcode opcode = instr.opcode();
             int operand = instr.operand();
-// TODO: remove duplicates
-//            TODO: refactor the switch statement. Export common logic into separate methods
+            // TODO: remove duplicates
+            // TODO: refactor the switch statement. Export common logic into separate methods, after the general structure is there
             // TODO!!!!Currently, the mistake is in the JumpIfFalse construction, so the control flow.
             // TODO: Fix throwing of errors with something else
             switch (opcode) {
@@ -56,27 +56,41 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(booleanLiteral);
                 }
                 case OP_LITERAL_BIGINT -> {
-                    BigInteger bigIntegerLiteral = (BigInteger) bytecode.getElementFromConstantPool(operand);
+                    BigInteger bigIntegerLiteral = BigInteger.valueOf((Long) bytecode.getElementFromConstantPool(operand));
                     stack.push(bigIntegerLiteral);
                 }
+                case OP_STORE -> {
+                    locals.add(operand, stack.pop());
+                }
+//                TODO: Fix this bad nesting of if/else blocks, try another way to organize the code, since currently it is quite bad
                 case OP_ADD -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Number && right instanceof Number) {
+                    if (left instanceof Long && right instanceof Long) {
                         stack.push(((Number) left).intValue() + ((Number) right).intValue());
+                    } else if (left instanceof BigInteger && right instanceof BigInteger) {
+                        stack.push(((BigInteger) left).add((BigInteger) right));
+                    } else if (left instanceof BigInteger && right instanceof Long) {
+                        stack.push(((BigInteger) left).add(BigInteger.valueOf((Long) right)));
+                    } else if (left instanceof Long && right instanceof BigInteger) {
+                        stack.push((BigInteger.valueOf((Long) left)).add((BigInteger) right));
                     } else {
                         // TODO throw corresponding error:
                         throw new RuntimeException("TODO");
                     }
                 }
-                case OP_STORE -> {
-                    locals.add(operand, stack.pop());
-                }
+//                TODO: For each operation, if one number is BigInt, we just perform the operations corresponding to it.
                 case OP_SUB -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Number && right instanceof Number) {
+                    if (left instanceof Long && right instanceof Long) {
                         stack.push(((Number) left).intValue() - ((Number) right).intValue());
+                    } else if (left instanceof BigInteger && right instanceof BigInteger) {
+                        stack.push(((BigInteger) left).subtract((BigInteger) right));
+                    } else if (left instanceof BigInteger && right instanceof Long) {
+                        stack.push(((BigInteger) left).subtract(BigInteger.valueOf((Long) right)));
+                    } else if (left instanceof Long && right instanceof BigInteger) {
+                        stack.push((BigInteger.valueOf((Long) left)).subtract((BigInteger) right));
                     } else {
                         // TODO throw corresponding error:
                         throw new RuntimeException("TODO");
@@ -85,15 +99,27 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_DIV -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Number && right instanceof Number && !right.toString().equals("0")) {
+                    if (left instanceof Long && right instanceof Long && !right.toString().equals("0")) {
                         stack.push(((Number) left).intValue() / ((Number) right).intValue());
+                    } else if (left instanceof BigInteger && right instanceof BigInteger) {
+                        stack.push(((BigInteger) left).divide((BigInteger) right));
+                    } else if (left instanceof BigInteger && right instanceof Long) {
+                        stack.push(((BigInteger) left).divide(BigInteger.valueOf((Long) right)));
+                    } else if (left instanceof Long && right instanceof BigInteger) {
+                        stack.push((BigInteger.valueOf((Long) left)).divide((BigInteger) right));
                     }
                 }
                 case OP_MUL -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Number && right instanceof Number) {
+                    if (left instanceof Long && right instanceof Long) {
                         stack.push(((Number) left).intValue() * ((Number) right).intValue());
+                    } else if (left instanceof BigInteger && right instanceof BigInteger) {
+                        stack.push(((BigInteger) left).multiply((BigInteger) right));
+                    } else if (left instanceof BigInteger && right instanceof Long) {
+                        stack.push(((BigInteger) left).multiply(BigInteger.valueOf((Long) right)));
+                    } else if (left instanceof Long && right instanceof BigInteger) {
+                        stack.push((BigInteger.valueOf((Long) left)).multiply((BigInteger) right));
                     }
                 }
 //                Have a relative jump, based on the given bytecode
@@ -199,7 +225,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             pc++;
 
         }
-        // return whatever;
+        // TODO: decide what to return in the end;
         return null;
     }
 

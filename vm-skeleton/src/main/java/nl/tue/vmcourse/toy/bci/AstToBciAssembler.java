@@ -4,6 +4,7 @@ import nl.tue.vmcourse.toy.ast.*;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
 
+import java.math.BigInteger;
 import java.util.Optional;
 
 public class AstToBciAssembler {
@@ -92,28 +93,34 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_LITERAL_STRING, indexOfString);
             }
             case ToyLongLiteralNode literalNode -> {
-                int indexOfLong = bytecode.addToConstantPool(literalNode.getValue());
-                bytecode.addInstruction(Opcode.OP_LITERAL_LONG, indexOfLong);
+                long value = literalNode.getValue();
+                final long LONG_UPPERBOUND = 2147483647;
+                if (value < LONG_UPPERBOUND) {
+                    int indexOfLong = bytecode.addToConstantPool(literalNode.getValue());
+                    bytecode.addInstruction(Opcode.OP_LITERAL_LONG, indexOfLong);
+                } else {
+                    int indexOfBigInt = bytecode.addToConstantPool(literalNode.getValue());
+                    bytecode.addInstruction(Opcode.OP_LITERAL_BIGINT, indexOfBigInt);
+                }
+
             }
             case ToyBooleanLiteralNode booleanLiteralNode -> {
                 int indexOfBoolean = bytecode.addToConstantPool(booleanLiteralNode.isValue());
                 bytecode.addInstruction(Opcode.OP_LITERAL_BOOLEAN, indexOfBoolean);
             }
+            // Actually, mostly, the don't pass a bigint in the AST, so I need to check it in the long literal and there determine what happens
             case ToyBigIntegerLiteralNode bigIntegerLiteralNode -> {
                 int indexOfBigInteger = bytecode.addToConstantPool(bigIntegerLiteralNode.getBigInteger());
                 bytecode.addInstruction(Opcode.OP_LITERAL_BIGINT, indexOfBigInteger);
             }
 
             case ToyInvokeNode invokeNode -> {
-                // Generate bytecode for the function invocation (println)
                 generateBytecode(invokeNode.getFunctionNode(), bytecode);
 
-                // Add bytecode for each argument of the function
                 for (ToyExpressionNode arg : invokeNode.getToyExpressionNodes()) {
-                    generateBytecode(arg, bytecode);  // Process the argument (either a literal or variable)
+                    generateBytecode(arg, bytecode);
                 }
 
-                // Add the OP_PRINT instruction for println (assuming println is a special function)
                 if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
                     if (functionNode.getName().equals("println")) {
                         bytecode.addInstruction(Opcode.OP_PRINT, 0);
@@ -157,6 +164,11 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_JUMP, loopStart - bytecode.getSize() - 1); // Jump back to the start of the loop
 
                 bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize() - jumpIfFalseLocation - 1);
+            }
+
+            case ToyReturnNode returnNode -> {
+                generateBytecode(returnNode.getValueNode(), bytecode);
+                bytecode.addInstruction(Opcode.OP_RETURN, 0);
             }
             case ToyUnboxNode unboxNode -> generateBytecode(unboxNode.getLeftNode(), bytecode);
             case null, default -> System.out.println("Brrrrrrr");
