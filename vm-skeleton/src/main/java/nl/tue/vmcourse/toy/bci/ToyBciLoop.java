@@ -1,5 +1,6 @@
 package nl.tue.vmcourse.toy.bci;
 
+import nl.tue.vmcourse.toy.ast.ToyFunctionLiteralNode;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
 
@@ -149,7 +150,16 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     } else {
                         stack.push("NULL");
                     }
-                    System.out.println();
+                }
+                case OP_IS_INSTANCE -> {
+                    Object valueToCheckInstanceOf = stack.pop();
+                    Object typeToCompareWith = stack.pop();
+
+                    String returnedValue = checkValueType(valueToCheckInstanceOf);
+
+                    boolean isInstance = returnedValue.equals(typeToCompareWith);
+
+                    stack.push(isInstance);
                 }
                 case OP_COMPARE -> {
                     Object right = stack.pop();
@@ -223,6 +233,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object value = locals.get(operand);
                     stack.push(value);
                 }
+                // TODO: Check if this code is correct
+                case OP_CALL -> {
+
+                }
                 case OP_RETURN -> {
                     if (!stack.isEmpty()) {
                         return stack.pop();
@@ -242,6 +256,23 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         }
         // TODO: decide what to return in the end;
         return null;
+    }
+
+
+    /**
+     * Utility function to check the type of the variable (Number, Boolean, String, etc)
+     */
+//    TODO: Probably create a custom class. Also export common logic from the previous function.
+    private String checkValueType(Object value) {
+        if (value instanceof Long || value instanceof BigInteger) {
+            return "Number";
+        } else if (value instanceof Boolean) {
+            return "Boolean";
+        } else if (value instanceof String) {
+            return "String";
+        } else {
+            return "NULL";
+        }
     }
 
 }

@@ -55,7 +55,13 @@ public class AstToBciAssembler {
                 generateBytecode(writeNode.getValueNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_STORE, writeNode.getFrameSlot());
             }
-            case ToyReadLocalVariableNode readNode -> bytecode.addInstruction(Opcode.OP_LOAD, readNode.getFrameSlot());
+            case ToyReadLocalVariableNode readNode -> {
+                bytecode.addInstruction(Opcode.OP_LOAD, readNode.getFrameSlot());
+            }
+//            TODO: Check how to read functional arguments, consult books
+            case ToyReadArgumentNode readArgumentNode -> {
+                bytecode.addInstruction(Opcode.OP_LOAD, readArgumentNode.getParameterCount());
+            }
             case ToyAddNode addNode ->
                     binaryInstructionHelperGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
             case ToySubNode subNode ->
@@ -114,11 +120,12 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_LITERAL_BIGINT, indexOfBigInteger);
             }
 
+//            TODO: Redesign and think of other approaches regarding where to store variables. Main priority for today
             case ToyInvokeNode invokeNode -> {
                 generateBytecode(invokeNode.getFunctionNode(), bytecode);
 
-                for (ToyExpressionNode arg : invokeNode.getToyExpressionNodes()) {
-                    generateBytecode(arg, bytecode);
+                for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
+                    generateBytecode(expression, bytecode);
                 }
 
                 if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
@@ -126,12 +133,13 @@ public class AstToBciAssembler {
                         bytecode.addInstruction(Opcode.OP_PRINT, 0);
                     } else if (functionNode.getName().equals("typeOf")) {
                         bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
+                    } else if (functionNode.getName().equals("isInstance")) {
+                        bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
                     } else {
                         bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
                     }
                 }
             }
-            // TODO: Change, not sure if this is correct
             case ToyIfNode ifNode -> {
                 generateBytecode(ifNode.getConditionNode(), bytecode);
 
@@ -159,11 +167,12 @@ public class AstToBciAssembler {
 
                 generateBytecode(whileNode.getConditionNode(), bytecode);
 
-                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1); // Placeholder -1 for offset
+                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1);
 
                 generateBytecode(whileNode.getBodyNode(), bytecode);
 
-                bytecode.addInstruction(Opcode.OP_JUMP, loopStart - bytecode.getSize() - 1); // Jump back to the start of the loop
+                // Go back to the beginning of the loop
+                bytecode.addInstruction(Opcode.OP_JUMP, loopStart - bytecode.getSize() - 1);
 
                 bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize() - jumpIfFalseLocation - 1);
             }

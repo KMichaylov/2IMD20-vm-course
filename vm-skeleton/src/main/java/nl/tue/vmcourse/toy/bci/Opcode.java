@@ -46,7 +46,12 @@ public enum Opcode {
     OP_JUMP_IF_FALSE((byte) 0x1A),
 
     // Idle operations
-    OP_NOP((byte) 0x1B);
+    OP_NOP((byte) 0x1B),
+
+    // Built-in functions
+    OP_IS_INSTANCE((byte) 0x1C);
+
+
     private final byte value;
 
     Opcode(byte value) {
