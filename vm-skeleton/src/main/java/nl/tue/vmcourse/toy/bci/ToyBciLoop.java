@@ -161,6 +161,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                     stack.push(isInstance);
                 }
+                case OP_NANO_TIME -> {
+                    stack.push(System.nanoTime());
+                }
                 case OP_COMPARE -> {
                     Object right = stack.pop();
                     Object left = stack.pop();

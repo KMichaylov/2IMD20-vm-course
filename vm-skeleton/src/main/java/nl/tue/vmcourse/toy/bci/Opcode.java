@@ -49,7 +49,8 @@ public enum Opcode {
     OP_NOP((byte) 0x1B),
 
     // Built-in functions
-    OP_IS_INSTANCE((byte) 0x1C);
+    OP_IS_INSTANCE((byte) 0x1C),
+    OP_NANO_TIME((byte) 0x1D);
 
 
     private final byte value;

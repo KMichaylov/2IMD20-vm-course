@@ -135,6 +135,8 @@ public class AstToBciAssembler {
                         bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
                     } else if (functionNode.getName().equals("isInstance")) {
                         bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
+                    } else if (functionNode.getName().equals("nanoTime")) {
+                        bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
                     } else {
                         bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
                     }
