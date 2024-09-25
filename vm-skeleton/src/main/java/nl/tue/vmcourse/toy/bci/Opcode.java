@@ -6,6 +6,7 @@ package nl.tue.vmcourse.toy.bci;
 
 //TODO: Maybe create a separate opcode for while loops
 public enum Opcode {
+    OP_TYPEOF((byte) 0x01),
     OP_RETURN((byte) 0x02),
     OP_PRINT((byte) 0x03),
     OP_LOOP((byte) 0x04),

@@ -56,7 +56,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(booleanLiteral);
                 }
                 case OP_LITERAL_BIGINT -> {
-                    BigInteger bigIntegerLiteral = BigInteger.valueOf((Long) bytecode.getElementFromConstantPool(operand));
+                    BigInteger bigIntegerLiteral = (BigInteger) bytecode.getElementFromConstantPool(operand);
                     stack.push(bigIntegerLiteral);
                 }
                 case OP_STORE -> {
@@ -122,7 +122,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push((BigInteger.valueOf((Long) left)).multiply((BigInteger) right));
                     }
                 }
-//                Have a relative jump, based on the given bytecode
+                // Have a relative jump, based on the given bytecode
                 case OP_JUMP -> {
                     pc += operand;
                 }
@@ -132,9 +132,24 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
                 case OP_PRINT -> {
-//                    System.out.println(locals.getLast());
+                    // System.out.println(locals.getLast());
                     Object valueToPrint = stack.pop();
                     System.out.println(valueToPrint);
+                }
+                // TODO: Extract some logic into separate method
+                // TODO: Later add support for Object and Function
+                case OP_TYPEOF -> {
+                    Object valueToCheckTypeOf = stack.pop();
+                    if (valueToCheckTypeOf instanceof Long || valueToCheckTypeOf instanceof BigInteger) {
+                        stack.push("Number");
+                    } else if (valueToCheckTypeOf instanceof Boolean) {
+                        stack.push("Boolean");
+                    } else if (valueToCheckTypeOf instanceof String) {
+                        stack.push("String");
+                    } else {
+                        stack.push("NULL");
+                    }
+                    System.out.println();
                 }
                 case OP_COMPARE -> {
                     Object right = stack.pop();

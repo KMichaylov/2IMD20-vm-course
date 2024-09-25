@@ -124,6 +124,8 @@ public class AstToBciAssembler {
                 if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
                     if (functionNode.getName().equals("println")) {
                         bytecode.addInstruction(Opcode.OP_PRINT, 0);
+                    } else if (functionNode.getName().equals("typeOf")) {
+                        bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
                     } else {
                         bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
                     }
