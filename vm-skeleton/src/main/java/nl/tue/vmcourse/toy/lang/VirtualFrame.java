@@ -7,6 +7,10 @@ public class VirtualFrame {
         this.arguments = arguments;
     }
 
+    public Object[] getArguments() {
+        return arguments;
+    }
+
     public Object getConstant(int index) {
         return arguments[index];
     }

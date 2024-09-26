@@ -9,6 +9,10 @@ public class RootCallTarget {
         this.rootNode = rootNode;
     }
 
+    public ToyRootNode getRootNode() {
+        return rootNode;
+    }
+
     public Object invoke(Object... arguments) {
         VirtualFrame frame = new VirtualFrame(arguments);
         return rootNode.execute(frame);
