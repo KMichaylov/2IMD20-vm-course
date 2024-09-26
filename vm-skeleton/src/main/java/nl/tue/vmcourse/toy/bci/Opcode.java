@@ -48,6 +48,9 @@ public enum Opcode {
     // Idle operations
     OP_NOP((byte) 0x1B),
 
+    // For functions
+    OP_FUNCTION_NAME((byte) 0x1E),
+
     // Built-in functions
     OP_IS_INSTANCE((byte) 0x1C),
     OP_NANO_TIME((byte) 0x1D);
