@@ -4,16 +4,13 @@ import nl.tue.vmcourse.toy.ast.*;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
 
-import java.math.BigInteger;
-import java.util.Optional;
-
 public class AstToBciAssembler {
 
     /**
      * We send the code to the ToyBciLoop to execute the bytecode commands.
      *
-     * @param methodBlock
-     * @return
+     * @param methodBlock the AST for the whole method that should be parsed
+     * @return the result of the execution of bytecode commands
      */
     public static ToyAbstractFunctionBody build(ToyStatementNode methodBlock) {
         Bytecode bytecode = compileAst(methodBlock);
@@ -81,13 +78,13 @@ public class AstToBciAssembler {
             case ToyLessThanNode lessThanNode -> {
                 generateBytecode(lessThanNode.getLeftUnboxed(), bytecode);
                 generateBytecode(lessThanNode.getRightUnboxed(), bytecode);
-                bytecode.addInstruction(Opcode.OP_COMPARE, 1);
+                bytecode.addInstruction(Opcode.OP_COMPARE, 2);
             }
 
             case ToyLessOrEqualNode lessOrEqualNode -> {
                 generateBytecode(lessOrEqualNode.getLeftUnboxed(), bytecode);
                 generateBytecode(lessOrEqualNode.getRightUnboxed(), bytecode);
-                bytecode.addInstruction(Opcode.OP_COMPARE, 2);
+                bytecode.addInstruction(Opcode.OP_COMPARE, 3);
             }
 
             case ToyLogicalNotNode toyLogicalNotNode -> {
@@ -114,7 +111,7 @@ public class AstToBciAssembler {
                 int indexOfBoolean = bytecode.addToConstantPool(booleanLiteralNode.isValue());
                 bytecode.addInstruction(Opcode.OP_LITERAL_BOOLEAN, indexOfBoolean);
             }
-            // Actually, mostly, the don't pass a bigint in the AST, so I need to check it in the long literal and there determine what happens
+            // Actually, mostly, they don't pass a bigint in the AST, so I need to check it in the long literal and there determine what happens
             case ToyBigIntegerLiteralNode bigIntegerLiteralNode -> {
                 int indexOfBigInteger = bytecode.addToConstantPool(bigIntegerLiteralNode.getBigInteger());
                 bytecode.addInstruction(Opcode.OP_LITERAL_BIGINT, indexOfBigInteger);
@@ -122,24 +119,34 @@ public class AstToBciAssembler {
 
 //            TODO: Redesign and think of other approaches regarding where to store variables. Main priority for today
             case ToyInvokeNode invokeNode -> {
-                generateBytecode(invokeNode.getFunctionNode(), bytecode);
+                if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
+                    String functionName = functionNode.getName();
+                    if (!isBuiltInFunction(functionName)) {
+                        // Here, we add the function name, so that the function can be executed.
+                        int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
+                        bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
+                    }
+
+                }
+                // TODO Check if this need to be uncommeted.
+//                generateBytecode(invokeNode.getFunctionNode(), bytecode);
 
                 for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
                     generateBytecode(expression, bytecode);
                 }
+//                TODO: Should also check here what type the function is (extract into separate method)
 
                 if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
-                    if (functionNode.getName().equals("println")) {
-                        bytecode.addInstruction(Opcode.OP_PRINT, 0);
-                    } else if (functionNode.getName().equals("typeOf")) {
-                        bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
-                    } else if (functionNode.getName().equals("isInstance")) {
-                        bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
-                    } else if (functionNode.getName().equals("nanoTime")) {
-                        bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
-                    } else {
-                        bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+                    switch (functionNode.getName()) {
+                        // The cases check for built-in functions
+                        case "println" -> bytecode.addInstruction(Opcode.OP_PRINT, 0);
+                        case "typeOf" -> bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
+                        case "isInstance" -> bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
+                        case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
+                        // The operand is the number of arguments
+                        default -> bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
                     }
+
                 }
             }
             case ToyIfNode ifNode -> {
@@ -179,12 +186,13 @@ public class AstToBciAssembler {
                 bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize() - jumpIfFalseLocation - 1);
             }
 
+            // TODO: CONTINUE FROM HERE
             case ToyReturnNode returnNode -> {
                 generateBytecode(returnNode.getValueNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_RETURN, 0);
             }
             case ToyUnboxNode unboxNode -> generateBytecode(unboxNode.getLeftNode(), bytecode);
-            case null, default -> System.out.println("Brrrrrrr");
+            case null, default -> System.out.println(STR."Brrrrrrr\{node.getClass().getName()}");
 
 //            throw new RuntimeException("Unknown AST node type: " + node.getClass().getSimpleName());
         }
@@ -203,6 +211,22 @@ public class AstToBciAssembler {
         generateBytecode(leftNode, bytecode);
         generateBytecode(rightNode, bytecode);
         bytecode.addInstruction(opcode, operand);
+    }
+
+    /**
+     * A helper method to decide if the current function is a built-in one.
+     *
+     * @param functionName the name of the function
+     * @return true if function is built-in, false otherwise
+     */
+    private static boolean isBuiltInFunction(String functionName) {
+        boolean result = false;
+        switch (functionName) {
+            case "println", "typeOf", "isInstance", "nanoTime" -> result = true;
+            default -> result = false;
+        }
+        ;
+        return result;
     }
 
 
