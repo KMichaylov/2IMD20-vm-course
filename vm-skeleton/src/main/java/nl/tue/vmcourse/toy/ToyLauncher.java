@@ -1,5 +1,11 @@
 package nl.tue.vmcourse.toy;
 
+import nl.tue.vmcourse.toy.ast.ToyStatementNode;
+import nl.tue.vmcourse.toy.bci.AstToBciAssembler;
+import nl.tue.vmcourse.toy.bci.Bytecode;
+import nl.tue.vmcourse.toy.bci.GlobalScope;
+import nl.tue.vmcourse.toy.bci.ToyBciLoop;
+import nl.tue.vmcourse.toy.interpreter.ToyRootNode;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 import nl.tue.vmcourse.toy.parser.ToyLangLexer;
@@ -10,7 +16,13 @@ import org.antlr.v4.runtime.misc.Interval;
 import java.io.IOException;
 import java.util.Map;
 
+import static nl.tue.vmcourse.toy.bci.AstToBciAssembler.build;
+
 public class ToyLauncher {
+
+    //    TODO: Maybe remove
+    private static final GlobalScope globalScope = new GlobalScope();
+
 
     public static Object eval(String code) {
         return evalStream(CharStreams.fromString(code));
@@ -50,7 +62,14 @@ public class ToyLauncher {
         if (!allFunctions.isEmpty() && allFunctions.containsKey("main")) {
             RootCallTarget mainFunction = allFunctions.get("main");
             // TODO register builtins, initialize global scope, ...
-            return mainFunction.invoke();
+            // TODO ME: Maybe check if here you can do the buildins or leave them as they are.
+            // TODO ME: Basically, we should always start with the main function, see how to be able to check other functions.
+
+            for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
+                // here, we add the global scope for functions and then create the bytecode for each function.
+                globalScope.registerFunction(entry.getKey(), entry.getValue());
+            }
+            return mainFunction.invoke(globalScope);
         }
         return null;
     }

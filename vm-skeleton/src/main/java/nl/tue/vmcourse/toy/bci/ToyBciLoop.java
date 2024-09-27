@@ -2,13 +2,16 @@ package nl.tue.vmcourse.toy.bci;
 
 import nl.tue.vmcourse.toy.ast.ToyFunctionLiteralNode;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
+import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
+// This class really needs rewriting
 public class ToyBciLoop extends ToyAbstractFunctionBody {
     private final Bytecode bytecode;
     private final List<Object> locals;
@@ -20,7 +23,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     public ToyBciLoop(Bytecode bytecode) {
         this.bytecode = bytecode;
-        this.locals = new ArrayList<Object>();
+        this.locals = new ArrayList<>();
+    }
+
+    private Object resolveArgument(Object arg) {
+        while (arg instanceof VirtualFrame) {
+            arg = ((VirtualFrame) arg).getArguments()[0];
+        }
+        return arg;
     }
 
     /**
@@ -31,8 +41,17 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     public Object execute(VirtualFrame frame) {
         Stack<Object> stack = new Stack<>();
-        int pc = 0;
+        // Check if there are arguments on the frame and add them to the locals if yes
 
+        // TODO: PROBLEM IS RELATED TO HOW VARIABLES ARE PASSED!!!!
+        if (frame.getArguments() != null) {
+            locals.clear();
+            for (int i = 0; i < frame.getArguments().length; i++) {
+                Object arg = frame.getArguments()[i];
+                locals.add(resolveArgument(arg));
+            }
+        }
+        int pc = 0;
 //        TODO: Idea: I think the general structure of the bytecode is problematic, currently, it does not make sense how things are organized and ordered. Check the whole logic
         bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
@@ -44,7 +63,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             // TODO!!!!Currently, the mistake is in the JumpIfFalse construction, so the control flow.
             // TODO: Fix throwing of errors with something else
             switch (opcode) {
-                case OP_LITERAL_STRING -> {
+                case OP_LITERAL_STRING, OP_FUNCTION_NAME -> {
                     String stringLiteral = (String) bytecode.getElementFromConstantPool(operand);
                     stack.push(stringLiteral);
                 }
@@ -67,7 +86,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_ADD -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Long && right instanceof Long) {
+                    // Might arrise a problem if one of the numbers is considered int, generally this vague Object idea is not the best!
+                    if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
                         stack.push(((Number) left).intValue() + ((Number) right).intValue());
                     } else if (left instanceof BigInteger && right instanceof BigInteger) {
                         stack.push(((BigInteger) left).add((BigInteger) right));
@@ -129,6 +149,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 case OP_JUMP_IF_FALSE -> {
                     if (!((Boolean) stack.pop())) {
+                        //if (!(Boolean) stack.peek()) {
                         pc += operand;
                     }
                 }
@@ -236,10 +257,35 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object value = locals.get(operand);
                     stack.push(value);
                 }
-                // TODO: Check if this code is correct
+                // TODO: Check how to handle function
                 case OP_CALL -> {
+                    int numberOfFunctionArguments = operand;
 
+                    // Pop arguments from the stack
+                    Object[] args = new Object[numberOfFunctionArguments];
+                    for (int i = numberOfFunctionArguments - 1; i >= 0; i--) {
+                        args[i] = stack.pop();
+                    }
+
+                    String functionName = (String) stack.pop();
+
+                    GlobalScope globalScope = (GlobalScope) frame.getArguments()[0];
+
+                    RootCallTarget function = globalScope.getFunction(functionName);
+                    if (function == null) {
+                        throw new RuntimeException("Function not found: " + functionName);
+                    }
+
+                    // Create a copy of locals that will be passed to invoke function, so that we don't have the modifying problem.
+
+                    // Create a new frame with the arguments
+                    VirtualFrame newFrame = new VirtualFrame(args);
+
+                    // Invoke the function and push the return value onto the stack
+                    Object returnValue = function.invoke(newFrame);
+                    stack.push(returnValue);
                 }
+
                 case OP_RETURN -> {
                     if (!stack.isEmpty()) {
                         return stack.pop();
@@ -263,7 +309,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
 
     /**
-     * Utility function to check the type of the variable (Number, Boolean, String, etc)
+     * Utility function to check the type of the variable (Number, Boolean, String, etc.)
      */
 //    TODO: Probably create a custom class. Also export common logic from the previous function.
     private String checkValueType(Object value) {
