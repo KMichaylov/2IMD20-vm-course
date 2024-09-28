@@ -87,6 +87,22 @@ public class AstToBciAssembler {
             case ToyMulNode mulNode ->
                     binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
 
+
+            // Boolean operations: TODO: If the left part is false, then we don't look at the right part
+            case ToyLogicalAndNode logicalAndNode -> {
+                binaryInstructionHelperGenerator(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_LOGICAL_AND, bytecode, 0);
+            }
+
+            case ToyLogicalOrNode logicalOrNode -> {
+                binaryInstructionHelperGenerator(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_LOGICAL_OR, bytecode, 0);
+            }
+
+            case ToyParenExpressionNode parenExpressionNode -> {
+                generateBytecode(parenExpressionNode.getExpressionNode(), bytecode);
+                bytecode.addInstruction(Opcode.OP_NOP, 0);
+            }
+
+
             // For the comparisons we use the provided AST and in case we need > or >=, we just negate the results
             case ToyEqualNode equalNode -> {
                 generateBytecode(equalNode.getLeftUnboxed(), bytecode);
@@ -203,7 +219,6 @@ public class AstToBciAssembler {
                 bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize() - jumpIfFalseLocation - 1);
             }
 
-            // TODO: CONTINUE FROM HERE
             case ToyReturnNode returnNode -> {
                 generateBytecode(returnNode.getValueNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_RETURN, 0);

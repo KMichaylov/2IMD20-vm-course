@@ -5,6 +5,7 @@ package nl.tue.vmcourse.toy.bci;
 //TODO: Add javadoc
 
 //TODO: Maybe create a separate opcode for while loops
+// TODO: Add some port have a sequential order for the opcodes
 public enum Opcode {
     OP_TYPEOF((byte) 0x01),
     OP_RETURN((byte) 0x02),
@@ -13,12 +14,6 @@ public enum Opcode {
     OP_JUMP((byte) 0x05),
     // Comparison operators
     OP_COMPARE((byte) 0x06),
-    //    OP_EQUAL((byte) 0x06),
-//    OP_NOT_EQUAL((byte) 0x26),
-//    OP_LESS((byte) 0x27),
-//    OP_LESS_EQUAL((byte) 0x28),
-//    OP_GREATER((byte) 0x29),
-//    OP_GREATER_EQUAL((byte) 0x2A),
     // Binary values
     OP_NOT((byte) 0x30),
     OP_NULL((byte) 0x0D),
@@ -30,6 +25,8 @@ public enum Opcode {
     OP_MUL((byte) 0x12),
     OP_DIV((byte) 0x13),
     OP_CONCAT((byte) 0x14),
+    OP_LOGICAL_AND((byte) 0x23),
+    OP_LOGICAL_OR((byte) 0x24),
     // Literals
     OP_LITERAL_STRING((byte) 0x15),
     OP_LITERAL_LONG((byte) 0x20),

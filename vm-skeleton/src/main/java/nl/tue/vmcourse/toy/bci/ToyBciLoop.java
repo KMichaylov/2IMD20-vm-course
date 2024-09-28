@@ -109,7 +109,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_SUB -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Long && right instanceof Long) {
+                    if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
                         stack.push(((Number) left).intValue() - ((Number) right).intValue());
                     } else if (left instanceof BigInteger && right instanceof BigInteger) {
                         stack.push(((BigInteger) left).subtract((BigInteger) right));
@@ -125,7 +125,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_DIV -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Long && right instanceof Long && !right.toString().equals("0")) {
+                    if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger) && !right.toString().equals("0")) {
                         stack.push(((Number) left).intValue() / ((Number) right).intValue());
                     } else if (left instanceof BigInteger && right instanceof BigInteger) {
                         stack.push(((BigInteger) left).divide((BigInteger) right));
@@ -138,7 +138,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_MUL -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Long && right instanceof Long) {
+                    if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
                         stack.push(((Number) left).intValue() * ((Number) right).intValue());
                     } else if (left instanceof BigInteger && right instanceof BigInteger) {
                         stack.push(((BigInteger) left).multiply((BigInteger) right));
@@ -147,6 +147,29 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     } else if (left instanceof Long && right instanceof BigInteger) {
                         stack.push((BigInteger.valueOf((Long) left)).multiply((BigInteger) right));
                     }
+                }
+
+                case OP_LOGICAL_AND -> {
+                    Object left = stack.pop();
+                    Object right = stack.pop();
+                    if (left.equals(true) && right.equals(true)) {
+                        stack.push(true);
+                    } else {
+                        stack.push(false);
+                    }
+                }
+
+                case OP_LOGICAL_OR -> {
+                    Object left = stack.pop();
+                    Object right = stack.pop();
+                    if (left.equals(true) || right.equals(true)) {
+                        stack.push(true);
+                    } else {
+                        stack.push(false);
+                    }
+                }
+
+                case OP_NOP -> {
                 }
                 // Have a relative jump, based on the given bytecode
                 case OP_JUMP -> {
@@ -190,6 +213,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_NANO_TIME -> {
                     stack.push(System.nanoTime());
                 }
+
+                // TODO: Might have a problem with comparison of BigIntegers
                 case OP_COMPARE -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
