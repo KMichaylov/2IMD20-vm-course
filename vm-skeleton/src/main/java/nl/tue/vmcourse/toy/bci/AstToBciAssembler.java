@@ -4,6 +4,8 @@ import nl.tue.vmcourse.toy.ast.*;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
 
+import java.math.BigInteger;
+
 public class AstToBciAssembler {
 
     /**
@@ -48,12 +50,29 @@ public class AstToBciAssembler {
                     generateBytecode(statement, bytecode);
                 }
             }
+
             case ToyWriteLocalVariableNode writeNode -> {
                 generateBytecode(writeNode.getValueNode(), bytecode);
-                bytecode.addInstruction(Opcode.OP_STORE, writeNode.getFrameSlot());
+                String variableName = ((ToyStringLiteralNode) writeNode.getNameNode()).getValue();
+                if (variableName.equals("null")) {
+                    variableName = null;
+                }
+                bytecode.addVariableInstruction(
+                        Opcode.OP_STORE,
+                        0,
+                        variableName,
+                        writeNode.getFrameSlot(),
+                        writeNode.isNewVariable()
+                );
             }
             case ToyReadLocalVariableNode readNode -> {
-                bytecode.addInstruction(Opcode.OP_LOAD, readNode.getFrameSlot());
+                bytecode.addVariableInstruction(
+                        Opcode.OP_LOAD,
+                        readNode.getFrameSlot(),
+                        null,
+                        readNode.getFrameSlot(),
+                        false
+                );
             }
 //            TODO: Check how to read functional arguments, consult books
             case ToyReadArgumentNode readArgumentNode -> {
@@ -102,7 +121,7 @@ public class AstToBciAssembler {
                     int indexOfLong = bytecode.addToConstantPool(literalNode.getValue());
                     bytecode.addInstruction(Opcode.OP_LITERAL_LONG, indexOfLong);
                 } else {
-                    int indexOfBigInt = bytecode.addToConstantPool(literalNode.getValue());
+                    int indexOfBigInt = bytecode.addToConstantPool(BigInteger.valueOf(literalNode.getValue()));
                     bytecode.addInstruction(Opcode.OP_LITERAL_BIGINT, indexOfBigInt);
                 }
 
@@ -128,8 +147,6 @@ public class AstToBciAssembler {
                     }
 
                 }
-                // TODO Check if this need to be uncommeted.
-//                generateBytecode(invokeNode.getFunctionNode(), bytecode);
 
                 for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
                     generateBytecode(expression, bytecode);
@@ -220,12 +237,11 @@ public class AstToBciAssembler {
      * @return true if function is built-in, false otherwise
      */
     private static boolean isBuiltInFunction(String functionName) {
-        boolean result = false;
+        boolean result;
         switch (functionName) {
             case "println", "typeOf", "isInstance", "nanoTime" -> result = true;
             default -> result = false;
         }
-        ;
         return result;
     }
 

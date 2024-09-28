@@ -1,17 +1,14 @@
 package nl.tue.vmcourse.toy.bci;
 
-import nl.tue.vmcourse.toy.ast.ToyFunctionLiteralNode;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
-// This class really needs rewriting
 public class ToyBciLoop extends ToyAbstractFunctionBody {
     private final Bytecode bytecode;
     private final List<Object> locals;
@@ -42,10 +39,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     public Object execute(VirtualFrame frame) {
         Stack<Object> stack = new Stack<>();
         // Check if there are arguments on the frame and add them to the locals if yes
+        locals.clear();
 
         // TODO: PROBLEM IS RELATED TO HOW VARIABLES ARE PASSED!!!!
         if (frame.getArguments() != null) {
-            locals.clear();
             for (int i = 0; i < frame.getArguments().length; i++) {
                 Object arg = frame.getArguments()[i];
                 locals.add(resolveArgument(arg));
@@ -53,11 +50,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         }
         int pc = 0;
 //        TODO: Idea: I think the general structure of the bytecode is problematic, currently, it does not make sense how things are organized and ordered. Check the whole logic
-        bytecode.printBytecode();
+//        bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
             Instruction instr = bytecode.getInstruction(pc);
-            Opcode opcode = instr.opcode();
-            int operand = instr.operand();
+            Opcode opcode = instr.getOpcode();
+            Integer frameSlot = instr.getFrameSlot();
+            int operand = instr.getOperand();
             // TODO: remove duplicates
             // TODO: refactor the switch statement. Export common logic into separate methods, after the general structure is there
             // TODO!!!!Currently, the mistake is in the JumpIfFalse construction, so the control flow.
@@ -80,7 +78,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(bigIntegerLiteral);
                 }
                 case OP_STORE -> {
-                    locals.add(operand, stack.pop());
+                    if (frameSlot != null && !stack.isEmpty()) {
+                        if (frameSlot < locals.size()) {
+                            locals.set(frameSlot, stack.pop());
+                        } else {
+                            locals.add(frameSlot, stack.pop());
+                        }
+                    }
+
                 }
 //                TODO: Fix this bad nesting of if/else blocks, try another way to organize the code, since currently it is quite bad
                 case OP_ADD -> {
@@ -254,8 +259,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
                 case OP_LOAD -> {
-                    Object value = locals.get(operand);
-                    stack.push(value);
+                    if (frameSlot != null) {
+                        Object value = locals.get(frameSlot);
+                        stack.push(value);
+                    }
                 }
                 // TODO: Check how to handle function
                 case OP_CALL -> {

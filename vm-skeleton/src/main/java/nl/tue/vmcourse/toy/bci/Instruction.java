@@ -1,12 +1,48 @@
 package nl.tue.vmcourse.toy.bci;
 
 /**
- * The instruction record is essentially a wrapper over the opcode which helps to store information about the operands.
+ * The instruction class is essentially a wrapper over the opcode which helps to store information about the operands.
  **/
+public class Instruction {
+    private final Opcode opcode;
+    private final Integer operand;
+    private final String variableName;
+    private final Integer frameSlot;
+    private final Boolean newVariable;
 
-// TODO: Create a table with all opcodes and operand numbers, to make navigation easier for later changes.
-//    This needs redesign, since different values have different types.
-public record Instruction(Opcode opcode, int operand) {
+    public Instruction(Opcode opcode, Integer operand) {
+        this.opcode = opcode;
+        this.operand = operand;
+        this.variableName = null;
+        this.frameSlot = null;
+        this.newVariable = null;
+    }
 
+    // The following constructor is solely for variables and other structures which keep track of frameSlot and name.
+    public Instruction(Opcode opcode, Integer operand, String variableName, Integer frameSlot, Boolean newVariable) {
+        this.opcode = opcode;
+        this.operand = operand;
+        this.variableName = variableName;
+        this.frameSlot = frameSlot;
+        this.newVariable = newVariable;
+    }
+
+    public Opcode getOpcode() { return opcode; }
+    public Integer getOperand() { return operand; }
+    public String getVariableName() { return variableName; }
+    public Integer getFrameSlot() { return frameSlot; }
+    public Boolean isNewVariable() { return newVariable; }
+
+    // Example toString to print instruction
+    @Override
+    public String toString() {
+        return "Instruction{" +
+                "opcode=" + opcode +
+                ", operand=" + operand +
+                ", variableName='" + variableName + '\'' +
+                ", frameSlot=" + frameSlot +
+                ", newVariable=" + newVariable +
+                '}';
+    }
 }
 

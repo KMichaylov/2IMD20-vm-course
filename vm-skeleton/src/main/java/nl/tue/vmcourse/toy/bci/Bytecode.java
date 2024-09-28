@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// TODO: add javadoc
+/**
+ * The bytecode class is essentially a holder for all bytecode instructions and data for a given method.
+ */
 public class Bytecode {
     private final List<Instruction> instructions;
     private final List<Object> constantPool;
@@ -14,22 +16,24 @@ public class Bytecode {
         this.constantPool = new ArrayList<>();
     }
 
-
-    public int addInstruction(Opcode opcode, int operand) {
+    public int addInstruction(Opcode opcode, Integer operand) {
         instructions.add(new Instruction(opcode, operand));
-        return instructions.size() - 1;  // Return the index of the added instruction
+        return instructions.size() - 1;
     }
 
+    public int addVariableInstruction(Opcode opcode, Integer operand, String variableName, Integer frameSlot, Boolean newVariable) {
+        instructions.add(new Instruction(opcode, operand, variableName, frameSlot, newVariable));
+        return instructions.size() - 1;
+    }
 
-    public void patchInstruction(int index, int operand) {
+    public void patchInstruction(int index, Integer operand) {
         Instruction oldInstruction = instructions.get(index);
-        instructions.set(index, new Instruction(oldInstruction.opcode(), operand));
+        instructions.set(index, new Instruction(oldInstruction.getOpcode(), operand));
     }
 
     public Instruction getInstruction(int index) {
         return instructions.get(index);
     }
-
 
     public int getSize() {
         return instructions.size();
@@ -53,12 +57,9 @@ public class Bytecode {
         }
     }
 
-
     public void printBytecode() {
         for (Instruction instr : instructions) {
-            System.out.println(STR."\{instr.opcode()} \{instr.operand()}");
+            System.out.println(instr);
         }
     }
-
-
 }
