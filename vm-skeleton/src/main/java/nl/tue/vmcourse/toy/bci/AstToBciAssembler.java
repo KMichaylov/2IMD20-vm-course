@@ -97,6 +97,18 @@ public class AstToBciAssembler {
                 binaryInstructionHelperGenerator(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_LOGICAL_OR, bytecode, 0);
             }
 
+            // Operations regarding the execution of loops
+
+            case ToyContinueNode continueNode -> {
+                int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
+                bytecode.addContinueJump(continueJumpIndex);
+            }
+
+            case ToyBreakNode breakNode -> {
+                int breakJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
+                bytecode.addBreakJump(breakJumpIndex);
+            }
+
             case ToyParenExpressionNode parenExpressionNode -> {
                 generateBytecode(parenExpressionNode.getExpressionNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_NOP, 0);
@@ -195,12 +207,12 @@ public class AstToBciAssembler {
                 }
 
                 int elseOrEndLocation = bytecode.getSize(); // This is the target for "jump if false"
-                bytecode.patchInstruction(jumpIfFalseLocation, elseOrEndLocation - jumpIfFalseLocation - 1);
+                bytecode.updateInstruction(jumpIfFalseLocation, elseOrEndLocation - jumpIfFalseLocation - 1);
 
                 if (ifNode.getElsePartNode() != null) {
                     generateBytecode(ifNode.getElsePartNode(), bytecode);
                     int endLocation = bytecode.getSize();
-                    bytecode.patchInstruction(jumpToEndLocation, endLocation - jumpToEndLocation - 1);
+                    bytecode.updateInstruction(jumpToEndLocation, endLocation - jumpToEndLocation - 1);
                 }
             }
 
@@ -213,10 +225,18 @@ public class AstToBciAssembler {
 
                 generateBytecode(whileNode.getBodyNode(), bytecode);
 
-                // Go back to the beginning of the loop
+                // Go back to the beginning of the loop while iterating the loop
                 bytecode.addInstruction(Opcode.OP_JUMP, loopStart - bytecode.getSize() - 1);
 
-                bytecode.patchInstruction(jumpIfFalseLocation, bytecode.getSize() - jumpIfFalseLocation - 1);
+                // After traversing the whole loop, get the final location
+                int loopEnd = bytecode.getSize();
+
+                // Ensures that in case of a false condition, we can continue with the next statements outside the loop
+                bytecode.updateInstruction(jumpIfFalseLocation, loopEnd - jumpIfFalseLocation - 1);
+
+                // Update the jumps for continue and break to point to the correct locations
+                bytecode.updateContinueJumps(loopStart);
+                bytecode.updateBreakJumps(loopEnd);
             }
 
             case ToyReturnNode returnNode -> {

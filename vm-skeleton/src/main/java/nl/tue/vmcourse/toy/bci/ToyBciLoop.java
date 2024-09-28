@@ -50,7 +50,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         }
         int pc = 0;
 //        TODO: Idea: I think the general structure of the bytecode is problematic, currently, it does not make sense how things are organized and ordered. Check the whole logic
-//        bytecode.printBytecode();
+        bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
             Instruction instr = bytecode.getInstruction(pc);
             Opcode opcode = instr.getOpcode();
@@ -226,14 +226,18 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 result = ((Number) left).longValue() == ((Number) right).longValue();
                             } else if (left instanceof String && right instanceof String) {
                                 result = left.equals(right);
+                            } else if (left instanceof Boolean && right instanceof Boolean) {
+                                result = left.equals(right);
                             } else {
-                                throw new RuntimeException("Invalid comparison types for '=='.");
+                                throw new RuntimeException("Invalid comparison types for '!='.");
                             }
                             break;
                         case 1: // !=
                             if (left instanceof Number && right instanceof Number) {
                                 result = ((Number) left).longValue() != ((Number) right).longValue();
                             } else if (left instanceof String && right instanceof String) {
+                                result = !left.equals(right);
+                            } else if (left instanceof Boolean && right instanceof Boolean) {
                                 result = !left.equals(right);
                             } else {
                                 throw new RuntimeException("Invalid comparison types for '!='.");

@@ -27,22 +27,55 @@ public class Instruction {
         this.newVariable = newVariable;
     }
 
-    public Opcode getOpcode() { return opcode; }
-    public Integer getOperand() { return operand; }
-    public String getVariableName() { return variableName; }
-    public Integer getFrameSlot() { return frameSlot; }
-    public Boolean isNewVariable() { return newVariable; }
+    /**
+     * Get the opcode of the instruction.
+     * @return the opcode
+     */
+    public Opcode getOpcode() {
+        return opcode;
+    }
 
-    // Example toString to print instruction
+
+    /**
+     * Get the operand of the instruction.
+     * @return the operand
+     */
+    public Integer getOperand() {
+        return operand;
+    }
+
+    /**
+     * Get the variable name of the instruction. If it does not exist, returns null.
+     * @return variable name or null
+     */
+    public String getVariableName() {
+        return variableName;
+    }
+
+
+    /**
+     * Get the frame slot where the instruction is stored
+     * @return the frame slot
+     */
+    public Integer getFrameSlot() {
+        return frameSlot;
+    }
+
+    /**
+     * Indicates if the variable in the instruction is newly defined.
+     * @return true if the variable is new, false otherwise
+     */
+    public Boolean isNewVariable() {
+        return newVariable;
+    }
+
+    /**
+     * String representation for all parts of the instruction.
+     * @return the string representation
+     */
     @Override
     public String toString() {
-        return "Instruction{" +
-                "opcode=" + opcode +
-                ", operand=" + operand +
-                ", variableName='" + variableName + '\'' +
-                ", frameSlot=" + frameSlot +
-                ", newVariable=" + newVariable +
-                '}';
+        return STR."Instruction{opcode=\{opcode}, operand=\{operand}, variableName='\{variableName}', frameSlot=\{frameSlot}, newVariable=\{newVariable}}";
     }
 }
 
