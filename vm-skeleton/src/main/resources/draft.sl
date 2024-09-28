@@ -1,10 +1,6 @@
-function main(){
-   a = 15;
-   if(a == 10) {
-    println("You are stupid");
-   } if(a == 15) {
-   println("You are clever");
-   } else {
-   println("You are defeated");
-   }
+function main() {
+  println(3 * 4);
+  println(3 * 4000000000000);
+  println(3000000000000 * 4);
+  println(3000000000000 * 4000000000000);
 }
