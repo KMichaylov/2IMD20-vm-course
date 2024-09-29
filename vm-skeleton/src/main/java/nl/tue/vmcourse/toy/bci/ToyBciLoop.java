@@ -23,11 +23,19 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         this.locals = new ArrayList<>();
     }
 
-    private Object resolveArgument(Object arg) {
-        while (arg instanceof VirtualFrame) {
-            arg = ((VirtualFrame) arg).getArguments()[0];
+    /**
+     * Add the function arguments
+     * @param extractedArgument the argument to be extracted
+     * @return the value of the argument
+     */
+    private Object resolveArgument(Object extractedArgument) {
+        while (extractedArgument instanceof VirtualFrame) {
+            if(((VirtualFrame) extractedArgument).getArguments().length == 0) {
+                return null;
+            }
+            extractedArgument = ((VirtualFrame) extractedArgument).getArguments()[0];
         }
-        return arg;
+        return extractedArgument;
     }
 
     /**
@@ -45,12 +53,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (frame.getArguments() != null) {
             for (int i = 0; i < frame.getArguments().length; i++) {
                 Object arg = frame.getArguments()[i];
-                locals.add(resolveArgument(arg));
+                Object argumentToBeAdded = resolveArgument(arg);
+                if(argumentToBeAdded != null)
+                    locals.add(argumentToBeAdded);
             }
         }
         int pc = 0;
 //        TODO: Idea: I think the general structure of the bytecode is problematic, currently, it does not make sense how things are organized and ordered. Check the whole logic
-        bytecode.printBytecode();
+//        bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
             Instruction instr = bytecode.getInstruction(pc);
             Opcode opcode = instr.getOpcode();
