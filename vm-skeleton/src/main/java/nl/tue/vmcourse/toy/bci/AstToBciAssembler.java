@@ -40,8 +40,7 @@ public class AstToBciAssembler {
      * @param node     The node for which we traverse the tree
      * @param bytecode The bytecode placeholder
      */
-//    TODO: Check the whole logic and see how AST changes when passed different expressions
-    // TODO: Refactor the whole tree.
+    // TODO: Refactor the whole tree. Continue with it even later.
     private static void generateBytecode(ToyNode node, Bytecode bytecode) {
         switch (node) {
             case ToyBlockNode blockNode -> {
@@ -86,7 +85,6 @@ public class AstToBciAssembler {
                     binaryInstructionHelperGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
             case ToyMulNode mulNode ->
                     binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
-
 
             // Boolean operations: TODO: If the left part is false, then we don't look at the right part
             case ToyLogicalAndNode logicalAndNode -> {
@@ -138,30 +136,29 @@ public class AstToBciAssembler {
                 generateBytecode(toyLogicalNotNode.getToyLessOrEqualNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_NOT, 0);
             }
+
             case ToyStringLiteralNode stringLiteralNode -> {
-                int indexOfString = bytecode.addToConstantPool(stringLiteralNode.getValue());
-                bytecode.addInstruction(Opcode.OP_LITERAL_STRING, indexOfString);
+                literalNodeHelper(stringLiteralNode.getValue(), Opcode.OP_LITERAL_STRING, bytecode);
             }
             case ToyLongLiteralNode literalNode -> {
                 long value = literalNode.getValue();
                 final long LONG_UPPERBOUND = 2147483647;
                 if (value < LONG_UPPERBOUND) {
-                    int indexOfLong = bytecode.addToConstantPool(literalNode.getValue());
-                    bytecode.addInstruction(Opcode.OP_LITERAL_LONG, indexOfLong);
+                    literalNodeHelper(literalNode.getValue(), Opcode.OP_LITERAL_LONG, bytecode);
+
                 } else {
-                    int indexOfBigInt = bytecode.addToConstantPool(BigInteger.valueOf(literalNode.getValue()));
-                    bytecode.addInstruction(Opcode.OP_LITERAL_BIGINT, indexOfBigInt);
+                    literalNodeHelper(BigInteger.valueOf(literalNode.getValue()), Opcode.OP_LITERAL_BIGINT, bytecode);
                 }
 
             }
             case ToyBooleanLiteralNode booleanLiteralNode -> {
-                int indexOfBoolean = bytecode.addToConstantPool(booleanLiteralNode.isValue());
-                bytecode.addInstruction(Opcode.OP_LITERAL_BOOLEAN, indexOfBoolean);
+                literalNodeHelper(booleanLiteralNode.isValue(), Opcode.OP_LITERAL_BOOLEAN, bytecode);
+
             }
             // Actually, mostly, they don't pass a bigint in the AST, so I need to check it in the long literal and there determine what happens
             case ToyBigIntegerLiteralNode bigIntegerLiteralNode -> {
-                int indexOfBigInteger = bytecode.addToConstantPool(bigIntegerLiteralNode.getBigInteger());
-                bytecode.addInstruction(Opcode.OP_LITERAL_BIGINT, indexOfBigInteger);
+                literalNodeHelper(bigIntegerLiteralNode.getBigInteger(), Opcode.OP_LITERAL_BIGINT, bytecode);
+
             }
 
 //            TODO: Redesign and think of other approaches regarding where to store variables. Main priority for today
@@ -180,7 +177,7 @@ public class AstToBciAssembler {
                     generateBytecode(expression, bytecode);
                 }
 //                TODO: Should also check here what type the function is (extract into separate method)
-
+// TODO: This should also be present outside the ToyInvokeNode!!!!
                 if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
                     switch (functionNode.getName()) {
                         // The cases check for built-in functions
@@ -278,6 +275,19 @@ public class AstToBciAssembler {
             default -> result = false;
         }
         return result;
+    }
+
+
+    /**
+     * A helper method to add a literal node to the bytecode. Could add all 4 types of literals.
+     *
+     * @param value    value to be added to the constant pool
+     * @param opcode   of the corresponding literal
+     * @param bytecode the bytecode array where the instruction will be added
+     */
+    private static void literalNodeHelper(Object value, Opcode opcode, Bytecode bytecode) {
+        int indexOfAddedElement = bytecode.addToConstantPool(value);
+        bytecode.addInstruction(opcode, indexOfAddedElement);
     }
 
 
