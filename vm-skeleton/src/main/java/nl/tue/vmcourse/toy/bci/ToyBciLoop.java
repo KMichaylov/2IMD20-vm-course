@@ -199,12 +199,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 case OP_JUMP_IF_FALSE -> {
                     if (!((Boolean) stack.pop())) {
-                        //if (!(Boolean) stack.peek()) {
                         pc += operand;
                     }
                 }
                 case OP_PRINT -> {
-                    // System.out.println(locals.getLast());
                     Object valueToPrint = stack.pop();
                     System.out.println(valueToPrint);
                 }
@@ -368,8 +366,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
     /**
      * Utility function to check the type of the variable (Number, Boolean, String, etc.)
+     * @param value to be checked
      */
-//    TODO: Probably create a custom class. Also export common logic from the previous function.
     private String checkValueType(Object value) {
         if (value instanceof Long || value instanceof BigInteger) {
             return "Number";

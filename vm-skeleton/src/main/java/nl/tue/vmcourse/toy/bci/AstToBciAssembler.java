@@ -77,59 +77,18 @@ public class AstToBciAssembler {
             case ToyReadArgumentNode readArgumentNode -> {
                 bytecode.addInstruction(Opcode.OP_LOAD, readArgumentNode.getParameterCount());
             }
-            case ToyAddNode addNode ->
-                    binaryInstructionHelperGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
-            case ToySubNode subNode ->
-                    binaryInstructionHelperGenerator(subNode.getLeftUnboxed(), subNode.getRightUnboxed(), Opcode.OP_SUB, bytecode, 0);
-            case ToyDivNode divNode ->
-                    binaryInstructionHelperGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
-            case ToyMulNode mulNode ->
-                    binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
-
-            // Boolean operations: TODO: If the left part is false, then we don't look at the right part
-            case ToyLogicalAndNode logicalAndNode -> {
-                binaryInstructionHelperGenerator(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_LOGICAL_AND, bytecode, 0);
-            }
-
-            case ToyLogicalOrNode logicalOrNode -> {
-                binaryInstructionHelperGenerator(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_LOGICAL_OR, bytecode, 0);
-            }
-
-            // Operations regarding the execution of loops
-
-            case ToyContinueNode continueNode -> {
-                int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
-                bytecode.addContinueJump(continueJumpIndex);
-            }
-
-            case ToyBreakNode breakNode -> {
-                int breakJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
-                bytecode.addBreakJump(breakJumpIndex);
-            }
-
-            case ToyParenExpressionNode parenExpressionNode -> {
-                generateBytecode(parenExpressionNode.getExpressionNode(), bytecode);
-                bytecode.addInstruction(Opcode.OP_NOP, 0);
-            }
-
 
             // For the comparisons we use the provided AST and in case we need > or >=, we just negate the results
             case ToyEqualNode equalNode -> {
-                generateBytecode(equalNode.getLeftUnboxed(), bytecode);
-                generateBytecode(equalNode.getRightUnboxed(), bytecode);
-                bytecode.addInstruction(Opcode.OP_COMPARE, 0);
+                comparisonNodeHelper(equalNode.getLeftUnboxed(), equalNode.getRightUnboxed(), Opcode.OP_COMPARE, 0, bytecode);
             }
 
             case ToyLessThanNode lessThanNode -> {
-                generateBytecode(lessThanNode.getLeftUnboxed(), bytecode);
-                generateBytecode(lessThanNode.getRightUnboxed(), bytecode);
-                bytecode.addInstruction(Opcode.OP_COMPARE, 2);
+                comparisonNodeHelper(lessThanNode.getLeftUnboxed(), lessThanNode.getRightUnboxed(), Opcode.OP_COMPARE, 2, bytecode);
             }
 
             case ToyLessOrEqualNode lessOrEqualNode -> {
-                generateBytecode(lessOrEqualNode.getLeftUnboxed(), bytecode);
-                generateBytecode(lessOrEqualNode.getRightUnboxed(), bytecode);
-                bytecode.addInstruction(Opcode.OP_COMPARE, 3);
+                comparisonNodeHelper(lessOrEqualNode.getLeftUnboxed(), lessOrEqualNode.getRightUnboxed(), Opcode.OP_COMPARE, 3, bytecode);
             }
 
             case ToyLogicalNotNode toyLogicalNotNode -> {
@@ -161,6 +120,41 @@ public class AstToBciAssembler {
 
             }
 
+            case ToyAddNode addNode ->
+                    binaryInstructionHelperGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
+            case ToySubNode subNode ->
+                    binaryInstructionHelperGenerator(subNode.getLeftUnboxed(), subNode.getRightUnboxed(), Opcode.OP_SUB, bytecode, 0);
+            case ToyDivNode divNode ->
+                    binaryInstructionHelperGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
+            case ToyMulNode mulNode ->
+                    binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
+
+            // Boolean operations: TODO: If the left part is false, then we don't look at the right part
+            case ToyLogicalAndNode logicalAndNode -> {
+                binaryInstructionHelperGenerator(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_LOGICAL_AND, bytecode, 0);
+            }
+
+            case ToyLogicalOrNode logicalOrNode -> {
+                binaryInstructionHelperGenerator(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_LOGICAL_OR, bytecode, 0);
+            }
+
+            // Operations regarding the execution of loops
+
+            case ToyContinueNode _ -> {
+                int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
+                bytecode.addContinueJump(continueJumpIndex);
+            }
+
+            case ToyBreakNode _ -> {
+                int breakJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
+                bytecode.addBreakJump(breakJumpIndex);
+            }
+
+            case ToyParenExpressionNode parenExpressionNode -> {
+                generateBytecode(parenExpressionNode.getExpressionNode(), bytecode);
+                bytecode.addInstruction(Opcode.OP_NOP, 0);
+            }
+
 //            TODO: Redesign and think of other approaches regarding where to store variables. Main priority for today
             case ToyInvokeNode invokeNode -> {
                 if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
@@ -170,7 +164,6 @@ public class AstToBciAssembler {
                         int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
                         bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
                     }
-
                 }
 
                 for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
@@ -179,31 +172,34 @@ public class AstToBciAssembler {
 //                TODO: Should also check here what type the function is (extract into separate method)
 // TODO: This should also be present outside the ToyInvokeNode!!!!
                 if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
-                    switch (functionNode.getName()) {
-                        // The cases check for built-in functions
-                        case "println" -> bytecode.addInstruction(Opcode.OP_PRINT, 0);
-                        case "typeOf" -> bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
-                        case "isInstance" -> bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
-                        case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
-                        // The operand is the number of arguments
-                        default -> bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
-                    }
-
+                    String functionName = checkFunctionNameForBuiltin(bytecode, functionNode);
+                    addFunctionToBytecode(bytecode, invokeNode, functionName);
                 }
             }
+
+            // TODO: Check if this breaks the built-in functions
+            // TODO: Check how to handle function literals
+            case ToyFunctionLiteralNode functionLiteralNode -> {
+                String functionName = checkFunctionNameForBuiltin(bytecode, functionLiteralNode);
+                if (!isBuiltInFunction(functionName)) {
+                    literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_LITERAL_STRING, bytecode);
+                }
+            }
+
             case ToyIfNode ifNode -> {
                 generateBytecode(ifNode.getConditionNode(), bytecode);
 
-                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1); // Placeholder -1 for offset
+                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1);
 
                 generateBytecode(ifNode.getThenPartNode(), bytecode);
 
                 int jumpToEndLocation = -1;
                 if (ifNode.getElsePartNode() != null) {
-                    jumpToEndLocation = bytecode.addInstruction(Opcode.OP_JUMP, -1); // Placeholder -1 for offset
+                    jumpToEndLocation = bytecode.addInstruction(Opcode.OP_JUMP, -1);
                 }
 
-                int elseOrEndLocation = bytecode.getSize(); // This is the target for "jump if false"
+                // location for the else part or the end of the if statement
+                int elseOrEndLocation = bytecode.getSize();
                 bytecode.updateInstruction(jumpIfFalseLocation, elseOrEndLocation - jumpIfFalseLocation - 1);
 
                 if (ifNode.getElsePartNode() != null) {
@@ -243,7 +239,50 @@ public class AstToBciAssembler {
             case ToyUnboxNode unboxNode -> generateBytecode(unboxNode.getLeftNode(), bytecode);
             case null, default -> System.out.println(STR."Brrrrrrr\{node.getClass().getName()}");
 
-//            throw new RuntimeException("Unknown AST node type: " + node.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * A helper method to check the type of the function.
+     *
+     * @param bytecode     the bytecode array where the instruction will be added
+     * @param functionNode the node where function information is stored
+     * @return the type of the function
+     */
+
+    private static String checkFunctionNameForBuiltin(Bytecode bytecode, ToyFunctionLiteralNode functionNode) {
+        switch (functionNode.getName()) {
+//            TODO: Add the other built-in functions here
+            // The cases check for built-in functions
+            case "println" -> {
+                return "println";
+            }
+            case "typeOf" -> {
+                return "typeOf";
+            }
+            case "isInstance" -> {
+                return "isInstance";
+            }
+            case "nanoTime" -> {
+                return "nanoTime";
+            }
+            // The operand is the number of arguments
+            default -> {
+                return functionNode.getName();
+            }
+        }
+    }
+
+    private static void addFunctionToBytecode(Bytecode bytecode, ToyInvokeNode invokeNode, String functionName) {
+        switch (functionName) {
+//            TODO: Add the other built-in functions here
+            // The cases check for built-in functions
+            case "println" -> bytecode.addInstruction(Opcode.OP_PRINT, 0);
+            case "typeOf" -> bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
+            case "isInstance" -> bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
+            case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
+            // The operand is the number of arguments
+            default -> bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
         }
     }
 
@@ -288,6 +327,22 @@ public class AstToBciAssembler {
     private static void literalNodeHelper(Object value, Opcode opcode, Bytecode bytecode) {
         int indexOfAddedElement = bytecode.addToConstantPool(value);
         bytecode.addInstruction(opcode, indexOfAddedElement);
+    }
+
+
+    /**
+     * A helper method to generate bytecode for the comparison nodes.
+     *
+     * @param leftNode  the left node element
+     * @param rightNode the right node element
+     * @param opcode    the opcode for the operation
+     * @param operand   the number signifying the exact type of comparison
+     * @param bytecode  the bytecode array where the instruction will be added
+     */
+    private static void comparisonNodeHelper(ToyNode leftNode, ToyNode rightNode, Opcode opcode, int operand, Bytecode bytecode) {
+        generateBytecode(leftNode, bytecode);
+        generateBytecode(rightNode, bytecode);
+        bytecode.addInstruction(opcode, operand);
     }
 
 
