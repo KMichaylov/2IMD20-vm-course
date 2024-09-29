@@ -6,12 +6,14 @@ import nl.tue.vmcourse.toy.lang.VirtualFrame;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
 public class ToyBciLoop extends ToyAbstractFunctionBody {
     private final Bytecode bytecode;
     private final List<Object> locals;
+    private static GlobalScope globalScope;
 
     /**
      * Bytecode are the bytecode instructions from the generator and locals are all the elements for the local scope
@@ -25,17 +27,21 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
     /**
      * Add the function arguments
+     *
      * @param extractedArgument the argument to be extracted
      * @return the value of the argument
      */
-    private Object resolveArgument(Object extractedArgument) {
-        while (extractedArgument instanceof VirtualFrame) {
-            if(((VirtualFrame) extractedArgument).getArguments().length == 0) {
+    private List<Object> resolveArgument(Object extractedArgument) {
+        List<Object> arguments = new ArrayList<>();
+        if (extractedArgument instanceof VirtualFrame) {
+            if (((VirtualFrame) extractedArgument).getArguments().length == 0) {
                 return null;
             }
-            extractedArgument = ((VirtualFrame) extractedArgument).getArguments()[0];
+            if (((VirtualFrame) extractedArgument).getArguments().length > 0) {
+                arguments.addAll(Arrays.asList(((VirtualFrame) extractedArgument).getArguments()));
+            }
         }
-        return extractedArgument;
+        return arguments;
     }
 
     /**
@@ -53,14 +59,18 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (frame.getArguments() != null) {
             for (int i = 0; i < frame.getArguments().length; i++) {
                 Object arg = frame.getArguments()[i];
-                Object argumentToBeAdded = resolveArgument(arg);
-                if(argumentToBeAdded != null)
-                    locals.add(argumentToBeAdded);
+                List<Object> argumentsToBeAdded = resolveArgument(arg);
+                if (argumentsToBeAdded != null && !argumentsToBeAdded.isEmpty()) {
+                    locals.addAll(argumentsToBeAdded);
+                }
             }
         }
         int pc = 0;
+        if (frame.getArguments().length > 0 && frame.getArguments()[0] instanceof GlobalScope) {
+            globalScope = (GlobalScope) frame.getArguments()[0];
+        }
 //        TODO: Idea: I think the general structure of the bytecode is problematic, currently, it does not make sense how things are organized and ordered. Check the whole logic
-//        bytecode.printBytecode();
+        bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
             Instruction instr = bytecode.getInstruction(pc);
             Opcode opcode = instr.getOpcode();
@@ -101,7 +111,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_ADD -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    // Might arrise a problem if one of the numbers is considered int, generally this vague Object idea is not the best!
+                    // Might arise a problem if one of the numbers is considered int, generally this vague Object idea is not the best!
                     if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
                         stack.push(((Number) left).intValue() + ((Number) right).intValue());
                     } else if (left instanceof BigInteger && right instanceof BigInteger) {
@@ -110,7 +120,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push(((BigInteger) left).add(BigInteger.valueOf((Long) right)));
                     } else if (left instanceof Long && right instanceof BigInteger) {
                         stack.push((BigInteger.valueOf((Long) left)).add((BigInteger) right));
-                    } else {
+                    } else if(left instanceof String || right instanceof String){
+                        stack.push(left.toString() + right.toString());
+                    }else {
                         // TODO throw corresponding error:
                         throw new RuntimeException("TODO");
                     }
@@ -315,7 +327,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                     String functionName = (String) stack.pop();
 
-                    GlobalScope globalScope = (GlobalScope) frame.getArguments()[0];
+//                    GlobalScope globalScope = (GlobalScope) frame.getArguments()[0];
 
                     RootCallTarget function = globalScope.getFunction(functionName);
                     if (function == null) {
