@@ -81,22 +81,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             // TODO!!!!Currently, the mistake is in the JumpIfFalse construction, so the control flow.
             // TODO: Fix throwing of errors with something else
             switch (opcode) {
-                case OP_LITERAL_STRING, OP_FUNCTION_NAME -> {
-                    String stringLiteral = (String) bytecode.getElementFromConstantPool(operand);
-                    stack.push(stringLiteral);
-                }
-                case OP_LITERAL_LONG -> {
-                    Long longLiteral = (Long) bytecode.getElementFromConstantPool(operand);
-                    stack.push(longLiteral);
-                }
-                case OP_LITERAL_BOOLEAN -> {
-                    Boolean booleanLiteral = (Boolean) bytecode.getElementFromConstantPool(operand);
-                    stack.push(booleanLiteral);
-                }
-                case OP_LITERAL_BIGINT -> {
-                    BigInteger bigIntegerLiteral = (BigInteger) bytecode.getElementFromConstantPool(operand);
-                    stack.push(bigIntegerLiteral);
-                }
+                case OP_LITERAL_STRING, OP_FUNCTION_NAME -> pushLiteralToStack(bytecode, operand, stack, String.class);
+                case OP_LITERAL_LONG -> pushLiteralToStack(bytecode, operand, stack, Long.class);
+                case OP_LITERAL_BOOLEAN -> pushLiteralToStack(bytecode, operand, stack, Boolean.class);
+                case OP_LITERAL_BIGINT -> pushLiteralToStack(bytecode, operand, stack, BigInteger.class);
+
                 case OP_STORE -> {
                     if (frameSlot != null && !stack.isEmpty()) {
                         if (frameSlot < locals.size()) {
@@ -120,14 +109,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push(((BigInteger) left).add(BigInteger.valueOf((Long) right)));
                     } else if (left instanceof Long && right instanceof BigInteger) {
                         stack.push((BigInteger.valueOf((Long) left)).add((BigInteger) right));
-                    } else if(left instanceof String || right instanceof String){
+                    } else if (left instanceof String || right instanceof String) {
                         stack.push(left.toString() + right.toString());
-                    }else {
+                    } else {
                         // TODO throw corresponding error:
                         throw new RuntimeException("TODO");
                     }
                 }
-//                TODO: For each operation, if one number is BigInt, we just perform the operations corresponding to it.
                 case OP_SUB -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
@@ -365,7 +353,23 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
 
     /**
-     * Utility function to check the type of the variable (Number, Boolean, String, etc.)
+     * Pushes the literal value to the stack.
+     *
+     * @param bytecode the array where all instructions are stored
+     * @param operand  the operand of the instruction, in this case used for index of element in constant pool
+     * @param stack    the stack where the values are stored
+     * @param type     the type of the literal value
+     * @param <T>      the generic which allows for type casting
+     */
+    private <T> void pushLiteralToStack(Bytecode bytecode, int operand, Stack<Object> stack, Class<T> type) {
+        T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
+        stack.push(literalValue);
+    }
+
+
+    /**
+     * Utility function to check the type of the variable (Number, Boolean, String, etc.).
+     *
      * @param value to be checked
      */
     private String checkValueType(Object value) {
