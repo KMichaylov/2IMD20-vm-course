@@ -55,7 +55,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         // Check if there are arguments on the frame and add them to the locals if yes
         locals.clear();
 
-        // TODO: PROBLEM IS RELATED TO HOW VARIABLES ARE PASSED!!!!
         if (frame.getArguments() != null) {
             for (int i = 0; i < frame.getArguments().length; i++) {
                 Object arg = frame.getArguments()[i];
@@ -76,7 +75,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             Opcode opcode = instr.getOpcode();
             Integer frameSlot = instr.getFrameSlot();
             int operand = instr.getOperand();
-            // TODO: remove duplicates
             // TODO: refactor the switch statement. Export common logic into separate methods, after the general structure is there
             // TODO!!!!Currently, the mistake is in the JumpIfFalse construction, so the control flow.
             // TODO: Fix throwing of errors with something else
@@ -85,7 +83,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_LITERAL_LONG -> pushLiteralToStack(bytecode, operand, stack, Long.class);
                 case OP_LITERAL_BOOLEAN -> pushLiteralToStack(bytecode, operand, stack, Boolean.class);
                 case OP_LITERAL_BIGINT -> pushLiteralToStack(bytecode, operand, stack, BigInteger.class);
-
                 case OP_STORE -> {
                     if (frameSlot != null && !stack.isEmpty()) {
                         if (frameSlot < locals.size()) {
@@ -96,7 +93,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
 
                 }
-//                TODO: Fix this bad nesting of if/else blocks, try another way to organize the code, since currently it is quite bad
                 case OP_ADD -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
@@ -193,7 +189,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(System.nanoTime());
                 }
 
-                // TODO: Might have a problem with comparison of BigIntegers
                 case OP_COMPARE -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
@@ -239,14 +234,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                     String functionName = (String) stack.pop();
 
-//                    GlobalScope globalScope = (GlobalScope) frame.getArguments()[0];
-
                     RootCallTarget function = globalScope.getFunction(functionName);
                     if (function == null) {
                         throw new RuntimeException("Function not found: " + functionName);
                     }
-
-                    // Create a copy of locals that will be passed to invoke function, so that we don't have the modifying problem.
 
                     // Create a new frame with the arguments
                     VirtualFrame newFrame = new VirtualFrame(args);
