@@ -100,62 +100,33 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_ADD -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    // Might arise a problem if one of the numbers is considered int, generally this vague Object idea is not the best!
-                    if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-                        stack.push(((Number) left).intValue() + ((Number) right).intValue());
-                    } else if (left instanceof BigInteger && right instanceof BigInteger) {
-                        stack.push(((BigInteger) left).add((BigInteger) right));
-                    } else if (left instanceof BigInteger && right instanceof Long) {
-                        stack.push(((BigInteger) left).add(BigInteger.valueOf((Long) right)));
-                    } else if (left instanceof Long && right instanceof BigInteger) {
-                        stack.push((BigInteger.valueOf((Long) left)).add((BigInteger) right));
-                    } else if (left instanceof String || right instanceof String) {
-                        stack.push(left.toString() + right.toString());
-                    } else {
-                        // TODO throw corresponding error:
-                        throw new RuntimeException("TODO");
+                    Object answer = add(left, right);
+                    if (answer != null) {
+                        stack.push(answer);
                     }
                 }
                 case OP_SUB -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-                        stack.push(((Number) left).intValue() - ((Number) right).intValue());
-                    } else if (left instanceof BigInteger && right instanceof BigInteger) {
-                        stack.push(((BigInteger) left).subtract((BigInteger) right));
-                    } else if (left instanceof BigInteger && right instanceof Long) {
-                        stack.push(((BigInteger) left).subtract(BigInteger.valueOf((Long) right)));
-                    } else if (left instanceof Long && right instanceof BigInteger) {
-                        stack.push((BigInteger.valueOf((Long) left)).subtract((BigInteger) right));
-                    } else {
-                        // TODO throw corresponding error:
-                        throw new RuntimeException("TODO");
+                    Object answer = subtract(left, right);
+                    if (answer != null) {
+                        stack.push(answer);
                     }
                 }
                 case OP_DIV -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger) && !right.toString().equals("0")) {
-                        stack.push(((Number) left).intValue() / ((Number) right).intValue());
-                    } else if (left instanceof BigInteger && right instanceof BigInteger) {
-                        stack.push(((BigInteger) left).divide((BigInteger) right));
-                    } else if (left instanceof BigInteger && right instanceof Long) {
-                        stack.push(((BigInteger) left).divide(BigInteger.valueOf((Long) right)));
-                    } else if (left instanceof Long && right instanceof BigInteger) {
-                        stack.push((BigInteger.valueOf((Long) left)).divide((BigInteger) right));
+                    Object answer = divide(left, right);
+                    if (answer != null) {
+                        stack.push(answer);
                     }
                 }
                 case OP_MUL -> {
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-                        stack.push(((Number) left).intValue() * ((Number) right).intValue());
-                    } else if (left instanceof BigInteger && right instanceof BigInteger) {
-                        stack.push(((BigInteger) left).multiply((BigInteger) right));
-                    } else if (left instanceof BigInteger && right instanceof Long) {
-                        stack.push(((BigInteger) left).multiply(BigInteger.valueOf((Long) right)));
-                    } else if (left instanceof Long && right instanceof BigInteger) {
-                        stack.push((BigInteger.valueOf((Long) left)).multiply((BigInteger) right));
+                    Object answer = multiply(left, right);
+                    if (answer != null) {
+                        stack.push(answer);
                     }
                 }
 
@@ -364,6 +335,93 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private <T> void pushLiteralToStack(Bytecode bytecode, int operand, Stack<Object> stack, Class<T> type) {
         T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
         stack.push(literalValue);
+    }
+
+    /**
+     * A helper method to add the two values together.
+     *
+     * @param left  the part of the addition
+     * @param right the right part of the addition
+     * @return the sum, or concatenation in case one of the values is a string
+     */
+    private Object add(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
+            return ((Number) left).intValue() + ((Number) right).intValue();
+        } else if (left instanceof BigInteger && right instanceof BigInteger) {
+            return ((BigInteger) left).add((BigInteger) right);
+        } else if (left instanceof BigInteger && right instanceof Long) {
+            return ((BigInteger) left).add(BigInteger.valueOf((Long) right));
+        } else if (left instanceof Long && right instanceof BigInteger) {
+            return (BigInteger.valueOf((Long) left)).add((BigInteger) right);
+        } else if (left instanceof String || right instanceof String) {
+            return left.toString() + right.toString();
+        } else {
+            throw new RuntimeException("Unsupported types for addition");
+        }
+    }
+
+
+    /**
+     * A helper method to subtract the two values together.
+     *
+     * @param left  the part of the subtraction
+     * @param right the right part of the subtraction
+     * @return the difference of the two values
+     */
+    private Object subtract(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
+            return ((Number) left).intValue() - ((Number) right).intValue();
+        } else if (left instanceof BigInteger && right instanceof BigInteger) {
+            return ((BigInteger) left).subtract((BigInteger) right);
+        } else if (left instanceof BigInteger && right instanceof Long) {
+            return ((BigInteger) left).subtract(BigInteger.valueOf((Long) right));
+        } else if (left instanceof Long && right instanceof BigInteger) {
+            return (BigInteger.valueOf((Long) left)).subtract((BigInteger) right);
+        } else {
+            throw new RuntimeException("Unsupported types for subtraction");
+        }
+    }
+
+    /**
+     * A helper method to multiply the two values together.
+     *
+     * @param left  the part of the product
+     * @param right the right part of the product
+     * @return the product of the two values
+     */
+    private Object multiply(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
+            return ((Number) left).intValue() * ((Number) right).intValue();
+        } else if (left instanceof BigInteger && right instanceof BigInteger) {
+            return ((BigInteger) left).multiply((BigInteger) right);
+        } else if (left instanceof BigInteger && right instanceof Long) {
+            return ((BigInteger) left).multiply(BigInteger.valueOf((Long) right));
+        } else if (left instanceof Long && right instanceof BigInteger) {
+            return (BigInteger.valueOf((Long) left)).multiply((BigInteger) right);
+        } else {
+            throw new RuntimeException("Unsupported types for multiplication");
+        }
+    }
+
+    /**
+     * A helper method to divide the two values.
+     *
+     * @param left  the part of the division
+     * @param right the right part of the division, cannot be null
+     * @return the division of the two values
+     */
+    private Object divide(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger) && !right.toString().equals("0")) {
+            return ((Number) left).intValue() / ((Number) right).intValue();
+        } else if (left instanceof BigInteger && right instanceof BigInteger) {
+            return ((BigInteger) left).divide((BigInteger) right);
+        } else if (left instanceof BigInteger && right instanceof Long) {
+            return ((BigInteger) left).divide(BigInteger.valueOf((Long) right));
+        } else if (left instanceof Long && right instanceof BigInteger) {
+            return (BigInteger.valueOf((Long) left)).divide((BigInteger) right);
+        } else {
+            throw new RuntimeException("Unsupported types for division");
+        }
     }
 
 
