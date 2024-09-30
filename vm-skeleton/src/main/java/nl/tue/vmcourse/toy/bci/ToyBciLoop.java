@@ -198,61 +198,16 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object right = stack.pop();
                     Object left = stack.pop();
 
-                    boolean result = false;
-                    switch (operand) {
-                        case 0: // ==
-                            if (left instanceof Number && right instanceof Number) {
-                                result = ((Number) left).longValue() == ((Number) right).longValue();
-                            } else if (left instanceof String && right instanceof String) {
-                                result = left.equals(right);
-                            } else if (left instanceof Boolean && right instanceof Boolean) {
-                                result = left.equals(right);
-                            } else {
-                                throw new RuntimeException("Invalid comparison types for '!='.");
-                            }
-                            break;
-                        case 1: // !=
-                            if (left instanceof Number && right instanceof Number) {
-                                result = ((Number) left).longValue() != ((Number) right).longValue();
-                            } else if (left instanceof String && right instanceof String) {
-                                result = !left.equals(right);
-                            } else if (left instanceof Boolean && right instanceof Boolean) {
-                                result = !left.equals(right);
-                            } else {
-                                throw new RuntimeException("Invalid comparison types for '!='.");
-                            }
-                            break;
-                        case 2: // <
-                            if (left instanceof Number && right instanceof Number) {
-                                result = ((Number) left).longValue() < ((Number) right).longValue();
-                            } else {
-                                throw new RuntimeException("Cannot compare non-numeric values with '<'.");
-                            }
-                            break;
-                        case 3: // <=
-                            if (left instanceof Number && right instanceof Number) {
-                                result = ((Number) left).longValue() <= ((Number) right).longValue();
-                            } else {
-                                throw new RuntimeException("Cannot compare non-numeric values with '<='.");
-                            }
-                            break;
-                        case 4: // >
-                            if (left instanceof Number && right instanceof Number) {
-                                result = ((Number) left).longValue() > ((Number) right).longValue();
-                            } else {
-                                throw new RuntimeException("Cannot compare non-numeric values with '>'.");
-                            }
-                            break;
-                        case 5: // >=
-                            if (left instanceof Number && right instanceof Number) {
-                                result = ((Number) left).longValue() >= ((Number) right).longValue();
-                            } else {
-                                throw new RuntimeException("Cannot compare non-numeric values with '>='.");
-                            }
-                            break;
-                        default:
-                            throw new RuntimeException("Unknown comparison type");
-                    }
+                    boolean result = switch (operand) {
+                        case 0 -> equalsComparison(left, right);            // for ==
+                        case 1 -> !equalsComparison(left, right);           // for !=
+                        case 2 -> lessThanComparison(left, right);          // for <
+                        case 3 -> lessThanOrEqualComparison(left, right);   // for <=
+                        case 4 -> greaterThanComparison(left, right);       // for >
+                        case 5 -> greaterThanOrEqualComparison(left, right);// for >=
+                        // TODO: Check later what exactly to do with default, what error to throw
+                        default -> throw new RuntimeException("Unknown comparison type");
+                    };
 
                     stack.push(result);
                 }
@@ -422,6 +377,116 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else {
             throw new RuntimeException("Unsupported types for division");
         }
+    }
+
+
+    /**
+     * Compares for equality the two values.
+     *
+     * @param left  value
+     * @param right value
+     * @return true if equal, otherwise false
+     */
+    private boolean equalsComparison(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number) {
+            return numericEquals((Number) left, (Number) right);
+        } else if (left instanceof String && right instanceof String) {
+            return left.equals(right);
+        } else if (left instanceof Boolean && right instanceof Boolean) {
+            return left.equals(right);
+        }
+        throw new RuntimeException("Invalid comparison types for '=='.");
+    }
+
+    /**
+     * Compares for less than the two values.
+     *
+     * @param left  value
+     * @param right value
+     * @return true if left is less than the right, otherwise false
+     */
+    private boolean lessThanComparison(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number) {
+            return numericCompare((Number) left, (Number) right) < 0;
+        }
+        throw new RuntimeException("Cannot compare non-numeric values with '<'.");
+    }
+
+    /**
+     * Compares for less than or equal the two values.
+     *
+     * @param left  value
+     * @param right value
+     * @return true if left is less than or equal the right, otherwise false
+     */
+    private boolean lessThanOrEqualComparison(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number) {
+            return numericCompare((Number) left, (Number) right) <= 0;
+        }
+        throw new RuntimeException("Cannot compare non-numeric values with '<='.");
+    }
+
+    /**
+     * Compares for greater than the two values.
+     *
+     * @param left  value
+     * @param right value
+     * @return true if left is greater than the right, otherwise false
+     */
+    private boolean greaterThanComparison(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number) {
+            return numericCompare((Number) left, (Number) right) > 0;
+        }
+        throw new RuntimeException("Cannot compare non-numeric values with '>'.");
+    }
+
+    /**
+     * Compares for greater than or equal the two values.
+     *
+     * @param left  value
+     * @param right value
+     * @return true if left is greater than or equal the right, otherwise false
+     */
+    private boolean greaterThanOrEqualComparison(Object left, Object right) {
+        if (left instanceof Number && right instanceof Number) {
+            return numericCompare((Number) left, (Number) right) >= 0;
+        }
+        throw new RuntimeException("Cannot compare non-numeric values with '>='.");
+    }
+
+
+    /**
+     * Compare two numeric values taking into account their types.
+     *
+     * @param left  value
+     * @param right value
+     * @return -1 if left is less than right, 0 if equal, 1 if greater
+     */
+    private int numericCompare(Number left, Number right) {
+        return switch (left) {
+            case BigInteger bigInteger when right instanceof BigInteger -> bigInteger.compareTo((BigInteger) right);
+            case Long l when right instanceof BigInteger -> -((BigInteger) right).compareTo(BigInteger.valueOf(l));
+            case BigInteger bigInteger when right instanceof Long ->
+                    bigInteger.compareTo(BigInteger.valueOf((Long) right));
+            case null, default -> Long.compare(left.longValue(), right.longValue());
+        };
+    }
+
+
+    /**
+     * Compares for equality the two numeric values taking into account their types.
+     *
+     * @param left  value
+     * @param right value
+     * @return true if equal, otherwise false
+     */
+    private boolean numericEquals(Number left, Number right) {
+        return switch (left) {
+            case BigInteger _ when right instanceof BigInteger -> left.equals(right);
+            case BigInteger _ when right instanceof Long -> left.equals(BigInteger.valueOf((Long) right));
+            case Long l when right instanceof BigInteger -> BigInteger.valueOf(l).equals(right);
+            case null, default -> left.longValue() == right.longValue();
+        };
     }
 
 
