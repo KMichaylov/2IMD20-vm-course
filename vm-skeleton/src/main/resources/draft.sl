@@ -1,28 +1,21 @@
-/* The following loop has if, else break and continue checks, to see if they are handled correctly. */
+/*
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+ */
 
-function moreComplexLoop(n) {
-    i = 0;
-    flag = true;
-  while (i < n) {
-    if (i == 10) {
-        i = i + 3;
-        continue;
-    }
-    if (flag == true) {
-        flag = false;
-        i = i + 1;
-    }
-    else {
-        flag = true;
-        i = i + 2;
-    }
-    if (i == 42){
-    break;
-    }
-  }
-  return i;
+function add(a, b) {
+  return a + b;
+}
+
+function sub(a, b) {
+  return a - b;
+}
+
+function foo(f) {
+  println(f(40, 2));
 }
 
 function main() {
-  println(moreComplexLoop(50));
+  foo(add);
+  foo(sub);
 }

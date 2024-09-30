@@ -56,6 +56,10 @@ public class AstToBciAssembler {
                 if (variableName.equals("null")) {
                     variableName = null;
                 }
+                // In case the node was function argument, then we do not need to store the variable in locals, since we just need it on the stack.
+                if (writeNode.getValueNode() instanceof ToyReadArgumentNode) {
+                    break;
+                }
                 bytecode.addVariableInstruction(
                         Opcode.OP_STORE,
                         0,
@@ -75,10 +79,11 @@ public class AstToBciAssembler {
             }
 //            TODO: Check how to read functional arguments, consult books
             case ToyReadArgumentNode readArgumentNode -> {
-                bytecode.addInstruction(Opcode.OP_LOAD, readArgumentNode.getParameterCount());
+                int parameterCount = readArgumentNode.getParameterCount();
+                bytecode.addVariableInstruction(Opcode.OP_LOAD, parameterCount, null, parameterCount, false);
             }
 
-            // For the comparisons we use the provided AST and in case we need > or >=, we just negate the results
+            // For the comparisons we use the provided AST classes and in case we need > or >=, we just negate the results
             case ToyEqualNode equalNode -> {
                 comparisonNodeHelper(equalNode.getLeftUnboxed(), equalNode.getRightUnboxed(), Opcode.OP_COMPARE, 0, bytecode);
             }
@@ -170,10 +175,14 @@ public class AstToBciAssembler {
                     generateBytecode(expression, bytecode);
                 }
 //                TODO: Should also check here what type the function is (extract into separate method)
-// TODO: This should also be present outside the ToyInvokeNode!!!!
                 if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
                     String functionName = checkFunctionNameForBuiltin(bytecode, functionNode);
                     addFunctionToBytecode(bytecode, invokeNode, functionName);
+                } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode readLocalVariableNode) {
+                    //TODO HERE WE GO FOR FUNCTION LITERALS
+                    int frameSlot = readLocalVariableNode.getFrameSlot();
+//                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
+                    bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
                 }
             }
 
@@ -182,7 +191,7 @@ public class AstToBciAssembler {
             case ToyFunctionLiteralNode functionLiteralNode -> {
                 String functionName = checkFunctionNameForBuiltin(bytecode, functionLiteralNode);
                 if (!isBuiltInFunction(functionName)) {
-                    literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_LITERAL_STRING, bytecode);
+                    literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
                 }
             }
 
