@@ -477,7 +477,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             }
             return Long.compare(left.longValue(), right.longValue());
         }
-        return 0;
+        return Long.compare(left.longValue(), right.longValue());
     }
 
 
@@ -514,7 +514,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             }
             return left.longValue() == right.longValue();
         }
-        return false;
+        return left.longValue() == right.longValue();
     }
 
 
