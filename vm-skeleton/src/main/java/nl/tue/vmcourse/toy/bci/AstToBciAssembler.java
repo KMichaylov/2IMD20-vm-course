@@ -43,213 +43,220 @@ public class AstToBciAssembler {
     // TODO: Refactor the whole tree. Continue with it even later.
     // TODO-VERY-IMPORTANT: Remove the pattern matching, all unnamed cases and string templates.
     private static void generateBytecode(ToyNode node, Bytecode bytecode) {
-        switch (node) {
-            case ToyBlockNode blockNode -> {
-//            If we have a block node, then we go through the statements and recursively call for each of them the function.
-                for (ToyStatementNode statement : blockNode.getStatements()) {
-                    generateBytecode(statement, bytecode);
-                }
+        if (node instanceof ToyBlockNode blockNode) {
+            // If we have a block node, go through the statements and recursively call for each of them.
+            for (ToyStatementNode statement : blockNode.getStatements()) {
+                generateBytecode(statement, bytecode);
+            }
+        }
+        if (node instanceof ToyWriteLocalVariableNode writeNode) {
+            // Generate bytecode for the value node.
+            generateBytecode(writeNode.getValueNode(), bytecode);
+
+            // Get the variable name from the name node (assumed to be ToyStringLiteralNode).
+            String variableName = ((ToyStringLiteralNode) writeNode.getNameNode()).getValue();
+            if ("null".equals(variableName)) {
+                variableName = null;
             }
 
-            case ToyWriteLocalVariableNode writeNode -> {
-                generateBytecode(writeNode.getValueNode(), bytecode);
-                String variableName = ((ToyStringLiteralNode) writeNode.getNameNode()).getValue();
-                if (variableName.equals("null")) {
-                    variableName = null;
-                }
-                // In case the node was function argument, then we do not need to store the variable in locals, since we just need it on the stack.
-                if (writeNode.getValueNode() instanceof ToyReadArgumentNode) {
-                    break;
-                }
-                bytecode.addVariableInstruction(
-                        Opcode.OP_STORE,
-                        0,
-                        variableName,
-                        writeNode.getFrameSlot(),
-                        writeNode.isNewVariable()
-                );
+            // If the value node is a ToyReadArgumentNode, we skip storing the variable in locals.
+            if (writeNode.getValueNode() instanceof ToyReadArgumentNode) {
+                return;  // This acts like a 'break' in a switch statement.
             }
-            case ToyReadLocalVariableNode readNode -> {
-                bytecode.addVariableInstruction(
-                        Opcode.OP_LOAD,
-                        readNode.getFrameSlot(),
-                        null,
-                        readNode.getFrameSlot(),
-                        false
-                );
-            }
+
+            bytecode.addVariableInstruction(
+                    Opcode.OP_STORE,
+                    0,
+                    variableName,
+                    writeNode.getFrameSlot(),
+                    writeNode.isNewVariable()
+            );
+        }
+        if (node instanceof ToyReadLocalVariableNode readNode) {
+            bytecode.addVariableInstruction(
+                    Opcode.OP_LOAD,
+                    readNode.getFrameSlot(),
+                    null,
+                    readNode.getFrameSlot(),
+                    false
+            );
+        }
 //            TODO: Check how to read functional arguments, consult books
-            case ToyReadArgumentNode readArgumentNode -> {
-                int parameterCount = readArgumentNode.getParameterCount();
-                bytecode.addVariableInstruction(Opcode.OP_LOAD, parameterCount, null, parameterCount, false);
+        if (node instanceof ToyReadArgumentNode readArgumentNode) {
+            int parameterCount = readArgumentNode.getParameterCount();
+            bytecode.addVariableInstruction(Opcode.OP_LOAD, parameterCount, null, parameterCount, false);
+        }
+
+        // For the comparisons we use the provided AST classes and in case we need > or >=, we just negate the results
+        if (node instanceof ToyEqualNode equalNode) {
+            comparisonNodeHelper(equalNode.getLeftUnboxed(), equalNode.getRightUnboxed(), Opcode.OP_COMPARE, 0, bytecode);
+        }
+
+        if (node instanceof ToyLessThanNode lessThanNode) {
+            comparisonNodeHelper(lessThanNode.getLeftUnboxed(), lessThanNode.getRightUnboxed(), Opcode.OP_COMPARE, 2, bytecode);
+        }
+
+        if (node instanceof ToyLessOrEqualNode lessOrEqualNode) {
+            comparisonNodeHelper(lessOrEqualNode.getLeftUnboxed(), lessOrEqualNode.getRightUnboxed(), Opcode.OP_COMPARE, 3, bytecode);
+        }
+
+        if (node instanceof ToyLogicalNotNode toyLogicalNotNode) {
+            generateBytecode(toyLogicalNotNode.getToyLessOrEqualNode(), bytecode);
+            bytecode.addInstruction(Opcode.OP_NOT, 0);
+        }
+
+        if (node instanceof ToyStringLiteralNode stringLiteralNode) {
+            literalNodeHelper(stringLiteralNode.getValue(), Opcode.OP_LITERAL_STRING, bytecode);
+        }
+        if (node instanceof ToyLongLiteralNode literalNode) {
+            long value = literalNode.getValue();
+            final long LONG_UPPERBOUND = 2147483647;
+            if (value < LONG_UPPERBOUND) {
+                literalNodeHelper(literalNode.getValue(), Opcode.OP_LITERAL_LONG, bytecode);
+
+            } else {
+                literalNodeHelper(BigInteger.valueOf(literalNode.getValue()), Opcode.OP_LITERAL_BIGINT, bytecode);
             }
-
-            // For the comparisons we use the provided AST classes and in case we need > or >=, we just negate the results
-            case ToyEqualNode equalNode -> {
-                comparisonNodeHelper(equalNode.getLeftUnboxed(), equalNode.getRightUnboxed(), Opcode.OP_COMPARE, 0, bytecode);
-            }
-
-            case ToyLessThanNode lessThanNode -> {
-                comparisonNodeHelper(lessThanNode.getLeftUnboxed(), lessThanNode.getRightUnboxed(), Opcode.OP_COMPARE, 2, bytecode);
-            }
-
-            case ToyLessOrEqualNode lessOrEqualNode -> {
-                comparisonNodeHelper(lessOrEqualNode.getLeftUnboxed(), lessOrEqualNode.getRightUnboxed(), Opcode.OP_COMPARE, 3, bytecode);
-            }
-
-            case ToyLogicalNotNode toyLogicalNotNode -> {
-                generateBytecode(toyLogicalNotNode.getToyLessOrEqualNode(), bytecode);
-                bytecode.addInstruction(Opcode.OP_NOT, 0);
-            }
-
-            case ToyStringLiteralNode stringLiteralNode -> {
-                literalNodeHelper(stringLiteralNode.getValue(), Opcode.OP_LITERAL_STRING, bytecode);
-            }
-            case ToyLongLiteralNode literalNode -> {
-                long value = literalNode.getValue();
-                final long LONG_UPPERBOUND = 2147483647;
-                if (value < LONG_UPPERBOUND) {
-                    literalNodeHelper(literalNode.getValue(), Opcode.OP_LITERAL_LONG, bytecode);
-
-                } else {
-                    literalNodeHelper(BigInteger.valueOf(literalNode.getValue()), Opcode.OP_LITERAL_BIGINT, bytecode);
-                }
-
-            }
-            case ToyBooleanLiteralNode booleanLiteralNode -> {
-                literalNodeHelper(booleanLiteralNode.isValue(), Opcode.OP_LITERAL_BOOLEAN, bytecode);
-
-            }
-            // Actually, mostly, they don't pass a bigint in the AST, so I need to check it in the long literal and there determine what happens
-            case ToyBigIntegerLiteralNode bigIntegerLiteralNode -> {
-                literalNodeHelper(bigIntegerLiteralNode.getBigInteger(), Opcode.OP_LITERAL_BIGINT, bytecode);
-
-            }
-
-            case ToyAddNode addNode ->
-                    binaryInstructionHelperGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
-            case ToySubNode subNode ->
-                    binaryInstructionHelperGenerator(subNode.getLeftUnboxed(), subNode.getRightUnboxed(), Opcode.OP_SUB, bytecode, 0);
-            case ToyDivNode divNode ->
-                    binaryInstructionHelperGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
-            case ToyMulNode mulNode ->
-                    binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
-
-            // Boolean operations: TODO: If the left part is false, then we don't look at the right part
-            case ToyLogicalAndNode logicalAndNode -> {
-                binaryInstructionHelperGenerator(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_LOGICAL_AND, bytecode, 0);
-            }
-
-            case ToyLogicalOrNode logicalOrNode -> {
-                binaryInstructionHelperGenerator(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_LOGICAL_OR, bytecode, 0);
-            }
-
-            // Operations regarding the execution of loops
-
-            case ToyContinueNode _ -> {
-                int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
-                bytecode.addContinueJump(continueJumpIndex);
-            }
-
-            case ToyBreakNode _ -> {
-                int breakJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
-                bytecode.addBreakJump(breakJumpIndex);
-            }
-
-            case ToyParenExpressionNode parenExpressionNode -> {
-                generateBytecode(parenExpressionNode.getExpressionNode(), bytecode);
-                bytecode.addInstruction(Opcode.OP_NOP, 0);
-            }
-
-//            TODO: Redesign and think of other approaches regarding where to store variables. Main priority for today
-            case ToyInvokeNode invokeNode -> {
-                if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
-                    String functionName = functionNode.getName();
-                    if (!isBuiltInFunction(functionName)) {
-                        // Here, we add the function name, so that the function can be executed.
-                        int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
-                        bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
-                    }
-                }
-
-                for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
-                    generateBytecode(expression, bytecode);
-                }
-//                TODO: Should also check here what type the function is (extract into separate method)
-                if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
-                    String functionName = checkFunctionNameForBuiltin(bytecode, functionNode);
-                    addFunctionToBytecode(bytecode, invokeNode, functionName);
-                } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode readLocalVariableNode) {
-                    //TODO HERE WE GO FOR FUNCTION LITERALS
-                    int frameSlot = readLocalVariableNode.getFrameSlot();
-//                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
-                    bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
-                }
-            }
-
-            // TODO: Check if this breaks the built-in functions
-            // TODO: Check how to handle function literals
-            case ToyFunctionLiteralNode functionLiteralNode -> {
-                String functionName = checkFunctionNameForBuiltin(bytecode, functionLiteralNode);
-                if (!isBuiltInFunction(functionName)) {
-                    literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
-                }
-            }
-
-            case ToyIfNode ifNode -> {
-                generateBytecode(ifNode.getConditionNode(), bytecode);
-
-                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1);
-
-                generateBytecode(ifNode.getThenPartNode(), bytecode);
-
-                int jumpToEndLocation = -1;
-                if (ifNode.getElsePartNode() != null) {
-                    jumpToEndLocation = bytecode.addInstruction(Opcode.OP_JUMP, -1);
-                }
-
-                // location for the else part or the end of the if statement
-                int elseOrEndLocation = bytecode.getSize();
-                bytecode.updateInstruction(jumpIfFalseLocation, elseOrEndLocation - jumpIfFalseLocation - 1);
-
-                if (ifNode.getElsePartNode() != null) {
-                    generateBytecode(ifNode.getElsePartNode(), bytecode);
-                    int endLocation = bytecode.getSize();
-                    bytecode.updateInstruction(jumpToEndLocation, endLocation - jumpToEndLocation - 1);
-                }
-            }
-
-            case ToyWhileNode whileNode -> {
-                int loopStart = bytecode.getSize();
-
-                generateBytecode(whileNode.getConditionNode(), bytecode);
-
-                int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1);
-
-                generateBytecode(whileNode.getBodyNode(), bytecode);
-
-                // Go back to the beginning of the loop while iterating the loop
-                bytecode.addInstruction(Opcode.OP_JUMP, loopStart - bytecode.getSize() - 1);
-
-                // After traversing the whole loop, get the final location
-                int loopEnd = bytecode.getSize();
-
-                // Ensures that in case of a false condition, we can continue with the next statements outside the loop
-                bytecode.updateInstruction(jumpIfFalseLocation, loopEnd - jumpIfFalseLocation - 1);
-
-                // Update the jumps for continue and break to point to the correct locations
-                bytecode.updateContinueJumps(loopStart);
-                bytecode.updateBreakJumps(loopEnd);
-            }
-
-            case ToyReturnNode returnNode -> {
-                generateBytecode(returnNode.getValueNode(), bytecode);
-                bytecode.addInstruction(Opcode.OP_RETURN, 0);
-            }
-            case ToyUnboxNode unboxNode -> generateBytecode(unboxNode.getLeftNode(), bytecode);
-            case null, default -> System.out.println(STR."Brrrrrrr\{node.getClass().getName()}");
 
         }
+        if (node instanceof ToyBooleanLiteralNode booleanLiteralNode) {
+            literalNodeHelper(booleanLiteralNode.isValue(), Opcode.OP_LITERAL_BOOLEAN, bytecode);
+
+        }
+        // Actually, mostly, they don't pass a bigint in the AST, so I need to check it in the long literal and there determine what happens
+        if (node instanceof ToyBigIntegerLiteralNode bigIntegerLiteralNode) {
+            literalNodeHelper(bigIntegerLiteralNode.getBigInteger(), Opcode.OP_LITERAL_BIGINT, bytecode);
+
+        }
+
+        if (node instanceof ToyAddNode addNode)
+            binaryInstructionHelperGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
+        if (node instanceof ToySubNode subNode)
+            binaryInstructionHelperGenerator(subNode.getLeftUnboxed(), subNode.getRightUnboxed(), Opcode.OP_SUB, bytecode, 0);
+        if (node instanceof ToyDivNode divNode)
+            binaryInstructionHelperGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
+        if (node instanceof ToyMulNode mulNode)
+            binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
+
+        // Boolean operations: TODO: If the left part is false, then we don't look at the right part
+        if (node instanceof ToyLogicalAndNode logicalAndNode) {
+            binaryInstructionHelperGenerator(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_LOGICAL_AND, bytecode, 0);
+        }
+
+        if (node instanceof ToyLogicalOrNode logicalOrNode) {
+            binaryInstructionHelperGenerator(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_LOGICAL_OR, bytecode, 0);
+        }
+
+        // Operations regarding the execution of loops
+
+        if (node instanceof ToyContinueNode continueNode) {
+            int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
+            bytecode.addContinueJump(continueJumpIndex);
+        }
+
+        if (node instanceof ToyBreakNode breakNode) {
+            int breakJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
+            bytecode.addBreakJump(breakJumpIndex);
+        }
+
+        if (node instanceof ToyParenExpressionNode parenExpressionNode) {
+            generateBytecode(parenExpressionNode.getExpressionNode(), bytecode);
+            bytecode.addInstruction(Opcode.OP_NOP, 0);
+        }
+
+//            TODO: Redesign and think of other approaches regarding where to store variables. Main priority for today
+        if (node instanceof ToyInvokeNode invokeNode) {
+            if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
+                String functionName = functionNode.getName();
+                if (!isBuiltInFunction(functionName)) {
+                    // Here, we add the function name, so that the function can be executed.
+                    int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
+                    bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
+                }
+            }
+
+            for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
+                generateBytecode(expression, bytecode);
+            }
+//                TODO: Should also check here what type the function is (extract into separate method)
+            if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
+                String functionName = checkFunctionNameForBuiltin(bytecode, functionNode);
+                addFunctionToBytecode(bytecode, invokeNode, functionName);
+            } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode readLocalVariableNode) {
+                //TODO HERE WE GO FOR FUNCTION LITERALS
+                int frameSlot = readLocalVariableNode.getFrameSlot();
+//                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
+                bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+            }
+        }
+
+        // TODO: Check if this breaks the built-in functions
+        // TODO: Check how to handle function literals
+        if (node instanceof ToyFunctionLiteralNode functionLiteralNode) {
+            String functionName = checkFunctionNameForBuiltin(bytecode, functionLiteralNode);
+            if (!isBuiltInFunction(functionName)) {
+                literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
+            }
+        }
+
+        if (node instanceof ToyIfNode ifNode) {
+            generateBytecode(ifNode.getConditionNode(), bytecode);
+
+            int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1);
+
+            generateBytecode(ifNode.getThenPartNode(), bytecode);
+
+            int jumpToEndLocation = -1;
+            if (ifNode.getElsePartNode() != null) {
+                jumpToEndLocation = bytecode.addInstruction(Opcode.OP_JUMP, -1);
+            }
+
+            // location for the else part or the end of the if statement
+            int elseOrEndLocation = bytecode.getSize();
+            bytecode.updateInstruction(jumpIfFalseLocation, elseOrEndLocation - jumpIfFalseLocation - 1);
+
+            if (ifNode.getElsePartNode() != null) {
+                generateBytecode(ifNode.getElsePartNode(), bytecode);
+                int endLocation = bytecode.getSize();
+                bytecode.updateInstruction(jumpToEndLocation, endLocation - jumpToEndLocation - 1);
+            }
+        }
+
+        if (node instanceof ToyWhileNode whileNode) {
+            int loopStart = bytecode.getSize();
+
+            generateBytecode(whileNode.getConditionNode(), bytecode);
+
+            int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1);
+
+            generateBytecode(whileNode.getBodyNode(), bytecode);
+
+            // Go back to the beginning of the loop while iterating the loop
+            bytecode.addInstruction(Opcode.OP_JUMP, loopStart - bytecode.getSize() - 1);
+
+            // After traversing the whole loop, get the final location
+            int loopEnd = bytecode.getSize();
+
+            // Ensures that in case of a false condition, we can continue with the next statements outside the loop
+            bytecode.updateInstruction(jumpIfFalseLocation, loopEnd - jumpIfFalseLocation - 1);
+
+            // Update the jumps for continue and break to point to the correct locations
+            bytecode.updateContinueJumps(loopStart);
+            bytecode.updateBreakJumps(loopEnd);
+        }
+
+        if (node instanceof ToyReturnNode returnNode) {
+            generateBytecode(returnNode.getValueNode(), bytecode);
+            bytecode.addInstruction(Opcode.OP_RETURN, 0);
+        }
+        if (node instanceof ToyUnboxNode unboxNode) generateBytecode(unboxNode.getLeftNode(), bytecode);
+        if (node == null) {
+            System.out.println("Brrrrrrr null value received");
+        } else {
+            System.out.println("Brrrrrrr " + node.getClass().getName());
+        }
+
+
     }
 
     /**

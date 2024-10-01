@@ -454,13 +454,30 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @return -1 if left is less than right, 0 if equal, 1 if greater
      */
     private int numericCompare(Number left, Number right) {
-        return switch (left) {
-            case BigInteger bigInteger when right instanceof BigInteger -> bigInteger.compareTo((BigInteger) right);
-            case Long l when right instanceof BigInteger -> -((BigInteger) right).compareTo(BigInteger.valueOf(l));
-            case BigInteger bigInteger when right instanceof Long ->
-                    bigInteger.compareTo(BigInteger.valueOf((Long) right));
-            case null, default -> Long.compare(left.longValue(), right.longValue());
-        };
+        if (left instanceof BigInteger) {
+            if (right instanceof BigInteger) {
+                return ((BigInteger) left).compareTo((BigInteger) right);
+            } else if (right instanceof Long) {
+                return ((BigInteger) left).compareTo(BigInteger.valueOf((Long) right));
+            } else {
+                throw new IllegalArgumentException("Incompatible types for comparison: " + right.getClass().getName());
+            }
+        } else if (left instanceof Long) {
+            if (right instanceof BigInteger) {
+                return -((BigInteger) right).compareTo(BigInteger.valueOf((Long) left));
+            } else if (right instanceof Long) {
+                return Long.compare((Long) left, (Long) right);
+            } else {
+                System.out.println("Incompatible types");
+            }
+        } else {
+            if (left == null || right == null) {
+                // TODO: later add custom logic here
+                System.out.println("Cannot compare if one or two are null values");
+            }
+            return Long.compare(left.longValue(), right.longValue());
+        }
+        return 0;
     }
 
 
@@ -472,12 +489,32 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @return true if equal, otherwise false
      */
     private boolean numericEquals(Number left, Number right) {
-        return switch (left) {
-            case BigInteger _ when right instanceof BigInteger -> left.equals(right);
-            case BigInteger _ when right instanceof Long -> left.equals(BigInteger.valueOf((Long) right));
-            case Long l when right instanceof BigInteger -> BigInteger.valueOf(l).equals(right);
-            case null, default -> left.longValue() == right.longValue();
-        };
+        if (left instanceof BigInteger) {
+            if (right instanceof BigInteger) {
+                return left.equals(right);
+            } else if (right instanceof Long) {
+                return left.equals(BigInteger.valueOf((Long) right));
+            } else {
+                //TODO
+                System.out.println("Incompatible types");
+            }
+        } else if (left instanceof Long) {
+            if (right instanceof BigInteger) {
+                return BigInteger.valueOf((Long) left).equals(right);
+            } else if (right instanceof Long) {
+                return left.longValue() == right.longValue();
+            } else {
+//                Todo
+                System.out.println("Incompatible types");
+            }
+        } else {
+            if (left == null || right == null) {
+                // TODO
+                System.out.println("Cannot compare if one or two are null values");
+            }
+            return left.longValue() == right.longValue();
+        }
+        return false;
     }
 
 

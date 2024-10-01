@@ -75,7 +75,6 @@ public class Instruction {
      */
     @Override
     public String toString() {
-        return STR."Instruction{opcode=\{opcode}, operand=\{operand}, variableName='\{variableName}', frameSlot=\{frameSlot}, newVariable=\{newVariable}}";
-    }
+        return "Instruction{opcode=%s, operand=%d, variableName='%s', frameSlot=%d, newVariable=%b}".formatted(opcode, operand, variableName, frameSlot, newVariable);    }
 }
 
