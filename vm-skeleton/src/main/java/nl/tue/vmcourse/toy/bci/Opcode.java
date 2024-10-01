@@ -50,7 +50,12 @@ public enum Opcode {
 
     // Built-in functions
     OP_IS_INSTANCE((byte) 0x1C),
-    OP_NANO_TIME((byte) 0x1D);
+    OP_NANO_TIME((byte) 0x1D),
+
+    // For object support
+    OP_NEW((byte) 0x2A),
+    OP_GET_PROPERTY((byte) 0x2B),
+    OP_SET_PROPERTY((byte) 0x2C);
 
 
     private final byte value;
