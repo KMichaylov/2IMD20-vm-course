@@ -41,6 +41,7 @@ public class AstToBciAssembler {
      * @param bytecode The bytecode placeholder
      */
     // TODO: Refactor the whole tree. Continue with it even later.
+    // TODO-VERY-IMPORTANT: Remove the pattern matching, all unnamed cases and string templates.
     private static void generateBytecode(ToyNode node, Bytecode bytecode) {
         switch (node) {
             case ToyBlockNode blockNode -> {
