@@ -20,9 +20,18 @@ public class Bytecode {
     }
 
     /**
+     * Get the size of the constant pool, used for the object creation.
+     *
+     * @return the size of the constant pool.
+     */
+    public int getConstantPoolSize() {
+        return constantPool.size();
+    }
+
+    /**
      * Add an instruction to the bytecode, this is for non-variable instructions.
      *
-     * @param opcode the opcode of the instruction
+     * @param opcode  the opcode of the instruction
      * @param operand a miscellaneous operand, can be used as a jump target, etc.
      * @return a number for the index of the element being added
      */
@@ -33,11 +42,12 @@ public class Bytecode {
 
     /**
      * Same as the addInstruction, but specifically for variable instructions.
-     * @param opcode the opcode of the instruction
-     * @param operand a miscellaneous operand, can be used as a jump target, etc
+     *
+     * @param opcode       the opcode of the instruction
+     * @param operand      a miscellaneous operand, can be used as a jump target, etc
      * @param variableName name of the variable
-     * @param frameSlot indicates on which frame slot the variable is stored
-     * @param newVariable boolean to indicate if the variable is newly defined
+     * @param frameSlot    indicates on which frame slot the variable is stored
+     * @param newVariable  boolean to indicate if the variable is newly defined
      */
     public void addVariableInstruction(Opcode opcode, Integer operand, String variableName, Integer frameSlot, Boolean newVariable) {
         instructions.add(new Instruction(opcode, operand, variableName, frameSlot, newVariable));
@@ -45,7 +55,8 @@ public class Bytecode {
 
     /**
      * Update an instruction at a given index with a new instruction.
-     * @param index the index of the instruction
+     *
+     * @param index   the index of the instruction
      * @param operand the operand of the instruction, could be anything depending on the instruction
      */
     public void updateInstruction(int index, Integer operand) {
@@ -55,6 +66,7 @@ public class Bytecode {
 
     /**
      * Get an instruction at the given index.
+     *
      * @param index of the instruction
      * @return the instruction
      */
@@ -64,6 +76,7 @@ public class Bytecode {
 
     /**
      * Get the size of the bytecode.
+     *
      * @return the size of the bytecode
      */
     public int getSize() {
@@ -73,6 +86,7 @@ public class Bytecode {
 
     /**
      * Adds an element to the constant pool, where all variable values are stored.
+     *
      * @param element to be added
      * @return the index of the element in the constant pool
      */
@@ -88,6 +102,7 @@ public class Bytecode {
 
     /**
      * Get an element from the constant pool.
+     *
      * @param index of the element
      * @return the element
      */
@@ -101,6 +116,7 @@ public class Bytecode {
 
     /**
      * Specifically adds the position of the loop start, to satisfy the continue operand.
+     *
      * @param position of the loop start
      */
     public void addContinueJump(int position) {
@@ -109,6 +125,7 @@ public class Bytecode {
 
     /**
      * Specifically adds the position of the loop start, to satisfy the break operand
+     *
      * @param position of the loop start
      */
     public void addBreakJump(int position) {
@@ -117,6 +134,7 @@ public class Bytecode {
 
     /**
      * Essentially it updates for all elements the location of the loop start
+     *
      * @param target for the loop start
      */
     public void updateContinueJumps(int target) {
@@ -128,6 +146,7 @@ public class Bytecode {
 
     /**
      * Essentially it updates for all elements the location of the loop end for the break statement
+     *
      * @param target for the loop start
      */
     public void updateBreakJumps(int target) {
