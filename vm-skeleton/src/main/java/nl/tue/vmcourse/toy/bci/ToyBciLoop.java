@@ -5,10 +5,7 @@ import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class ToyBciLoop extends ToyAbstractFunctionBody {
     private final Bytecode bytecode;
@@ -85,7 +82,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_LITERAL_BIGINT -> pushLiteralToStack(bytecode, operand, stack, BigInteger.class);
                 case OP_STORE -> {
                     if (frameSlot != null && !stack.isEmpty()) {
-                        if (frameSlot < locals.size()) {
+                        if (stack.peek() instanceof Map) {
+                            Map map = (Map) stack.pop();
+                            map.put(instr.getVariableName(), new Object());
+                            locals.add(map);
+                        } else if (frameSlot < locals.size()) {
                             locals.set(frameSlot, stack.pop());
                         } else {
                             locals.add(frameSlot, stack.pop());
@@ -143,6 +144,34 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push(true);
                     } else {
                         stack.push(false);
+                    }
+                }
+
+                case OP_NEW -> {
+                    // Here, we simply instantiate the hashmap, where the object-value pairs are stored.
+                    // In case of nested objects, we add them as HashMap to the value part
+                    Map<String, Object> newObject = new HashMap<>();
+                    stack.push(newObject);
+                }
+
+                case OP_SET_PROPERTY -> {
+                    String propertyName = (String) bytecode.getElementFromConstantPool(operand);
+                    Object value = stack.pop();
+                    Object receiver = stack.pop();
+                    if (receiver instanceof Map) {
+                        ((Map<String, Object>) receiver).put(propertyName, value);
+                    } else {
+                        System.out.println("Something with setter of the property went wrong...");
+                    }
+                }
+
+                case OP_GET_PROPERTY -> {
+                    String propertyName = (String) bytecode.getElementFromConstantPool(operand);
+                    Object receiver = stack.pop();
+                    if (receiver instanceof Map) {
+                        stack.push(((Map<?, ?>) receiver).get(propertyName));
+                    } else {
+                        System.out.println("Something with the getter of the object property went wrong...");
                     }
                 }
 

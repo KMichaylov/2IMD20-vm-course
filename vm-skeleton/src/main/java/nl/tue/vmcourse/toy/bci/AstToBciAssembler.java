@@ -132,10 +132,10 @@ public class AstToBciAssembler {
 
         // Operations regarding the execution of loops
 
-        else if (node instanceof ToyContinueNode continueNode) {
+        else if (node instanceof ToyContinueNode) {
             int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
             bytecode.addContinueJump(continueJumpIndex);
-        } else if (node instanceof ToyBreakNode breakNode) {
+        } else if (node instanceof ToyBreakNode) {
             int breakJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
             bytecode.addBreakJump(breakJumpIndex);
         } else if (node instanceof ToyParenExpressionNode parenExpressionNode) {
@@ -147,13 +147,18 @@ public class AstToBciAssembler {
         else if (node instanceof ToyInvokeNode invokeNode) {
             if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
                 String functionName = functionNode.getName();
+                // TODO This is for support of objects
+                if (functionName.equals("new")) {
+                    bytecode.addInstruction(Opcode.OP_NEW, 0);
+                    // WE do not interpret this command as a function call, thus we exit the invoke method.
+                    return;
+                }
                 if (!isBuiltInFunction(functionName)) {
                     // Here, we add the function name, so that the function can be executed.
                     int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
                     bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
                 }
             }
-
             for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
                 generateBytecode(expression, bytecode);
             }
@@ -167,6 +172,17 @@ public class AstToBciAssembler {
 //                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
             }
+        } else if (node instanceof ToyReadPropertyNode readPropertyNode) {
+            generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
+            String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
+            int propertyIndex = bytecode.addToConstantPool(propertyName);
+            bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
+        } else if (node instanceof ToyWritePropertyNode writePropertyNode) {
+            generateBytecode(writePropertyNode.getReceiverNode(), bytecode);
+            generateBytecode(writePropertyNode.getValueNode(), bytecode);
+            String propertyName = ((ToyStringLiteralNode) writePropertyNode.getNameNode()).getValue();
+            int propertyIndex = bytecode.addToConstantPool(propertyName);
+            bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
         }
 
         // TODO: Check if this breaks the built-in functions
