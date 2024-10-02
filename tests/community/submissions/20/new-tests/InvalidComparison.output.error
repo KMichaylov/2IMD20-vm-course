@@ -1,0 +1,2 @@
+Error(s) parsing script:
+-- line 6 col 13: extraneous input '=' expecting {'(', IDENTIFIER, STRING_LITERAL, NUMERIC_LITERAL}

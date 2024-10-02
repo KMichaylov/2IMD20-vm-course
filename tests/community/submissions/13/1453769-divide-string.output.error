@@ -1,0 +1,1 @@
+Type error at <stdin> line 6 col 13: operation "/" not defined for Number 77777777777777777777777, String "7"

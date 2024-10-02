@@ -1,0 +1,2 @@
+Error(s) parsing script:
+-- line 1 col 1: missing 'function' at 'println'
