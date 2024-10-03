@@ -183,16 +183,27 @@ public class AstToBciAssembler {
             }
         } else if (node instanceof ToyReadPropertyNode readPropertyNode) {
             generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
-            String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
-            int propertyIndex = bytecode.addToConstantPool(propertyName);
-            bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
+            // Sometimes AST property nodes are not assigned to a variable name but just to frame slot.
+            if (readPropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
+                String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
+                int propertyIndex = bytecode.addToConstantPool(propertyName);
+                bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
+            } else {
+                generateBytecode(readPropertyNode.getNameNode(), bytecode);
+                bytecode.addInstruction(Opcode.OP_GET_PROPERTY, 0);
+            }
         } else if (node instanceof ToyWritePropertyNode writePropertyNode) {
             isArgument = false;
             generateBytecode(writePropertyNode.getReceiverNode(), bytecode);
             generateBytecode(writePropertyNode.getValueNode(), bytecode);
-            String propertyName = ((ToyStringLiteralNode) writePropertyNode.getNameNode()).getValue();
-            int propertyIndex = bytecode.addToConstantPool(propertyName);
-            bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
+            if (writePropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
+                String propertyName = ((ToyStringLiteralNode) writePropertyNode.getNameNode()).getValue();
+                int propertyIndex = bytecode.addToConstantPool(propertyName);
+                bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
+            } else {
+                generateBytecode(writePropertyNode.getNameNode(), bytecode);
+                bytecode.addInstruction(Opcode.OP_SET_PROPERTY, 0);
+            }
         }
 
         // TODO: Check if this breaks the built-in functions
