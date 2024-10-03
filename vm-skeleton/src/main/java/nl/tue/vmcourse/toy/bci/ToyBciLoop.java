@@ -49,7 +49,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     public Object execute(VirtualFrame frame) {
         Stack<Object> stack = new Stack<>();
-        // Check if there are arguments on the frame and add them to the locals if yes
         locals.clear();
 
         if (frame.getArguments() != null) {
@@ -65,7 +64,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (frame.getArguments().length > 0 && frame.getArguments()[0] instanceof GlobalScope) {
             globalScope = (GlobalScope) frame.getArguments()[0];
         }
-//        TODO: Idea: I think the general structure of the bytecode is problematic, currently, it does not make sense how things are organized and ordered. Check the whole logic
         bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
             Instruction instr = bytecode.getInstruction(pc);
@@ -84,7 +82,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (frameSlot != null && !stack.isEmpty()) {
                         if (stack.peek() instanceof Map) {
                             Map map = (Map) stack.pop();
-                            map.put(instr.getVariableName(), new Object());
+                            map.replace(instr.getVariableName(), new Object());
                             locals.add(map);
                         } else if (frameSlot < locals.size()) {
                             locals.set(frameSlot, stack.pop());
@@ -148,14 +146,17 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_NEW -> {
-                    // Here, we simply instantiate the hashmap, where the object-value pairs are stored.
-                    // In case of nested objects, we add them as HashMap to the value part
                     Map<String, Object> newObject = new HashMap<>();
                     stack.push(newObject);
                 }
 
                 case OP_SET_PROPERTY -> {
-                    String propertyName = (String) bytecode.getElementFromConstantPool(operand);
+                    String propertyName;
+                    if (bytecode.getConstantPoolSize() > 0) {
+                        propertyName = (String) bytecode.getElementFromConstantPool(operand);
+                    } else {
+                        propertyName = (String) stack.pop();
+                    }
                     Object value = stack.pop();
                     Object receiver = stack.pop();
                     if (receiver instanceof Map) {
@@ -166,18 +167,26 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_GET_PROPERTY -> {
-                    String propertyName = (String) bytecode.getElementFromConstantPool(operand);
-                    Object receiver = stack.pop();
-                    if (receiver instanceof Map) {
-                        stack.push(((Map<?, ?>) receiver).get(propertyName));
+                    if (bytecode.getConstantPoolSize() > 0) {
+                        String propertyName = (String) bytecode.getElementFromConstantPool(operand);
+                        Object receiver = stack.pop();
+                        if (receiver instanceof Map) {
+                            stack.push(((Map<?, ?>) receiver).get(propertyName));
+                        } else {
+                            System.out.println("Something with the getter of the object property went wrong...");
+                        }
                     } else {
-                        System.out.println("Something with the getter of the object property went wrong...");
+                        String propertyName = (String) stack.pop();
+                        Object receiver = stack.pop();
+                        if (receiver instanceof Map) {
+                            stack.push(((Map<?, ?>) receiver).get(propertyName));
+                        }
                     }
+
                 }
 
                 case OP_NOP -> {
                 }
-                // Have a relative jump, based on the given bytecode
                 case OP_JUMP -> {
                     pc += operand;
                 }
@@ -255,7 +264,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_CALL -> {
                     int numberOfFunctionArguments = operand;
 
-                    // Pop arguments from the stack
                     Object[] args = new Object[numberOfFunctionArguments];
                     for (int i = numberOfFunctionArguments - 1; i >= 0; i--) {
                         args[i] = stack.pop();
