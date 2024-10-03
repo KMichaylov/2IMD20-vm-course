@@ -1,0 +1,2 @@
+Error(s) parsing script:
+-- line 2 col 3: extraneous input 'function' expecting {'(', '}', 'break', 'continue', 'debugger', 'while', 'if', 'return', IDENTIFIER, STRING_LITERAL, NUMERIC_LITERAL}

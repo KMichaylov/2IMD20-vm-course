@@ -1,0 +1,2 @@
+Error(s) parsing script:
+-- line 2 col 18: token recognition error at: '"function multipleLines(x, y) { \n'
