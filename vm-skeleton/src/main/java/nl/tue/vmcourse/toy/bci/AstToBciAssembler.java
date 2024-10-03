@@ -171,6 +171,12 @@ public class AstToBciAssembler {
                 int frameSlot = readLocalVariableNode.getFrameSlot();
 //                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+            } else if(invokeNode.getFunctionNode() instanceof ToyReadPropertyNode readPropertyNode){
+                System.out.println("I am here!!!!!!!!");
+                generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
+                String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
+                int propertyIndex = bytecode.addToConstantPool(propertyName);
+                bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
             }
         } else if (node instanceof ToyReadPropertyNode readPropertyNode) {
             generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
@@ -191,6 +197,9 @@ public class AstToBciAssembler {
             String functionName = checkFunctionNameForBuiltin(bytecode, functionLiteralNode);
             if (!isBuiltInFunction(functionName)) {
                 literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
+
+                // TODO: Function literals have 0 arguments.
+//                bytecode.addInstruction(Opcode.OP_CALL, 0);
             }
         } else if (node instanceof ToyIfNode ifNode) {
             generateBytecode(ifNode.getConditionNode(), bytecode);
@@ -269,7 +278,6 @@ public class AstToBciAssembler {
             case "nanoTime" -> {
                 return "nanoTime";
             }
-            // The operand is the number of arguments
             default -> {
                 return functionNode.getName();
             }
