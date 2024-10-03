@@ -8,6 +8,8 @@ import java.math.BigInteger;
 
 public class AstToBciAssembler {
 
+    private static boolean isArgument = false;
+
     /**
      * We send the code to the ToyBciLoop to execute the bytecode commands.
      *
@@ -160,6 +162,7 @@ public class AstToBciAssembler {
                 }
             }
             for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
+                isArgument = true;
                 generateBytecode(expression, bytecode);
             }
 //                TODO: Should also check here what type the function is (extract into separate method)
@@ -171,7 +174,7 @@ public class AstToBciAssembler {
                 int frameSlot = readLocalVariableNode.getFrameSlot();
 //                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
-            } else if(invokeNode.getFunctionNode() instanceof ToyReadPropertyNode readPropertyNode){
+            } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode readPropertyNode) {
                 System.out.println("I am here!!!!!!!!");
                 generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
                 String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
@@ -184,6 +187,7 @@ public class AstToBciAssembler {
             int propertyIndex = bytecode.addToConstantPool(propertyName);
             bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
         } else if (node instanceof ToyWritePropertyNode writePropertyNode) {
+            isArgument = false;
             generateBytecode(writePropertyNode.getReceiverNode(), bytecode);
             generateBytecode(writePropertyNode.getValueNode(), bytecode);
             String propertyName = ((ToyStringLiteralNode) writePropertyNode.getNameNode()).getValue();
@@ -198,8 +202,9 @@ public class AstToBciAssembler {
             if (!isBuiltInFunction(functionName)) {
                 literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
 
-                // TODO: Function literals have 0 arguments.
-//                bytecode.addInstruction(Opcode.OP_CALL, 0);
+                // If we do not pass the literal as an argument, we do not need to call it.
+                if (!isArgument)
+                    bytecode.addInstruction(Opcode.OP_CALL, 0);
             }
         } else if (node instanceof ToyIfNode ifNode) {
             generateBytecode(ifNode.getConditionNode(), bytecode);
