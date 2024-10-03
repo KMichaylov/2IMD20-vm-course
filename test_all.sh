@@ -45,18 +45,18 @@ for file in $(find $folder -type f -name "*.sl"); do
   if [ $? -eq 0 ]; then
     # If successful, compare the output with the .output file
     if [ -f "$output_file" ]; then
-      diff <(echo "$output") "$output_file" > /dev/null
+      diff <(echo "$output" | tr -d '\r') <(cat "$output_file" | tr -d '\r') > /dev/null
       if [ $? -eq 0 ]; then
         echo "[OK] Output for $file matches expected output."
         ((ok++))
 
-      elif diff <(sed -e '${/^$/d}' "$output") <(sed -e '${/^$/d}' "$output_file") > /dev/null; then
+      elif diff <(sed -e '${/^$/d}' <(echo "$output" | tr -d '\r')) <(sed -e '${/^$/d}' <(cat "$output_file" | tr -d '\r')) > /dev/null; then
         echo "[OK] Output for $file matches expected output. TRAILING cr or something like that?"
         echo "[?] $file" >> suspicious.log
         echo "--- Got ---"
-        echo $output
+        echo "$output"
         echo "--- Expected ---"
-        cat $output_file
+        cat "$output_file"
         ((ok++))
 
       else
@@ -64,9 +64,9 @@ for file in $(find $folder -type f -name "*.sl"); do
         echo "[ERROR] $file " >> wrong_stdout.log
         ((fail++))
         echo "--- Got ---"
-        echo $output
+        echo "$output"
         echo "--- Expected ---"
-        cat $output_file
+        cat "$output_file"
       fi
     else
       echo "!!!! FATAL !!!! Output file $output_file not found for $file."
@@ -76,18 +76,18 @@ for file in $(find $folder -type f -name "*.sl"); do
   else
     # If the command failed, compare the error with the .error file
     if [ -f "$error_file" ]; then
-      diff <(echo "$output") "$error_file" > /dev/null
+      diff <(echo "$output" | tr -d '\r') <(cat "$error_file" | tr -d '\r') > /dev/null
       if [ $? -eq 0 ]; then
         echo "[OK] Error output for $file matches expected error."
         ((ok++))
 
-      elif diff <(sed -e '${/^$/d}' "$output") <(sed -e '${/^$/d}' "$output_file") > /dev/null; then
+      elif diff <(sed -e '${/^$/d}' <(echo "$output" | tr -d '\r')) <(sed -e '${/^$/d}' <(cat "$output_file" | tr -d '\r')) > /dev/null; then
         echo "[OK] Error for $file matches expected output. TRAILING cr or something like that?"
         echo "[?] $file" >> suspicious.log
         echo "--- Got ---"
-        echo $output
+        echo "$output"
         echo "--- Expected ---"
-        cat $output_file
+        cat "$output_file"
         ((ok++))
 
       else
@@ -95,9 +95,9 @@ for file in $(find $folder -type f -name "*.sl"); do
         echo "[ERROR] $file" >> wrong_stderr.log
         ((fail++))
         echo "--- Got ---"
-        echo $output
+        echo "$output"
         echo "--- Expected ---"
-        cat $error_file
+        cat "$error_file"
       fi
     else
       echo "!!!! FATAL !!!!!: Error file $error_file not found for $file."
