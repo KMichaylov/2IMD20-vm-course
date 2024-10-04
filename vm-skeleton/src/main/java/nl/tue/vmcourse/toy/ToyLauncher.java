@@ -16,8 +16,6 @@ import org.antlr.v4.runtime.misc.Interval;
 import java.io.IOException;
 import java.util.Map;
 
-import static nl.tue.vmcourse.toy.bci.AstToBciAssembler.build;
-
 public class ToyLauncher {
 
     //    TODO: Maybe remove
