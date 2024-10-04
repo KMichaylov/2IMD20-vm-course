@@ -567,16 +567,22 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      *
      * @param value to be checked
      */
+    // TODO: Extract this logic
     private String checkValueType(Object value) {
-        if (value instanceof Long || value instanceof BigInteger) {
+        if (value == null) {
+            return "NULL";
+        } else if (globalScope.getFunction(value.toString()) != null) {
+            return "Function";
+        } else if (value instanceof Long || value instanceof BigInteger) {
             return "Number";
         } else if (value instanceof Boolean) {
             return "Boolean";
         } else if (value instanceof String) {
             return "String";
-        } else {
-            return "NULL";
+        } else if (value instanceof Map) {
+            return "Object";
         }
+        return "NULL";
     }
 
 }
