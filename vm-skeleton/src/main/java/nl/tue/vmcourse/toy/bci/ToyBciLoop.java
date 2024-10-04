@@ -200,17 +200,20 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     System.out.println(valueToPrint);
                 }
                 // TODO: Extract some logic into separate method
-                // TODO: Later add support for Object and Function
                 case OP_TYPEOF -> {
                     Object valueToCheckTypeOf = stack.pop();
-                    if (valueToCheckTypeOf instanceof Long || valueToCheckTypeOf instanceof BigInteger) {
+                    if (valueToCheckTypeOf == null) {
+                        stack.push("NULL");
+                    } else if (globalScope.getFunction(valueToCheckTypeOf.toString()) != null) {
+                        stack.push("Function");
+                    } else if (valueToCheckTypeOf instanceof Long || valueToCheckTypeOf instanceof BigInteger) {
                         stack.push("Number");
                     } else if (valueToCheckTypeOf instanceof Boolean) {
                         stack.push("Boolean");
                     } else if (valueToCheckTypeOf instanceof String) {
                         stack.push("String");
-                    } else {
-                        stack.push("NULL");
+                    } else if (valueToCheckTypeOf instanceof Map) {
+                        stack.push("Object");
                     }
                 }
                 case OP_IS_INSTANCE -> {
@@ -225,6 +228,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 case OP_NANO_TIME -> {
                     stack.push(System.nanoTime());
+                }
+
+                case OP_EVAL -> {
+
                 }
 
                 case OP_COMPARE -> {
