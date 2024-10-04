@@ -7,9 +7,7 @@ package nl.tue.vmcourse.toy.bci;
 //TODO: Maybe create a separate opcode for while loops
 // TODO: Add some port have a sequential order for the opcodes
 public enum Opcode {
-    OP_TYPEOF((byte) 0x01),
     OP_RETURN((byte) 0x02),
-    OP_PRINT((byte) 0x03),
     OP_LOOP((byte) 0x04),
     OP_JUMP((byte) 0x05),
     // Comparison operators
@@ -49,8 +47,13 @@ public enum Opcode {
     OP_FUNCTION_NAME((byte) 0x1E),
 
     // Built-in functions
+    OP_PRINT((byte) 0x03),
+    OP_TYPEOF((byte) 0x01),
     OP_IS_INSTANCE((byte) 0x1C),
     OP_NANO_TIME((byte) 0x1D),
+    OP_PRINT_STACK_TRACE((byte) 0x1F),
+    OP_EVAL((byte) 0x25),
+    OP_GET_SIZE((byte) 0x26),
 
     // For object support
     OP_NEW((byte) 0x2A),
