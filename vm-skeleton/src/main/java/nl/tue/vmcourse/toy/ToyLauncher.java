@@ -82,7 +82,11 @@ public class ToyLauncher {
         }
         // TODO, ignores other args for now.
         CharStream charStream = CharStreams.fromFileName(args[args.length - 1]);
-        Object result = evalStream(charStream);
-        System.out.println(result);
+        try {
+            Object result = evalStream(charStream);
+            System.out.println(result);
+        } catch (RuntimeException error) {
+            System.err.println(error.getMessage());
+        }
     }
 }
