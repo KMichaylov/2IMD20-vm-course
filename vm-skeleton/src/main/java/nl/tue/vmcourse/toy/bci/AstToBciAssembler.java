@@ -4,12 +4,6 @@ import nl.tue.vmcourse.toy.ast.*;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
-import nl.tue.vmcourse.toy.parser.ToyLangLexer;
-import nl.tue.vmcourse.toy.parser.ToyLangParser;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.math.BigInteger;
 
@@ -196,8 +190,7 @@ public class AstToBciAssembler {
                 Long propertyArrayValue = ((ToyLongLiteralNode) readPropertyNode.getNameNode()).getValue();
                 int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
-            }
-            else {
+            } else {
                 generateBytecode(readPropertyNode.getNameNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, 0);
             }
@@ -339,8 +332,10 @@ public class AstToBciAssembler {
                 ToyNodeFactory toyNodeFactory = new ToyNodeFactory(invokeNode.getToyExpressionNodes()[1].toString());
                 bytecode.addInstruction(Opcode.OP_EVAL, 0);
             }
-            case "getSize" -> bytecode.addInstruction(Opcode.OP_GET_SIZE, 0);
-            case "stacktrace" -> bytecode.addInstruction(Opcode.OP_PRINT_STACK_TRACE, 0);
+            case "getSize" -> {
+                bytecode.addInstruction(Opcode.OP_GET_SIZE, 0);
+            }
+            case "stacktrace" -> bytecode.addInstruction(Opcode.OP_STACKTRACE, 0);
             // The operand is the number of arguments
             default -> bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
         }
