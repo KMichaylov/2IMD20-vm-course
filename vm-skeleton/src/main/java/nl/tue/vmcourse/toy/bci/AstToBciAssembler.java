@@ -178,12 +178,13 @@ public class AstToBciAssembler {
 //                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode readPropertyNode) {
-                System.out.println("I am here!!!!!!!!");
                 generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
-                String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
+                Object propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
                 int propertyIndex = bytecode.addToConstantPool(propertyName);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
             }
+
+            // TODO This is ugly code, refactor when you have time to be more robust. The problem came from the fact that the object can have string and number properties
         } else if (node instanceof ToyReadPropertyNode readPropertyNode) {
             generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
             // Sometimes AST property nodes are not assigned to a variable name but just to frame slot.
@@ -191,7 +192,12 @@ public class AstToBciAssembler {
                 String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
                 int propertyIndex = bytecode.addToConstantPool(propertyName);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
-            } else {
+            } else if (readPropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
+                Long propertyArrayValue = ((ToyLongLiteralNode) readPropertyNode.getNameNode()).getValue();
+                int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
+                bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
+            }
+            else {
                 generateBytecode(readPropertyNode.getNameNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, 0);
             }
@@ -202,6 +208,10 @@ public class AstToBciAssembler {
             if (writePropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
                 String propertyName = ((ToyStringLiteralNode) writePropertyNode.getNameNode()).getValue();
                 int propertyIndex = bytecode.addToConstantPool(propertyName);
+                bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
+            } else if (writePropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
+                Long propertyArrayValue = ((ToyLongLiteralNode) writePropertyNode.getNameNode()).getValue();
+                int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
                 bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
             } else {
                 generateBytecode(writePropertyNode.getNameNode(), bytecode);

@@ -151,16 +151,20 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_SET_PROPERTY -> {
-                    String propertyName;
+                    Object propertyName = new Object();
                     if (bytecode.getConstantPoolSize() > 0) {
-                        propertyName = (String) bytecode.getElementFromConstantPool(operand);
+                        if (bytecode.getElementFromConstantPool(operand) instanceof String) {
+                            propertyName = bytecode.getElementFromConstantPool(operand).toString();
+                        } else if (bytecode.getElementFromConstantPool(operand) instanceof Long) {
+                            propertyName = bytecode.getElementFromConstantPool(operand).toString();
+                        }
                     } else {
-                        propertyName = (String) stack.pop();
+                        propertyName = stack.pop();
                     }
                     Object value = stack.pop();
                     Object receiver = stack.pop();
                     if (receiver instanceof Map) {
-                        ((Map<String, Object>) receiver).put(propertyName, value);
+                        ((Map<String, Object>) receiver).put((String) propertyName, value);
                     } else {
                         System.out.println("Something with setter of the property went wrong...");
                     }
@@ -168,7 +172,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 case OP_GET_PROPERTY -> {
                     if (bytecode.getConstantPoolSize() > 0) {
-                        String propertyName = (String) bytecode.getElementFromConstantPool(operand);
+                        Object propertyName = new Object();
+                        if (bytecode.getElementFromConstantPool(operand) instanceof String) {
+                            propertyName = bytecode.getElementFromConstantPool(operand).toString();
+                        } else if (bytecode.getElementFromConstantPool(operand) instanceof Long) {
+                            propertyName = bytecode.getElementFromConstantPool(operand).toString();
+                        }
                         Object receiver = stack.pop();
                         if (receiver instanceof Map) {
                             stack.push(((Map<?, ?>) receiver).get(propertyName));
@@ -230,6 +239,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     boolean isInstance = returnedValue.equals(typeToCompareWith);
 
                     stack.push(isInstance);
+                }
+
+                case OP_PRINT_STACK_TRACE -> {
+                    // TODO: Implement this
                 }
                 case OP_NANO_TIME -> {
                     stack.push(System.nanoTime());
