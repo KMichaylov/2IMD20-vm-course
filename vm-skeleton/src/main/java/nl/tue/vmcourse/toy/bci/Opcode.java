@@ -52,7 +52,7 @@ public enum Opcode {
     OP_TYPEOF((byte) 0x01),
     OP_IS_INSTANCE((byte) 0x1C),
     OP_NANO_TIME((byte) 0x1D),
-    OP_PRINT_STACK_TRACE((byte) 0x1F),
+    OP_STACKTRACE((byte) 0x1F),
     OP_EVAL((byte) 0x25),
     OP_GET_SIZE((byte) 0x26),
 
