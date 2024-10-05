@@ -199,12 +199,17 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object valueToPrint = stack.pop();
                     System.out.println(valueToPrint);
                 }
+
+                case OP_BUILTIN -> {
+                    stack.push("Function");
+                }
                 // TODO: Extract some logic into separate method
                 case OP_TYPEOF -> {
                     Object valueToCheckTypeOf = stack.pop();
                     if (valueToCheckTypeOf == null) {
                         stack.push("NULL");
-                    } else if (globalScope.getFunction(valueToCheckTypeOf.toString()) != null) {
+                    } else if (globalScope.getFunction(valueToCheckTypeOf.toString()) != null ||
+                            valueToCheckTypeOf.equals("Function")) {
                         stack.push("Function");
                     } else if (valueToCheckTypeOf instanceof Long || valueToCheckTypeOf instanceof BigInteger) {
                         stack.push("Number");

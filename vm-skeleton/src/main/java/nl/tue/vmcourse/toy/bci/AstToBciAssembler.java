@@ -3,6 +3,13 @@ package nl.tue.vmcourse.toy.bci;
 import nl.tue.vmcourse.toy.ast.*;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
+import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
+import nl.tue.vmcourse.toy.parser.ToyLangLexer;
+import nl.tue.vmcourse.toy.parser.ToyLangParser;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.math.BigInteger;
 
@@ -45,23 +52,19 @@ public class AstToBciAssembler {
     // TODO: Refactor the whole tree. Continue with it even later.
     private static void generateBytecode(ToyNode node, Bytecode bytecode) {
         if (node instanceof ToyBlockNode blockNode) {
-            // If we have a block node, go through the statements and recursively call for each of them.
             for (ToyStatementNode statement : blockNode.getStatements()) {
                 generateBytecode(statement, bytecode);
             }
         } else if (node instanceof ToyWriteLocalVariableNode writeNode) {
-            // Generate bytecode for the value node.
             generateBytecode(writeNode.getValueNode(), bytecode);
 
-            // Get the variable name from the name node (assumed to be ToyStringLiteralNode).
             String variableName = ((ToyStringLiteralNode) writeNode.getNameNode()).getValue();
             if ("null".equals(variableName)) {
                 variableName = null;
             }
 
-            // If the value node is a ToyReadArgumentNode, we skip storing the variable in locals.
             if (writeNode.getValueNode() instanceof ToyReadArgumentNode) {
-                return;  // This acts like a 'break' in a switch statement.
+                return;
             }
 
             bytecode.addVariableInstruction(
@@ -171,7 +174,7 @@ public class AstToBciAssembler {
                 addFunctionToBytecode(bytecode, invokeNode, functionName);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode readLocalVariableNode) {
                 //TODO HERE WE GO FOR FUNCTION LITERALS
-                int frameSlot = readLocalVariableNode.getFrameSlot();
+//                int frameSlot = readLocalVariableNode.getFrameSlot();
 //                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode readPropertyNode) {
@@ -210,12 +213,16 @@ public class AstToBciAssembler {
         // TODO: Check how to handle function literals
         else if (node instanceof ToyFunctionLiteralNode functionLiteralNode) {
             String functionName = checkFunctionNameForBuiltin(bytecode, functionLiteralNode);
-            if (!isBuiltInFunction(functionName)) {
+            if (!isBuiltInFunctionForTypeChecking(functionName)) {
                 literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
 
                 // If we do not pass the literal as an argument, we do not need to call it.
                 if (!isArgument)
                     bytecode.addInstruction(Opcode.OP_CALL, 0);
+            }
+
+            if (isArgument && isBuiltInFunctionForTypeChecking(functionName)) {
+                literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_BUILTIN, bytecode);
             }
         } else if (node instanceof ToyIfNode ifNode) {
             generateBytecode(ifNode.getConditionNode(), bytecode);
@@ -294,6 +301,15 @@ public class AstToBciAssembler {
             case "nanoTime" -> {
                 return "nanoTime";
             }
+            case "eval" -> {
+                return "eval";
+            }
+            case "getSize" -> {
+                return "getSize";
+            }
+            case "stacktrace" -> {
+                return "stacktrace";
+            }
             default -> {
                 return functionNode.getName();
             }
@@ -308,6 +324,13 @@ public class AstToBciAssembler {
             case "typeOf" -> bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
             case "isInstance" -> bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
             case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
+            case "eval" -> {
+                // TODO Continue from here for the eval
+                ToyNodeFactory toyNodeFactory = new ToyNodeFactory(invokeNode.getToyExpressionNodes()[1].toString());
+                bytecode.addInstruction(Opcode.OP_EVAL, 0);
+            }
+            case "getSize" -> bytecode.addInstruction(Opcode.OP_GET_SIZE, 0);
+            case "stacktrace" -> bytecode.addInstruction(Opcode.OP_PRINT_STACK_TRACE, 0);
             // The operand is the number of arguments
             default -> bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
         }
@@ -337,7 +360,23 @@ public class AstToBciAssembler {
     private static boolean isBuiltInFunction(String functionName) {
         boolean result;
         switch (functionName) {
-            case "println", "typeOf", "isInstance", "nanoTime" -> result = true;
+            case "println", "typeOf", "isInstance", "nanoTime", "eval", "getSize", "stacktrace" -> result = true;
+            default -> result = false;
+        }
+        return result;
+    }
+
+    /**
+     * A helper method to decide if the current function is a built-in one and use this for the type of operator
+     *
+     * @param functionName the name of the function
+     * @return true if function is built-in, false otherwise
+     */
+    private static boolean isBuiltInFunctionForTypeChecking(String functionName) {
+        boolean result;
+        switch (functionName) {
+            case "println", "typeOf", "isInstance", "nanoTime", "eval", "getSize", "stacktrace", "new", "exit" ->
+                    result = true;
             default -> result = false;
         }
         return result;

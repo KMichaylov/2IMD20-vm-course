@@ -47,6 +47,7 @@ public enum Opcode {
     OP_FUNCTION_NAME((byte) 0x1E),
 
     // Built-in functions
+    OP_BUILTIN((byte) 0x27),
     OP_PRINT((byte) 0x03),
     OP_TYPEOF((byte) 0x01),
     OP_IS_INSTANCE((byte) 0x1C),
