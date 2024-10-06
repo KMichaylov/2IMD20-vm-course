@@ -3,7 +3,6 @@ package nl.tue.vmcourse.toy.bci;
 import nl.tue.vmcourse.toy.ast.*;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
-import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 
 import java.math.BigInteger;
 
@@ -329,7 +328,8 @@ public class AstToBciAssembler {
             case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
             case "eval" -> {
                 // TODO Continue from here for the eval
-                ToyNodeFactory toyNodeFactory = new ToyNodeFactory(invokeNode.getToyExpressionNodes()[1].toString());
+                ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[1];
+                generateBytecode(codeData, bytecode);
                 bytecode.addInstruction(Opcode.OP_EVAL, 0);
             }
             case "getSize" -> {
@@ -415,6 +415,5 @@ public class AstToBciAssembler {
         generateBytecode(rightNode, bytecode);
         bytecode.addInstruction(opcode, operand);
     }
-
 
 }

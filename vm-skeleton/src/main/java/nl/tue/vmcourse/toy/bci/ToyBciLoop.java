@@ -1,8 +1,16 @@
 package nl.tue.vmcourse.toy.bci;
 
+import nl.tue.vmcourse.toy.ToyLauncher;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
+import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
+import nl.tue.vmcourse.toy.parser.ToyLangLexer;
+import nl.tue.vmcourse.toy.parser.ToyLangParser;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.misc.Interval;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -164,8 +172,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     } else {
                         propertyName = stack.pop();
                     }
-                    while (!(stack.get(stack.size() - 2) instanceof Map)){
-                       stack.pop();
+                    while (!(stack.get(stack.size() - 2) instanceof Map)) {
+                        stack.pop();
                     }
                     Object value = stack.pop();
                     Object receiver = stack.pop();
@@ -185,7 +193,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         } else if (bytecode.getElementFromConstantPool(operand) instanceof Long) {
                             propertyName = bytecode.getElementFromConstantPool(operand).toString();
                         }
-                        while (!(stack.get(stack.size() - 1) instanceof Map)){
+                        while (!(stack.get(stack.size() - 1) instanceof Map)) {
                             stack.pop();
                         }
                         Object receiver = stack.pop();
@@ -260,14 +268,16 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 case OP_GET_SIZE -> {
                     Object obj = locals.get(operand);
-                    if(obj instanceof Map<?,?>){
+                    if (obj instanceof Map<?, ?>) {
                         stack.pop();
                         stack.push(((Map<?, ?>) obj).size());
                     }
                 }
 
                 case OP_EVAL -> {
-
+                    Object obj = stack.pop();
+                    Object answer = evalStream(CharStreams.fromString((String) obj));
+                    stack.push(answer);
                 }
 
                 case OP_COMPARE -> {
@@ -313,7 +323,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
 
                     String functionName;
-                    while(!(stack.peek() instanceof String))
+                    while (!(stack.peek() instanceof String))
                         stack.pop();
                     functionName = (String) stack.pop();
                     RootCallTarget function = globalScope.getFunction(functionName);
@@ -621,6 +631,37 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return "Object";
         }
         return "NULL";
+    }
+
+
+    // TODO Change the place of this!
+
+    /**
+     * It applies the eval function on this code.
+     * @param charStream the actual program.
+     * @return the result of the program after execution.
+     */
+    public static Object evalStream(CharStream charStream) {
+        String src = charStream.getText(Interval.of(0, charStream.size()));
+        ToyLangLexer lex = new ToyLangLexer(charStream);
+        CommonTokenStream tokens = new CommonTokenStream(lex);
+        ToyLangParser parser = new ToyLangParser(tokens);
+        ToyNodeFactory factory = new ToyNodeFactory(src);
+        parser.setFactory(factory);
+        parser.addErrorListener(new ToyLangParser.BailoutErrorListener());
+        parser.toylanguage();
+
+        Map<String, RootCallTarget> allFunctions = factory.getAllFunctions();
+
+        for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
+            globalScope.registerFunction(entry.getKey(), entry.getValue());
+        }
+
+        if (!allFunctions.isEmpty()) {
+            RootCallTarget functionToEvaluate = allFunctions.values().iterator().next();
+            return functionToEvaluate.invoke(globalScope);
+        }
+        return null;
     }
 
 }
