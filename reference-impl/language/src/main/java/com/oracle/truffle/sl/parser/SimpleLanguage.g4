@@ -333,7 +333,7 @@ COMMENT : '/*' .*? '*/' -> skip;
 LINE_COMMENT : '//' ~[\r\n]* -> skip;
 
 fragment LETTER : [A-Z] | [a-z] | '_' | '$';
-fragment NON_ZERO_DIGIT : [1-9];
+fragment NON_ZERO_DIGIT : '-' | [1-9];
 fragment DIGIT : [0-9];
 fragment HEX_DIGIT : [0-9] | [a-f] | [A-F];
 fragment OCT_DIGIT : [0-7];

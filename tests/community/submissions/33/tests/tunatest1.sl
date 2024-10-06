@@ -1,6 +1,6 @@
 
 function isitodd(num) { 
-  if ((num / 2) == ((num-1) / 2)) {return 1;}
+  if ((num / 2) == ((num - 1) / 2)) {return 1;}
 
   return 0;
 }

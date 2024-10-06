@@ -45,6 +45,9 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeInfo;
+import com.oracle.truffle.sl.nodes.SLUndefinedFunctionRootNode;
+import com.oracle.truffle.sl.runtime.SLContext;
+import com.oracle.truffle.sl.runtime.SLFunction;
 import com.oracle.truffle.sl.runtime.SLNull;
 import com.oracle.truffle.sl.runtime.SLType;
 
@@ -62,6 +65,11 @@ public abstract class SLTypeOfBuiltin extends SLBuiltinNode {
     @ExplodeLoop
     public Object doDefault(Object operand,
                     @CachedLibrary("operand") InteropLibrary interop) {
+        if (operand instanceof SLFunction && ((SLFunction)operand).getCallTarget() != null) {
+            if (((SLFunction)operand).getCallTarget().getRootNode() instanceof SLUndefinedFunctionRootNode) {
+                return SLType.NULL;
+            }
+        }
         for (SLType type : SLType.PRECEDENCE) {
             if (type.isInstance(operand, interop)) {
                 return type;

@@ -113,6 +113,15 @@ public abstract class SLReadPropertyNode extends SLExpressionNode {
         }
     }
 
+    @Specialization(guards = {"!isSLObject(receiver)", "!objects.hasMembers(receiver)"}, limit = "LIBRARY_LIMIT")
+    protected static Object readNothing(Object receiver, Object name,
+                                       @Bind("this") Node node,
+                                       @CachedLibrary("receiver") InteropLibrary objects,
+                                       @Cached SLToMemberNode asMember) {
+        throw SLUndefinedNameException.undefinedProperty(node, name);
+    }
+
+
     static boolean isSLObject(Object receiver) {
         return receiver instanceof SLObject;
     }

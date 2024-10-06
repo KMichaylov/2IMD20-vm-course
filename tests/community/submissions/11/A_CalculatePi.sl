@@ -22,7 +22,7 @@ function BBP_calc_pi(prec) {
 
     // P = 1;
     P = createFixedInteger(prec);
-    P[prec-1] = 1;
+    P[prec - 1] = 1;
 
     i = 0;
     while(i < prec) {
@@ -189,7 +189,7 @@ function performMultiple(a, b, isDecimal) {
 
     len = 0;
     prod_9 = prod[9];
-    i = getSize(prod_9)-1;
+    i = getSize(prod_9) - 1;
     while(i >= 0) {
         if (prod_9[i] != 0) {
             break;
@@ -236,7 +236,7 @@ function performMultiple(a, b, isDecimal) {
     } else {
         i = 1;
         while (i <= len_a) {
-            ret[len_a - i] = re[len_a*2-1 - i];
+            ret[len_a - i] = re[len_a * 2 - 1 - i];
             i = i + 1;
         }
     }
