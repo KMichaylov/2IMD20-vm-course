@@ -11,12 +11,35 @@ public class Bytecode {
     private final List<Object> constantPool;
     private final List<Integer> continueJumps;
     private final List<Integer> breakJumps;
+    private final List<Object> propertyPool;
 
     public Bytecode() {
         this.instructions = new ArrayList<>();
         this.constantPool = new ArrayList<>();
         this.continueJumps = new ArrayList<>();
         this.breakJumps = new ArrayList<>();
+        this.propertyPool = new ArrayList<>();
+    }
+
+    public List<Object> getPropertyPool() {
+        return propertyPool;
+    }
+
+    public int addToPropertyPool(Object element) {
+        if (element instanceof Object) {
+            propertyPool.add(element);
+            return propertyPool.size() - 1;
+        } else {
+            return -1;
+        }
+    }
+
+    public Object getElementFromPropertyPool(int index) {
+        if (propertyPool.get(index) != null) {
+            return propertyPool.get(index);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -101,6 +124,16 @@ public class Bytecode {
     }
 
     /**
+     * Replace the element at the index with the object
+     *
+     * @param operand index of the element
+     * @param o       object to replace the element
+     */
+    public void replaceConstantPoolElement(int operand, Object o) {
+        constantPool.set(operand, o);
+    }
+
+    /**
      * Get an element from the constant pool.
      *
      * @param index of the element
@@ -164,4 +197,5 @@ public class Bytecode {
             System.out.println(instr);
         }
     }
+
 }

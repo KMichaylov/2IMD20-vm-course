@@ -86,8 +86,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             locals.add(map);
                         } else if (frameSlot < locals.size()) {
                             locals.set(frameSlot, stack.pop());
+                            bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
                         } else {
                             locals.add(frameSlot, stack.pop());
+                            bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
+
                         }
                     }
 
@@ -248,11 +251,19 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(isInstance);
                 }
 
-                case OP_PRINT_STACK_TRACE -> {
+                case OP_STACKTRACE -> {
                     // TODO: Implement this
                 }
                 case OP_NANO_TIME -> {
                     stack.push(System.nanoTime());
+                }
+
+                case OP_GET_SIZE -> {
+                    Object obj = locals.get(operand);
+                    if(obj instanceof Map<?,?>){
+                        stack.pop();
+                        stack.push(((Map<?, ?>) obj).size());
+                    }
                 }
 
                 case OP_EVAL -> {
