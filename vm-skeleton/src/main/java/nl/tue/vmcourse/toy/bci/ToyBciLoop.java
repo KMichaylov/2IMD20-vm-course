@@ -312,8 +312,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         args[i] = stack.pop();
                     }
 
-                    String functionName = (String) stack.pop();
-
+                    String functionName;
+                    while(!(stack.peek() instanceof String))
+                        stack.pop();
+                    functionName = (String) stack.pop();
                     RootCallTarget function = globalScope.getFunction(functionName);
                     if (function == null) {
                         throw new RuntimeException("Function not found: " + functionName);

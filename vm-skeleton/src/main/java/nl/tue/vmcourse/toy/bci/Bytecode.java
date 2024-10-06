@@ -127,10 +127,10 @@ public class Bytecode {
      * Replace the element at the index with the object
      *
      * @param operand index of the element
-     * @param o       object to replace the element
+     * @param element object to replace the element
      */
-    public void replaceConstantPoolElement(int operand, Object o) {
-        constantPool.set(operand, o);
+    public void replaceConstantPoolElement(int operand, Object element) {
+        constantPool.set(operand, element);
     }
 
     /**
