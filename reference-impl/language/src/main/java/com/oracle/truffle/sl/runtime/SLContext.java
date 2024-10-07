@@ -93,6 +93,9 @@ import com.oracle.truffle.sl.builtins.SLRegisterShutdownHookBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLStackTraceBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLTypeOfBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLWrapPrimitiveBuiltinFactory;
+import com.oracle.truffle.sl.builtins.SLObjectHasPropertyBuiltinFactory;
+import com.oracle.truffle.sl.builtins.SLObjectDeletePropertyBuiltinFactory;
+
 
 /**
  * The run-time state of SL during execution. The context is created by the {@link SLLanguage}. It
@@ -194,6 +197,8 @@ public final class SLContext {
         installBuiltin(SLInNativeImageBuiltinFactory.getInstance());
 
         installBuiltin(SLStringSubstringBuiltinFactory.getInstance());
+        installBuiltin(SLObjectHasPropertyBuiltinFactory.getInstance());
+        installBuiltin(SLObjectDeletePropertyBuiltinFactory.getInstance());
     }
 
     public void installBuiltin(NodeFactory<? extends SLBuiltinNode> factory) {

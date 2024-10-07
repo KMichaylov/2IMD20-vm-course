@@ -49,10 +49,11 @@ import com.oracle.truffle.sl.SLException;
 import com.oracle.truffle.sl.SLLanguage;
 
 
+
 @NodeInfo(shortName = "subString")
 public abstract class SLStringSubstringBuiltin extends SLBuiltinNode {
 
-    @Specialization(limit = "3")
+    @Specialization
     public TruffleString hasSize(Object obj, Number from, Number to) {
         if (obj instanceof TruffleString) {
             String sub = ((TruffleString) obj).toJavaStringUncached().substring(from.intValue(), to.intValue());
