@@ -103,38 +103,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
 
                 }
-                case OP_ADD -> {
-                    Object right = stack.pop();
-                    Object left = stack.pop();
-                    Object answer = add(left, right);
-                    if (answer != null) {
-                        stack.push(answer);
-                    }
-                }
-                case OP_SUB -> {
-                    Object right = stack.pop();
-                    Object left = stack.pop();
-                    Object answer = subtract(left, right);
-                    if (answer != null) {
-                        stack.push(answer);
-                    }
-                }
-                case OP_DIV -> {
-                    Object right = stack.pop();
-                    Object left = stack.pop();
-                    Object answer = divide(left, right);
-                    if (answer != null) {
-                        stack.push(answer);
-                    }
-                }
-                case OP_MUL -> {
-                    Object right = stack.pop();
-                    Object left = stack.pop();
-                    Object answer = multiply(left, right);
-                    if (answer != null) {
-                        stack.push(answer);
-                    }
-                }
+                case OP_ADD -> performArithmeticOperations(stack, "ADD");
+                case OP_SUB -> performArithmeticOperations(stack, "SUB");
+                case OP_DIV -> performArithmeticOperations(stack, "DIV");
+                case OP_MUL -> performArithmeticOperations(stack, "MUL");
 
                 case OP_LOGICAL_AND -> {
                     Object left = stack.pop();
@@ -373,6 +345,27 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private <T> void pushLiteralToStack(Bytecode bytecode, int operand, Stack<Object> stack, Class<T> type) {
         T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
         stack.push(literalValue);
+    }
+
+
+    /**
+     * Method which performs the arithmetic operations.
+     * @param stack where the values are stored
+     * @param operation the corresponding arithmetic operation
+     */
+    private void performArithmeticOperations(Stack<Object> stack, String operation) {
+        Object right = stack.pop();
+        Object left = stack.pop();
+        Object result = switch (operation) {
+            case "ADD" -> add(left, right);
+            case "SUB" -> subtract(left, right);
+            case "DIV" -> divide(left, right);
+            case "MUL" -> multiply(left, right);
+            default -> throw new RuntimeException("TODO");
+        };
+        if (result != null) {
+            stack.push(result);
+        }
     }
 
     /**
@@ -638,6 +631,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
     /**
      * It applies the eval function on this code.
+     *
      * @param charStream the actual program.
      * @return the result of the program after execution.
      */
