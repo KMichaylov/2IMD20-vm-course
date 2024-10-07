@@ -272,6 +272,10 @@ factor returns [SLExpressionNode result]
 |
     NUMERIC_LITERAL                             { $result = factory.createNumericLiteral($NUMERIC_LITERAL); }
 |
+    d='true'                                     { $result = factory.createBooleanLiteral($d, true); }
+|
+    d='false'                                    { $result = factory.createBooleanLiteral($d, false); }
+|
     s='('
     expr=expression
     e=')'                                       { $result = factory.createParenExpression($expr.result, $s.getStartIndex(), $e.getStopIndex() - $s.getStartIndex() + 1); }
@@ -344,4 +348,3 @@ fragment STRING_CHAR : ~('"' | '\r' | '\n');
 IDENTIFIER : LETTER (LETTER | DIGIT)*;
 STRING_LITERAL : '"' STRING_CHAR* '"';
 NUMERIC_LITERAL : '0' | NON_ZERO_DIGIT DIGIT*;
-

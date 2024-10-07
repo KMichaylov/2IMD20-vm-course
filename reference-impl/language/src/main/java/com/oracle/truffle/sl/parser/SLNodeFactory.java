@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.sl.nodes.expression.*;
 import com.oracle.truffle.sl.runtime.SLStrings;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.Token;
@@ -68,26 +70,6 @@ import com.oracle.truffle.sl.nodes.controlflow.SLFunctionBodyNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLIfNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLReturnNode;
 import com.oracle.truffle.sl.nodes.controlflow.SLWhileNode;
-import com.oracle.truffle.sl.nodes.expression.SLAddNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLBigIntegerLiteralNode;
-import com.oracle.truffle.sl.nodes.expression.SLDivNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLEqualNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLFunctionLiteralNode;
-import com.oracle.truffle.sl.nodes.expression.SLInvokeNode;
-import com.oracle.truffle.sl.nodes.expression.SLLessOrEqualNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLLessThanNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLLogicalAndNode;
-import com.oracle.truffle.sl.nodes.expression.SLLogicalNotNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLLogicalOrNode;
-import com.oracle.truffle.sl.nodes.expression.SLLongLiteralNode;
-import com.oracle.truffle.sl.nodes.expression.SLMulNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLParenExpressionNode;
-import com.oracle.truffle.sl.nodes.expression.SLReadPropertyNode;
-import com.oracle.truffle.sl.nodes.expression.SLReadPropertyNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLStringLiteralNode;
-import com.oracle.truffle.sl.nodes.expression.SLSubNodeGen;
-import com.oracle.truffle.sl.nodes.expression.SLWritePropertyNode;
-import com.oracle.truffle.sl.nodes.expression.SLWritePropertyNodeGen;
 import com.oracle.truffle.sl.nodes.local.SLReadArgumentNode;
 import com.oracle.truffle.sl.nodes.local.SLReadLocalVariableNode;
 import com.oracle.truffle.sl.nodes.local.SLReadLocalVariableNodeGen;
@@ -100,6 +82,13 @@ import com.oracle.truffle.sl.nodes.util.SLUnboxNodeGen;
  * automatically generated parser to keep the attributed grammar of SL small.
  */
 public class SLNodeFactory {
+
+    public SLExpressionNode createBooleanLiteral(Token literalToken, boolean value) {
+        SLExpressionNode exp = new SLBooleanLiteralNode(value);
+        srcFromToken(exp, literalToken);
+        exp.addExpressionTag();
+        return exp;
+    }
 
     /**
      * Local variable names that are visible in the current block. Variables are not visible outside

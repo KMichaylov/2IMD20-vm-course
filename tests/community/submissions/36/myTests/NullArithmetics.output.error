@@ -1,1 +1,1 @@
-Type error at <stdin> line 5 col 11: operation "+" not defined for NULL, NULL
+Type error at NullArithmetics.sl line 5 col 11: operation "+" not defined for NULL, NULL

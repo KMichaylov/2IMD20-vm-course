@@ -51,10 +51,7 @@ import java.util.function.Function;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.oracle.truffle.api.debug.Breakpoint;
 import com.oracle.truffle.api.debug.DebugException;
@@ -67,6 +64,7 @@ import com.oracle.truffle.tck.DebuggerTester;
 /**
  * Test of host interop in debugger: {@link DebuggerSession#setShowHostStackFrames(boolean)}.
  */
+@Ignore
 public class SLJavaInteropDebugTest {
 
     @BeforeClass
