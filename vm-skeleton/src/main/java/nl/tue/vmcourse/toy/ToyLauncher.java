@@ -1,11 +1,6 @@
 package nl.tue.vmcourse.toy;
 
-import nl.tue.vmcourse.toy.ast.ToyStatementNode;
-import nl.tue.vmcourse.toy.bci.AstToBciAssembler;
-import nl.tue.vmcourse.toy.bci.Bytecode;
 import nl.tue.vmcourse.toy.bci.GlobalScope;
-import nl.tue.vmcourse.toy.bci.ToyBciLoop;
-import nl.tue.vmcourse.toy.interpreter.ToyRootNode;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 import nl.tue.vmcourse.toy.parser.ToyLangLexer;
@@ -18,7 +13,6 @@ import java.util.Map;
 
 public class ToyLauncher {
 
-    //    TODO: Maybe remove
     private static final GlobalScope globalScope = new GlobalScope();
 
 
