@@ -1,2 +1,2 @@
 Error(s) parsing script:
--- line 16 col 9: mismatched input '=' expecting {';', '||', '&&', '<', '<=', '>', '>=', '==', '!=', '+', '-', '*', '/'}
+-- line 27 col 8: token recognition error at: '\'

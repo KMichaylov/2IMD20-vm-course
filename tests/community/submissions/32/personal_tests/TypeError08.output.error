@@ -1,1 +1,1 @@
-Type error at <stdin> line 2 col 13: operation "*" not defined for String "2IMD20", String "2IMD20"
+Type error at TypeError08.sl line 2 col 13: operation "*" not defined for String "2IMD20", String "2IMD20"

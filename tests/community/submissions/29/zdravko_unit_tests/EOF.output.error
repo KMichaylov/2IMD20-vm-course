@@ -1,2 +1,2 @@
 Error(s) parsing script:
--- line 4 col 1: extraneous input '<EOF>' expecting {'(', '}', 'break', 'continue', 'debugger', 'while', 'if', 'return', IDENTIFIER, STRING_LITERAL, NUMERIC_LITERAL}
+-- line 4 col 1: extraneous input '<EOF>' expecting {'(', '}', 'break', 'continue', 'debugger', 'while', 'if', 'return', 'true', 'false', IDENTIFIER, STRING_LITERAL, NUMERIC_LITERAL}

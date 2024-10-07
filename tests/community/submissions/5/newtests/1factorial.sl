@@ -8,7 +8,7 @@ function factorial(num) {
 
     while (num > 1) {
     result = result * num;
-    num = num -1;
+    num = num - 1;
     }
     return(result);
 }

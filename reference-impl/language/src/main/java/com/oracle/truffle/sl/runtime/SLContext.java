@@ -74,6 +74,7 @@ import com.oracle.truffle.sl.builtins.SLDefineFunctionBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLEvalBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLExitBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLGetSizeBuiltinFactory;
+import com.oracle.truffle.sl.builtins.SLStringSubstringBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLHasSizeBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLHelloEqualsWorldBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLImportBuiltinFactory;
@@ -92,6 +93,9 @@ import com.oracle.truffle.sl.builtins.SLRegisterShutdownHookBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLStackTraceBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLTypeOfBuiltinFactory;
 import com.oracle.truffle.sl.builtins.SLWrapPrimitiveBuiltinFactory;
+import com.oracle.truffle.sl.builtins.SLObjectHasPropertyBuiltinFactory;
+import com.oracle.truffle.sl.builtins.SLObjectDeletePropertyBuiltinFactory;
+
 
 /**
  * The run-time state of SL during execution. The context is created by the {@link SLLanguage}. It
@@ -191,6 +195,10 @@ public final class SLContext {
         installBuiltin(SLRegisterShutdownHookBuiltinFactory.getInstance());
         installBuiltin(SLAddToHostClassPathBuiltinFactory.getInstance());
         installBuiltin(SLInNativeImageBuiltinFactory.getInstance());
+
+        installBuiltin(SLStringSubstringBuiltinFactory.getInstance());
+        installBuiltin(SLObjectHasPropertyBuiltinFactory.getInstance());
+        installBuiltin(SLObjectDeletePropertyBuiltinFactory.getInstance());
     }
 
     public void installBuiltin(NodeFactory<? extends SLBuiltinNode> factory) {

@@ -14,7 +14,7 @@ function main() {
         swapped = 0;
         i = 0;
 
-        while(i < len -1){
+        while(i < len - 1){
             if(arr[i] > arr[i + 1]){
                 temp = arr[i];
                 arr[i] = arr[i + 1];

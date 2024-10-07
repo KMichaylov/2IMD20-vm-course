@@ -13,6 +13,7 @@ fi
 ok=0
 fail=0
 fatals=0
+iters=0
 
 touch fatal_errors.log
 echo "" > fatal_errors.log
@@ -26,6 +27,9 @@ echo "" > wrong_stdout.log
 touch suspicious.log
 echo "" > suspicious.log
 
+rm *.tmp
+
+x=130
 # Iterate over all files in the folder
 #for file in "$folder"/*.sl; do
 for file in $(find $folder -type f -name "*.sl"); do
@@ -33,30 +37,42 @@ for file in $(find $folder -type f -name "*.sl"); do
   [ -f "$file" ] || continue
   file="${file%.*}"
 
+  ((iters++))
+
+  # if [ "$iters" -lt 240 ]; then
+  #     continue  # Skip this iteration
+  # fi
+
   # Output and error files (assuming they are in the same folder and named after the input file)
   output_file="${file}.output"
   error_file="${file}.output.error"
 
+  echo "[$iters]"
   echo "[INFO] running $file.sl ..."
   # Execute the sl command and capture output and error
-  output=$($sl < "$file.sl" 2> >(tee /dev/stderr))
+  tmpfile=$(mktemp)
+  # echo $tmpfile
+  $sl "$file.sl" &> $tmpfile
+
+  # output=$($sl < "$file.sl" 2> >(tee /dev/stderr))
 
   # Check if the command was successful (exit code 0)
   if [ $? -eq 0 ]; then
     # If successful, compare the output with the .output file
     if [ -f "$output_file" ]; then
-      diff <(echo "$output" | tr -d '\r') <(cat "$output_file" | tr -d '\r') > /dev/null
+      # diff <(echo "$output") "$output_file" > /dev/null
+      diff $tmpfile $output_file
       if [ $? -eq 0 ]; then
-        echo "[OK] Output for $file matches expected output."
+        echo "[ OK ] Output for $file matches expected output."
         ((ok++))
 
-      elif diff <(sed -e '${/^$/d}' <(echo "$output" | tr -d '\r')) <(sed -e '${/^$/d}' <(cat "$output_file" | tr -d '\r')) > /dev/null; then
+      elif diff <(sed -e '${/^$/d}' "$output") <(sed -e '${/^$/d}' "$output_file") > /dev/null; then
         echo "[OK] Output for $file matches expected output. TRAILING cr or something like that?"
         echo "[?] $file" >> suspicious.log
         echo "--- Got ---"
-        echo "$output"
+        echo $output
         echo "--- Expected ---"
-        cat "$output_file"
+        cat $output_file
         ((ok++))
 
       else
@@ -64,9 +80,20 @@ for file in $(find $folder -type f -name "*.sl"); do
         echo "[ERROR] $file " >> wrong_stdout.log
         ((fail++))
         echo "--- Got ---"
-        echo "$output"
+        cat $tmpfile
         echo "--- Expected ---"
-        cat "$output_file"
+        cat $output_file
+        echo ""
+        echo "--- Diff ---"
+        diff -y <(echo "$output") "$output_file"
+        echo $?
+        echo ""
+        diff -c <(echo "$output") "$output_file"
+        echo $?echo $?
+        echo ""
+        diff -u <(echo "$output") "$output_file"
+        echo $?
+        exit -1
       fi
     else
       echo "!!!! FATAL !!!! Output file $output_file not found for $file."
@@ -76,28 +103,30 @@ for file in $(find $folder -type f -name "*.sl"); do
   else
     # If the command failed, compare the error with the .error file
     if [ -f "$error_file" ]; then
-      diff <(echo "$output" | tr -d '\r') <(cat "$error_file" | tr -d '\r') > /dev/null
+      # diff <(echo "$output") "$error_file" > /dev/null
+      diff $tmpfile $error_file
       if [ $? -eq 0 ]; then
-        echo "[OK] Error output for $file matches expected error."
+        echo "[ OK!] Error output for $file matches expected error."
         ((ok++))
-
-      elif diff <(sed -e '${/^$/d}' <(echo "$output" | tr -d '\r')) <(sed -e '${/^$/d}' <(cat "$output_file" | tr -d '\r')) > /dev/null; then
-        echo "[OK] Error for $file matches expected output. TRAILING cr or something like that?"
-        echo "[?] $file" >> suspicious.log
-        echo "--- Got ---"
-        echo "$output"
-        echo "--- Expected ---"
-        cat "$output_file"
-        ((ok++))
-
       else
         echo "[ERROR] Error output for $file does not match expected error!"
         echo "[ERROR] $file" >> wrong_stderr.log
         ((fail++))
         echo "--- Got ---"
-        echo "$output"
+        cat $tmpfile
         echo "--- Expected ---"
-        cat "$error_file"
+        cat $error_file
+        echo ""
+        echo "--- Diff ---"
+        diff -y <(echo "$output") "$error_file"
+        echo $?
+        echo ""
+        diff -c <(echo "$output") "$error_file"
+        echo $?echo $?
+        echo ""
+        diff -u <(echo "$output") "$error_file"
+        echo $?
+        exit -1
       fi
     else
       echo "!!!! FATAL !!!!!: Error file $error_file not found for $file."
