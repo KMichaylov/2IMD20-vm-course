@@ -45,19 +45,19 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.strings.TruffleString;
+import com.oracle.truffle.sl.SLException;
+import com.oracle.truffle.sl.SLLanguage;
 
-/**
- * Built-in function that queries if the foreign object has a size. See
- * <link>Messages.HAS_SIZE</link>.
- */
-@NodeInfo(shortName = "hasSize")
-public abstract class SLHasSizeBuiltin extends SLBuiltinNode {
+
+@NodeInfo(shortName = "subString")
+public abstract class SLStringSubstringBuiltin extends SLBuiltinNode {
 
     @Specialization(limit = "3")
-    public boolean hasSize(Object obj, @CachedLibrary("obj") InteropLibrary arrays) {
+    public TruffleString hasSize(Object obj, Number from, Number to) {
         if (obj instanceof TruffleString) {
-            return true;
+            String sub = ((TruffleString) obj).toJavaStringUncached().substring(from.intValue(), to.intValue());
+            return TruffleString.fromJavaStringUncached(sub, SLLanguage.STRING_ENCODING);
         }
-        return arrays.hasArrayElements(obj);
+        throw new SLException("Not a string: cannot substring", this);
     }
 }
