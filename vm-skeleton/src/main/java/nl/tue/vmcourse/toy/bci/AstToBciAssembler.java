@@ -5,10 +5,23 @@ import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class AstToBciAssembler {
 
     private static boolean isArgument = false;
+
+    private static final Map<String, Opcode> BUILTIN_FUNCTIONS = Map.of(
+            "println", Opcode.OP_PRINT,
+            "typeOf", Opcode.OP_TYPEOF,
+            "isInstance", Opcode.OP_IS_INSTANCE,
+            "nanoTime", Opcode.OP_NANO_TIME,
+            "eval", Opcode.OP_EVAL,
+            "getSize", Opcode.OP_GET_SIZE,
+            "stacktrace", Opcode.OP_STACKTRACE
+    );
 
     /**
      * We send the code to the ToyBciLoop to execute the bytecode commands.
@@ -75,9 +88,7 @@ public class AstToBciAssembler {
                     readNode.getFrameSlot(),
                     false
             );
-        }
-//            TODO: Check how to read functional arguments, consult books
-        else if (node instanceof ToyReadArgumentNode readArgumentNode) {
+        } else if (node instanceof ToyReadArgumentNode readArgumentNode) {
             int parameterCount = readArgumentNode.getParameterCount();
             bytecode.addVariableInstruction(Opcode.OP_LOAD, parameterCount, null, parameterCount, false);
         }
@@ -107,9 +118,7 @@ public class AstToBciAssembler {
         } else if (node instanceof ToyBooleanLiteralNode booleanLiteralNode) {
             literalNodeHelper(booleanLiteralNode.isValue(), Opcode.OP_LITERAL_BOOLEAN, bytecode);
 
-        }
-        // Actually, mostly, they don't pass a bigint in the AST, so I need to check it in the long literal and there determine what happens
-        else if (node instanceof ToyBigIntegerLiteralNode bigIntegerLiteralNode) {
+        } else if (node instanceof ToyBigIntegerLiteralNode bigIntegerLiteralNode) {
             literalNodeHelper(bigIntegerLiteralNode.getBigInteger(), Opcode.OP_LITERAL_BIGINT, bytecode);
 
         } else if (node instanceof ToyAddNode addNode)
@@ -126,11 +135,7 @@ public class AstToBciAssembler {
             binaryInstructionHelperGenerator(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_LOGICAL_AND, bytecode, 0);
         } else if (node instanceof ToyLogicalOrNode logicalOrNode) {
             binaryInstructionHelperGenerator(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_LOGICAL_OR, bytecode, 0);
-        }
-
-        // Operations regarding the execution of loops
-
-        else if (node instanceof ToyContinueNode) {
+        } else if (node instanceof ToyContinueNode) {
             int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
             bytecode.addContinueJump(continueJumpIndex);
         } else if (node instanceof ToyBreakNode) {
@@ -161,14 +166,10 @@ public class AstToBciAssembler {
                 isArgument = true;
                 generateBytecode(expression, bytecode);
             }
-//                TODO: Should also check here what type the function is (extract into separate method)
             if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
-                String functionName = checkFunctionNameForBuiltin(bytecode, functionNode);
+                String functionName = functionNode.getName();
                 addFunctionToBytecode(bytecode, invokeNode, functionName);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode readLocalVariableNode) {
-                //TODO HERE WE GO FOR FUNCTION LITERALS
-//                int frameSlot = readLocalVariableNode.getFrameSlot();
-//                        bytecode.addVariableInstruction(Opcode.OP_LOAD, frameSlot, null, frameSlot, false);
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode readPropertyNode) {
                 generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
@@ -177,44 +178,12 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
             }
 
-            // TODO This is ugly code, refactor when you have time to be more robust. The problem came from the fact that the object can have string and number properties
         } else if (node instanceof ToyReadPropertyNode readPropertyNode) {
-            generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
-            // Sometimes AST property nodes are not assigned to a variable name but just to frame slot.
-            if (readPropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
-                String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
-                int propertyIndex = bytecode.addToConstantPool(propertyName);
-                bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
-            } else if (readPropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
-                Long propertyArrayValue = ((ToyLongLiteralNode) readPropertyNode.getNameNode()).getValue();
-                int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
-                bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
-            } else {
-                generateBytecode(readPropertyNode.getNameNode(), bytecode);
-                bytecode.addInstruction(Opcode.OP_GET_PROPERTY, 0);
-            }
+            readObjectProperty(readPropertyNode, bytecode);
         } else if (node instanceof ToyWritePropertyNode writePropertyNode) {
-            isArgument = false;
-            generateBytecode(writePropertyNode.getReceiverNode(), bytecode);
-            generateBytecode(writePropertyNode.getValueNode(), bytecode);
-            if (writePropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
-                String propertyName = ((ToyStringLiteralNode) writePropertyNode.getNameNode()).getValue();
-                int propertyIndex = bytecode.addToConstantPool(propertyName);
-                bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
-            } else if (writePropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
-                Long propertyArrayValue = ((ToyLongLiteralNode) writePropertyNode.getNameNode()).getValue();
-                int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
-                bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
-            } else {
-                generateBytecode(writePropertyNode.getNameNode(), bytecode);
-                bytecode.addInstruction(Opcode.OP_SET_PROPERTY, 0);
-            }
-        }
-
-        // TODO: Check if this breaks the built-in functions
-        // TODO: Check how to handle function literals
-        else if (node instanceof ToyFunctionLiteralNode functionLiteralNode) {
-            String functionName = checkFunctionNameForBuiltin(bytecode, functionLiteralNode);
+            writeObjectProperty(writePropertyNode, bytecode);
+        } else if (node instanceof ToyFunctionLiteralNode functionLiteralNode) {
+            String functionName = functionLiteralNode.getName();
             if (!isBuiltInFunctionForTypeChecking(functionName)) {
                 literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
 
@@ -238,7 +207,6 @@ public class AstToBciAssembler {
                 jumpToEndLocation = bytecode.addInstruction(Opcode.OP_JUMP, -1);
             }
 
-            // location for the else part or the end of the if statement
             int elseOrEndLocation = bytecode.getSize();
             bytecode.updateInstruction(jumpIfFalseLocation, elseOrEndLocation - jumpIfFalseLocation - 1);
 
@@ -256,16 +224,12 @@ public class AstToBciAssembler {
 
             generateBytecode(whileNode.getBodyNode(), bytecode);
 
-            // Go back to the beginning of the loop while iterating the loop
             bytecode.addInstruction(Opcode.OP_JUMP, loopStart - bytecode.getSize() - 1);
 
-            // After traversing the whole loop, get the final location
             int loopEnd = bytecode.getSize();
 
-            // Ensures that in case of a false condition, we can continue with the next statements outside the loop
             bytecode.updateInstruction(jumpIfFalseLocation, loopEnd - jumpIfFalseLocation - 1);
 
-            // Update the jumps for continue and break to point to the correct locations
             bytecode.updateContinueJumps(loopStart);
             bytecode.updateBreakJumps(loopEnd);
         } else if (node instanceof ToyReturnNode returnNode) {
@@ -279,55 +243,13 @@ public class AstToBciAssembler {
 
     }
 
-    /**
-     * A helper method to check the type of the function.
-     *
-     * @param bytecode     the bytecode array where the instruction will be added
-     * @param functionNode the node where function information is stored
-     * @return the type of the function
-     */
-
-    private static String checkFunctionNameForBuiltin(Bytecode bytecode, ToyFunctionLiteralNode functionNode) {
-        switch (functionNode.getName()) {
-//            TODO: Add the other built-in functions here
-            // The cases check for built-in functions
-            case "println" -> {
-                return "println";
-            }
-            case "typeOf" -> {
-                return "typeOf";
-            }
-            case "isInstance" -> {
-                return "isInstance";
-            }
-            case "nanoTime" -> {
-                return "nanoTime";
-            }
-            case "eval" -> {
-                return "eval";
-            }
-            case "getSize" -> {
-                return "getSize";
-            }
-            case "stacktrace" -> {
-                return "stacktrace";
-            }
-            default -> {
-                return functionNode.getName();
-            }
-        }
-    }
-
     private static void addFunctionToBytecode(Bytecode bytecode, ToyInvokeNode invokeNode, String functionName) {
         switch (functionName) {
-//            TODO: Add the other built-in functions here
-            // The cases check for built-in functions
             case "println" -> bytecode.addInstruction(Opcode.OP_PRINT, 0);
             case "typeOf" -> bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
             case "isInstance" -> bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
             case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
             case "eval" -> {
-                // TODO Continue from here for the eval
                 ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[1];
                 generateBytecode(codeData, bytecode);
                 bytecode.addInstruction(Opcode.OP_EVAL, 0);
@@ -363,12 +285,7 @@ public class AstToBciAssembler {
      * @return true if function is built-in, false otherwise
      */
     private static boolean isBuiltInFunction(String functionName) {
-        boolean result;
-        switch (functionName) {
-            case "println", "typeOf", "isInstance", "nanoTime", "eval", "getSize", "stacktrace" -> result = true;
-            default -> result = false;
-        }
-        return result;
+        return BUILTIN_FUNCTIONS.containsKey(functionName);
     }
 
     /**
@@ -414,6 +331,41 @@ public class AstToBciAssembler {
         generateBytecode(leftNode, bytecode);
         generateBytecode(rightNode, bytecode);
         bytecode.addInstruction(opcode, operand);
+    }
+
+
+    private static void readObjectProperty(ToyReadPropertyNode readPropertyNode, Bytecode bytecode) {
+        generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
+        if (readPropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
+            String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
+            int propertyIndex = bytecode.addToConstantPool(propertyName);
+            bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
+        } else if (readPropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
+            Long propertyArrayValue = ((ToyLongLiteralNode) readPropertyNode.getNameNode()).getValue();
+            int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
+            bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
+        } else {
+            generateBytecode(readPropertyNode.getNameNode(), bytecode);
+            bytecode.addInstruction(Opcode.OP_GET_PROPERTY, 0);
+        }
+    }
+
+    private static void writeObjectProperty(ToyWritePropertyNode writePropertyNode, Bytecode bytecode) {
+        isArgument = false;
+        generateBytecode(writePropertyNode.getReceiverNode(), bytecode);
+        generateBytecode(writePropertyNode.getValueNode(), bytecode);
+        if (writePropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
+            String propertyName = ((ToyStringLiteralNode) writePropertyNode.getNameNode()).getValue();
+            int propertyIndex = bytecode.addToConstantPool(propertyName);
+            bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
+        } else if (writePropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
+            Long propertyArrayValue = ((ToyLongLiteralNode) writePropertyNode.getNameNode()).getValue();
+            int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
+            bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
+        } else {
+            generateBytecode(writePropertyNode.getNameNode(), bytecode);
+            bytecode.addInstruction(Opcode.OP_SET_PROPERTY, 0);
+        }
     }
 
 }
