@@ -97,7 +97,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
                         } else {
                             locals.add(frameSlot, stack.pop());
-                            bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
+                            // We do this only for array properties, to update the index.
+                            if(!(locals.get(frameSlot) instanceof Boolean))
+                                bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
 
                         }
                     }
