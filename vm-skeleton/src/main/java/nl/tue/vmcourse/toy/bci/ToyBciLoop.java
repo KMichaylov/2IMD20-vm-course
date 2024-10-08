@@ -72,7 +72,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (frame.getArguments().length > 0 && frame.getArguments()[0] instanceof GlobalScope) {
             globalScope = (GlobalScope) frame.getArguments()[0];
         }
-        bytecode.printBytecode();
+//        bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
             Instruction instr = bytecode.getInstruction(pc);
             Opcode opcode = instr.getOpcode();
@@ -98,7 +98,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         } else {
                             locals.add(frameSlot, stack.pop());
                             // We do this only for array properties, to update the index.
-                            if(!(locals.get(frameSlot) instanceof Boolean))
+                            if (!(locals.get(frameSlot) instanceof Boolean))
                                 bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
 
                         }
@@ -111,6 +111,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_MUL -> performArithmeticOperations(stack, "MUL");
 
                 case OP_LOGICAL_AND -> {
+                    if (stack.size() < 2) {
+                        stack.push(false);
+                        break;
+                    }
                     Object left = stack.pop();
                     Object right = stack.pop();
                     if (left.equals(true) && right.equals(true)) {
@@ -121,6 +125,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_LOGICAL_OR -> {
+                    if (stack.size() < 2) {
+                        stack.push(true);
+                        break;
+                    }
                     Object left = stack.pop();
                     Object right = stack.pop();
                     if (left.equals(true) || right.equals(true)) {
@@ -192,7 +200,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     pc += operand;
                 }
                 case OP_JUMP_IF_FALSE -> {
-                    if (!((Boolean) stack.pop())) {
+                    if (!((Boolean) stack.peek())) {
+                        pc += operand;
+                    }
+                }
+                case OP_JUMP_IF_TRUE -> {
+                    if ((Boolean) stack.peek()) {
                         pc += operand;
                     }
                 }
@@ -352,7 +365,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
     /**
      * Method which performs the arithmetic operations.
-     * @param stack where the values are stored
+     *
+     * @param stack     where the values are stored
      * @param operation the corresponding arithmetic operation
      */
     private void performArithmeticOperations(Stack<Object> stack, String operation) {

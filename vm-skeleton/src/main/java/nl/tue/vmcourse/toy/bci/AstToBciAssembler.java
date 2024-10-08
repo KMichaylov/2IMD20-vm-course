@@ -5,9 +5,7 @@ import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
 
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class AstToBciAssembler {
 
@@ -122,19 +120,17 @@ public class AstToBciAssembler {
             literalNodeHelper(bigIntegerLiteralNode.getBigInteger(), Opcode.OP_LITERAL_BIGINT, bytecode);
 
         } else if (node instanceof ToyAddNode addNode)
-            binaryInstructionHelperGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
+            binaryInstructionGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
         else if (node instanceof ToySubNode subNode)
-            binaryInstructionHelperGenerator(subNode.getLeftUnboxed(), subNode.getRightUnboxed(), Opcode.OP_SUB, bytecode, 0);
+            binaryInstructionGenerator(subNode.getLeftUnboxed(), subNode.getRightUnboxed(), Opcode.OP_SUB, bytecode, 0);
         else if (node instanceof ToyDivNode divNode)
-            binaryInstructionHelperGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
+            binaryInstructionGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
         else if (node instanceof ToyMulNode mulNode)
-            binaryInstructionHelperGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
-
-            // Boolean operations: TODO: If the left part is false, then we don't look at the right part
+            binaryInstructionGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
         else if (node instanceof ToyLogicalAndNode logicalAndNode) {
-            binaryInstructionHelperGenerator(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_LOGICAL_AND, bytecode, 0);
+            binaryInstructionFixerForBooleans(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_JUMP_IF_FALSE, Opcode.OP_LOGICAL_AND, bytecode, 0);
         } else if (node instanceof ToyLogicalOrNode logicalOrNode) {
-            binaryInstructionHelperGenerator(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_LOGICAL_OR, bytecode, 0);
+            binaryInstructionFixerForBooleans(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_JUMP_IF_TRUE, Opcode.OP_LOGICAL_OR, bytecode, 0);
         } else if (node instanceof ToyContinueNode) {
             int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
             bytecode.addContinueJump(continueJumpIndex);
@@ -272,10 +268,29 @@ public class AstToBciAssembler {
      * @param bytecode  the bytecode array where bytecode instructions are added
      * @param operand   0 for number arithmetic 1 for string arithmetic
      */
-    private static void binaryInstructionHelperGenerator(ToyNode leftNode, ToyNode rightNode, Opcode opcode, Bytecode bytecode, int operand) {
+    private static void binaryInstructionGenerator(ToyNode leftNode, ToyNode rightNode, Opcode opcode, Bytecode bytecode, int operand) {
         generateBytecode(leftNode, bytecode);
         generateBytecode(rightNode, bytecode);
         bytecode.addInstruction(opcode, operand);
+    }
+
+
+    /**
+     * The following is a helper method to generate bytecode for boolean operations. It uses the short-circuit evaluation.
+     *
+     * @param leftNode              the left node
+     * @param rightNode             the right node
+     * @param opcodeJumpInstruction the corresponding opcode of the operation (JUMP_IF_TRUE or JUMP_IF_FALSE)
+     * @param operation             the corresponding opcode of the operation (LOGICAL_AND or LOGICAL_OR)
+     * @param bytecode              the bytecode array where bytecode instructions are added
+     * @param operand               0 for number arithmetic 1 for string arithmetic
+     */
+    private static void binaryInstructionFixerForBooleans(ToyNode leftNode, ToyNode rightNode, Opcode opcodeJumpInstruction, Opcode operation, Bytecode bytecode, int operand) {
+        generateBytecode(leftNode, bytecode);
+        int jumpIfTrueLocation = bytecode.addInstruction(opcodeJumpInstruction, -1);
+        generateBytecode(rightNode, bytecode);
+        bytecode.updateInstruction(jumpIfTrueLocation, bytecode.getSize() - jumpIfTrueLocation - 1);
+        bytecode.addInstruction(operation, 0);
     }
 
     /**
