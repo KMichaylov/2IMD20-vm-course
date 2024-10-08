@@ -290,6 +290,26 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
 
+                case OP_HAS_PROPERTY -> {
+                    Object propertyName = stack.pop();
+                    Object receiver = stack.pop();
+                    if (receiver instanceof Map) {
+                        stack.push(((Map<?, ?>) receiver).containsKey(propertyName));
+                    }
+                }
+
+                case OP_DELETE_PROPERTY -> {
+                    Object propertyName = stack.pop();
+                    Object receiver = stack.pop();
+                    if (receiver instanceof Map) {
+                        if (stack.push(((Map<?, ?>) receiver).remove(propertyName)) != null) {
+                            stack.push(true);
+                        } else {
+                            stack.push(false);
+                        }
+                    }
+                }
+
 
                 case OP_EVAL -> {
                     Object obj = stack.pop();

@@ -11,16 +11,18 @@ public class AstToBciAssembler {
 
     private static boolean isArgument = false;
 
-    private static final Map<String, Opcode> BUILTIN_FUNCTIONS = Map.of(
-            "println", Opcode.OP_PRINT,
-            "typeOf", Opcode.OP_TYPEOF,
-            "isInstance", Opcode.OP_IS_INSTANCE,
-            "nanoTime", Opcode.OP_NANO_TIME,
-            "eval", Opcode.OP_EVAL,
-            "getSize", Opcode.OP_GET_SIZE,
-            "stacktrace", Opcode.OP_STACKTRACE,
-            "hasSize", Opcode.OP_HAS_SIZE,
-            "subString", Opcode.OP_SUB_STRING
+    private static final Map<String, Opcode> BUILTIN_FUNCTIONS = Map.ofEntries(
+            Map.entry("println", Opcode.OP_PRINT),
+            Map.entry("typeOf", Opcode.OP_TYPEOF),
+            Map.entry("isInstance", Opcode.OP_IS_INSTANCE),
+            Map.entry("nanoTime", Opcode.OP_NANO_TIME),
+            Map.entry("eval", Opcode.OP_EVAL),
+            Map.entry("getSize", Opcode.OP_GET_SIZE),
+            Map.entry("stacktrace", Opcode.OP_STACKTRACE),
+            Map.entry("hasSize", Opcode.OP_HAS_SIZE),
+            Map.entry("subString", Opcode.OP_SUB_STRING),
+            Map.entry("hasProperty", Opcode.OP_HAS_PROPERTY),
+            Map.entry("deleteProperty", Opcode.OP_DELETE_PROPERTY)
     );
 
     /**
@@ -258,6 +260,16 @@ public class AstToBciAssembler {
             case "stacktrace" -> bytecode.addInstruction(Opcode.OP_STACKTRACE, 0);
             case "hasSize" -> bytecode.addInstruction(Opcode.OP_HAS_SIZE, 0);
             case "subString" -> bytecode.addInstruction(Opcode.OP_SUB_STRING, 0);
+            case "hasProperty" -> {
+                generateBytecode(invokeNode.getToyExpressionNodes()[0], bytecode);
+                generateBytecode(invokeNode.getToyExpressionNodes()[1], bytecode);
+                bytecode.addInstruction(Opcode.OP_HAS_PROPERTY, 0);
+            }
+            case "deleteProperty" -> {
+                generateBytecode(invokeNode.getToyExpressionNodes()[0], bytecode);
+                generateBytecode(invokeNode.getToyExpressionNodes()[1], bytecode);
+                bytecode.addInstruction(Opcode.OP_DELETE_PROPERTY, 0);
+            }
             // The operand is the number of arguments
             default -> bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
         }
@@ -317,7 +329,7 @@ public class AstToBciAssembler {
         boolean result;
         switch (functionName) {
             case "println", "typeOf", "isInstance", "nanoTime", "eval", "getSize", "stacktrace", "new", "exit",
-                 "hasSize", "subString" -> result = true;
+                 "hasSize", "subString", "hasProperty", "deleteProperty" -> result = true;
             default -> result = false;
         }
         return result;
