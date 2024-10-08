@@ -258,13 +258,22 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (obj instanceof Map<?, ?>) {
                         stack.pop();
                         stack.push(((Map<?, ?>) obj).size());
-                    } if(obj instanceof String){
+                    }
+                    if (obj instanceof String) {
                         stack.pop();
                         stack.push(((String) obj).length());
                     }
                 }
 
-                case OP_HAS_SIZE -> {}
+                case OP_HAS_SIZE -> {
+                    Object obj = stack.pop();
+                    if (obj instanceof Map || obj instanceof String) {
+                        stack.push(true);
+                    } else {
+                        stack.push(false);
+                    }
+
+                }
 
                 case OP_SUB_STRING -> {
                     Object endObj = stack.pop();
@@ -276,11 +285,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         int end = Math.toIntExact((Long) endObj);
                         stack.push(((String) strObj).substring(start, end));
                     } else {
-                        System.out.println("Invalid types: cannot substring");
+                        System.out.println("Not a string: cannot substring");
                         return null;
                     }
                 }
-
 
 
                 case OP_EVAL -> {
