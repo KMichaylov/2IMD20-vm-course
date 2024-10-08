@@ -57,6 +57,8 @@ public enum Opcode {
     OP_GET_SIZE((byte) 0x26),
     OP_HAS_SIZE((byte) 0x28),
     OP_SUB_STRING((byte) 0x29),
+    OP_HAS_PROPERTY((byte) 0x2D),
+    OP_DELETE_PROPERTY((byte) 0x2E),
 
     // For object support
     OP_NEW((byte) 0x2A),
