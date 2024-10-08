@@ -98,7 +98,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         } else {
                             locals.add(frameSlot, stack.pop());
                             // We do this only for array properties, to update the index.
-                            if (!(locals.get(frameSlot) instanceof Boolean))
+                            if (!(locals.get(frameSlot) instanceof Boolean) && !(locals.get(frameSlot) instanceof String))
                                 bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
 
                         }
@@ -258,6 +258,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (obj instanceof Map<?, ?>) {
                         stack.pop();
                         stack.push(((Map<?, ?>) obj).size());
+                    } if(obj instanceof String){
+                        stack.pop();
+                        stack.push(((String) obj).length());
                     }
                 }
 
