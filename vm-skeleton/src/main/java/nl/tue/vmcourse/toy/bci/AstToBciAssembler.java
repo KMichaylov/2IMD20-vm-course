@@ -18,7 +18,9 @@ public class AstToBciAssembler {
             "nanoTime", Opcode.OP_NANO_TIME,
             "eval", Opcode.OP_EVAL,
             "getSize", Opcode.OP_GET_SIZE,
-            "stacktrace", Opcode.OP_STACKTRACE
+            "stacktrace", Opcode.OP_STACKTRACE,
+            "hasSize", Opcode.OP_HAS_SIZE,
+            "subString", Opcode.OP_SUB_STRING
     );
 
     /**
@@ -254,6 +256,8 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_GET_SIZE, 0);
             }
             case "stacktrace" -> bytecode.addInstruction(Opcode.OP_STACKTRACE, 0);
+            case "hasSize" -> bytecode.addInstruction(Opcode.OP_HAS_SIZE, 0);
+            case "subString" -> bytecode.addInstruction(Opcode.OP_SUB_STRING, 0);
             // The operand is the number of arguments
             default -> bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
         }
@@ -312,8 +316,8 @@ public class AstToBciAssembler {
     private static boolean isBuiltInFunctionForTypeChecking(String functionName) {
         boolean result;
         switch (functionName) {
-            case "println", "typeOf", "isInstance", "nanoTime", "eval", "getSize", "stacktrace", "new", "exit" ->
-                    result = true;
+            case "println", "typeOf", "isInstance", "nanoTime", "eval", "getSize", "stacktrace", "new", "exit",
+                 "hasSize", "subString" -> result = true;
             default -> result = false;
         }
         return result;

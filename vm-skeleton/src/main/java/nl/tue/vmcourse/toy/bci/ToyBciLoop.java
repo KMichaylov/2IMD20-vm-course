@@ -264,6 +264,25 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
 
+                case OP_HAS_SIZE -> {}
+
+                case OP_SUB_STRING -> {
+                    Object endObj = stack.pop();
+                    Object startObj = stack.pop();
+                    Object strObj = stack.pop();
+
+                    if (strObj instanceof String && startObj instanceof Long && endObj instanceof Long) {
+                        int start = Math.toIntExact((Long) startObj);
+                        int end = Math.toIntExact((Long) endObj);
+                        stack.push(((String) strObj).substring(start, end));
+                    } else {
+                        System.out.println("Invalid types: cannot substring");
+                        return null;
+                    }
+                }
+
+
+
                 case OP_EVAL -> {
                     Object obj = stack.pop();
                     Object answer = evalStream(CharStreams.fromString((String) obj));

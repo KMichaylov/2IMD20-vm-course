@@ -55,6 +55,8 @@ public enum Opcode {
     OP_STACKTRACE((byte) 0x1F),
     OP_EVAL((byte) 0x25),
     OP_GET_SIZE((byte) 0x26),
+    OP_HAS_SIZE((byte) 0x28),
+    OP_SUB_STRING((byte) 0x29),
 
     // For object support
     OP_NEW((byte) 0x2A),
