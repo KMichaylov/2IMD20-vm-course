@@ -4,11 +4,13 @@ This folder contains a basic docker image that we will be using to run and repro
 
 ## Building and installing
 
-From the root folder of the git repository, run the following command to create your Docker image:
+From the _root folder_ of the git repository, run the following command to create your Docker image:
 
 ```
 $ sudo docker build -f docker/Dockerfile  --progress=plain --platform=linux/amd64  -t my-ubuntu-image .
 ```
+
+_Note: this command would work on Linux and on Mac OS, but on windows the command is probably different._
 
 The `--platform=linux/amd64` flag is not needed if you are on x86 (but it is needed on Apple silicon).
 

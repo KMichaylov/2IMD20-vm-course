@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
- * Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
- */
-
 function fib(num) { 
   if (num < 1) {return 0;}
   n1 = 0;
@@ -17,10 +12,35 @@ function fib(num) {
   return n2;
 }
 
-function main() {  
-  i = 1;
-  while (i <= 10) {
-    println(i + ": " + fib(i));
-    i = i + 1;
-  }
+function benchmark() {
+  fib(8384);
 }  
+
+function main() {
+  //
+  // benchmark constants
+  //
+  ITERATIONS = 10000;
+  MEASURE_FROM = 8000;
+  NAME = "Fibonacci";
+
+  //
+  // harness
+  //
+  time = 0;
+  it = 0;
+
+  while (it < ITERATIONS) {
+    s = nanoTime();
+    benchmark();
+    e = nanoTime() - s;
+    if (it >= MEASURE_FROM) {
+      time = time + e;
+    }
+    it = it + 1;
+  }
+
+  avg = time / (ITERATIONS - MEASURE_FROM);
+  // Make sure you print the final result -- and no other things!
+  println(NAME + ": " + avg);
+}
