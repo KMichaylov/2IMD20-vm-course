@@ -19,15 +19,19 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private final Bytecode bytecode;
     private final List<Object> locals;
     private static GlobalScope globalScope;
+    private final Map<String, Object> stackTraceElements;
+    private String currentFunctionName;
 
     /**
      * Bytecode are the bytecode instructions from the generator and locals are all the elements for the local scope
      *
      * @param bytecode
      */
-    public ToyBciLoop(Bytecode bytecode) {
+    public ToyBciLoop(Bytecode bytecode, Map<String, Object> stackTraceElements) {
         this.bytecode = bytecode;
         this.locals = new ArrayList<>();
+        this.stackTraceElements = stackTraceElements;
+        this.currentFunctionName = "main";
     }
 
     /**
@@ -102,6 +106,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
 
                         }
+                        stackTraceElements.replace(instr.getVariableName(), locals.get(frameSlot));
                     }
 
                 }
@@ -248,6 +253,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 case OP_STACKTRACE -> {
                     // TODO: Implement this
+                    String stackTrace = generateStackTrace(currentFunctionName);
+                    stack.push(stackTrace);
                 }
                 case OP_NANO_TIME -> {
                     stack.push(System.nanoTime());
@@ -367,6 +374,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (function == null) {
                         throw new RuntimeException("Function not found: " + functionName);
                     }
+
+                    currentFunctionName = functionName;
 
                     // Create a new frame with the arguments
                     VirtualFrame newFrame = new VirtualFrame(args);
@@ -722,6 +731,24 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return functionToEvaluate.invoke(globalScope);
         }
         return null;
+    }
+
+
+    /**
+     * Generates the string represantation of the stack trace
+     *
+     * @param functionName the name of the current function in the frame scope
+     * @return the string representation
+     */
+    public String generateStackTrace(String functionName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Frame: root ").append(functionName);
+        for (Map.Entry<String, Object> entry : stackTraceElements.entrySet()) {
+            String varName = entry.getKey();
+            Object value = entry.getValue();
+            sb.append(", ").append(varName).append("=").append(value == null ? "null" : value.toString());
+        }
+        return sb.toString();
     }
 
 }

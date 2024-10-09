@@ -5,12 +5,16 @@ import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AstToBciAssembler {
 
     private static boolean isArgument = false;
 
+    // Todo add as an optimization the ability to scan the file to see if there is any stacktrace in the source.
+    private static final Map<String, Object> stackTraceElements = new LinkedHashMap<>();
     private static final Map<String, Opcode> BUILTIN_FUNCTIONS = Map.ofEntries(
             Map.entry("println", Opcode.OP_PRINT),
             Map.entry("typeOf", Opcode.OP_TYPEOF),
@@ -34,7 +38,7 @@ public class AstToBciAssembler {
     public static ToyAbstractFunctionBody build(ToyStatementNode methodBlock) {
         Bytecode bytecode = compileAst(methodBlock);
         // TODO code is one argument; depending in impl other arguments might be needed (e.g., constant pool?)
-        return new ToyBciLoop(bytecode);
+        return new ToyBciLoop(bytecode, stackTraceElements);
     }
 
     /**
@@ -74,6 +78,7 @@ public class AstToBciAssembler {
             if (writeNode.getValueNode() instanceof ToyReadArgumentNode) {
                 return;
             }
+            stackTraceElements.put(variableName, null);
 
             bytecode.addVariableInstruction(
                     Opcode.OP_STORE,
@@ -160,6 +165,8 @@ public class AstToBciAssembler {
                     // Here, we add the function name, so that the function can be executed.
                     int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
                     bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
+                    stackTraceElements.put(functionName, null);
+
                 }
             }
             for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
@@ -365,6 +372,11 @@ public class AstToBciAssembler {
     }
 
 
+    /**
+     * The helper method is used to read the object property.
+     * @param readPropertyNode the node containing information about the property that will be read
+     * @param bytecode array where all instructions are stored
+     */
     private static void readObjectProperty(ToyReadPropertyNode readPropertyNode, Bytecode bytecode) {
         generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
         if (readPropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
@@ -381,6 +393,12 @@ public class AstToBciAssembler {
         }
     }
 
+
+    /**
+     * The helper method is used to write the object property.
+     * @param writePropertyNode the node containing information about the property
+     * @param bytecode array where all instructions are stored
+     */
     private static void writeObjectProperty(ToyWritePropertyNode writePropertyNode, Bytecode bytecode) {
         isArgument = false;
         generateBytecode(writePropertyNode.getReceiverNode(), bytecode);
