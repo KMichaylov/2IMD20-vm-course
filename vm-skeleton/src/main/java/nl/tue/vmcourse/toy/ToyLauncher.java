@@ -1,5 +1,6 @@
 package nl.tue.vmcourse.toy;
 
+import nl.tue.vmcourse.toy.interpreter.ToySyntaxErrorException;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 import nl.tue.vmcourse.toy.parser.ToyLangLexer;
@@ -43,6 +44,8 @@ public class ToyLauncher {
         ToyLangParser parser = new ToyLangParser(tokens);
         ToyNodeFactory factory = new ToyNodeFactory(src);
         parser.setFactory(factory);
+        lex.removeErrorListeners();
+        parser.removeErrorListeners();
         parser.addErrorListener(new ToyLangParser.BailoutErrorListener());
         parser.toylanguage();
 
@@ -63,7 +66,11 @@ public class ToyLauncher {
         }
         // TODO, ignores other args for now.
         CharStream charStream = CharStreams.fromFileName(args[args.length - 1]);
-        Object result = evalStream(charStream);
-        System.out.println(result);
+        try {
+            Object result = evalStream(charStream);
+            System.out.println(result);
+        } catch (ToySyntaxErrorException e) {
+            System.err.println(e.getMessage());
+        }
     }
 }

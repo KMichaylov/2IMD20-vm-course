@@ -8,6 +8,7 @@ import java.util.List;
 
 import nl.tue.vmcourse.toy.ast.*;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
+import nl.tue.vmcourse.toy.interpreter.ToySyntaxErrorException;
 
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -133,7 +134,7 @@ public class ToyLangParser extends Parser {
 	    int col = charPositionInLine + 1;
 	    String location = "-- line " + line + " col " + col + ": ";
 	    int length = token == null ? 1 : Math.max(token.getStopIndex() - token.getStartIndex(), 0);
-	    throw new RuntimeException(String.format("Error(s) parsing script:%n" + location + message));
+	    throw new ToySyntaxErrorException(String.format("Error(s) parsing script:%n" + location + message));
 	}
 
 	public ToyLangParser(TokenStream input) {

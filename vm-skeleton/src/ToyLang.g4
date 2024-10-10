@@ -56,6 +56,7 @@ import java.util.Map;
 import interpreter.ast.ToyExpressionNode;
 import interpreter.ast.ToyStatementNode;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
+import nl.tue.vmcourse.toy.interpreter.ToySyntaxErrorException;
 }
 
 @lexer::header
@@ -91,7 +92,7 @@ private static void throwParseError(int line, int charPositionInLine, Token toke
     int col = charPositionInLine + 1;
     String location = "-- line " + line + " col " + col + ": ";
     int length = token == null ? 1 : Math.max(token.getStopIndex() - token.getStartIndex(), 0);
-    throw new RuntimeException(String.format("Error(s) parsing script:%n" + location + message));
+    throw new ToySyntaxErrorException(String.format("Error(s) parsing script:%n" + location + message));
 }
 /*
 public static Map<TruffleString, RootCallTarget> parseSL(SLLanguage language, Source source) {
