@@ -1,8 +1,25 @@
-/*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
- * Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
- */
+function f1()
+{
+	f4();
+	f2();
+}
 
-function main() {
-  3 - "4";
+function f2()
+{
+	f3();
+}
+
+function f3()
+{
+	println(stacktrace());
+}
+
+function f4()
+{
+	f3();
+}
+
+function main()
+{
+	f1();
 }
