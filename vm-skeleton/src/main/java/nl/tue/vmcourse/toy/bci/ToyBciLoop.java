@@ -22,6 +22,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private Map<String, Object> stackTraceElements;
     private static Map<String, Map<String, Object>> stackTracePerFunction;
     private static String currentFunctionName;
+    private static StringBuilder consoleMessages;
 
     /**
      * Bytecode are the bytecode instructions from the generator and locals are all the elements for the local scope
@@ -35,6 +36,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         this.currentFunctionName = "main";
         stackTracePerFunction = new LinkedHashMap<>();
         stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
+        consoleMessages = new StringBuilder();
     }
 
     /**
@@ -220,7 +222,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 case OP_PRINT -> {
                     Object valueToPrint = stack.pop();
-                    System.out.println(valueToPrint);
+                    consoleMessages.append(valueToPrint.toString()).append("\n");
+                    //System.out.println(valueToPrint);
                 }
 
                 case OP_BUILTIN -> {
@@ -415,7 +418,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
         }
         // TODO: decide what to return in the end;
-        return null;
+        return consoleMessages.toString().trim();
     }
 
 
