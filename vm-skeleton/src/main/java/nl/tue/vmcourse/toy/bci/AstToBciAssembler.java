@@ -5,7 +5,6 @@ import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNode;
 
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -63,11 +62,13 @@ public class AstToBciAssembler {
      */
     // TODO: Refactor the whole tree. Continue with it even later.
     private static void generateBytecode(ToyNode node, Bytecode bytecode) {
-        if (node instanceof ToyBlockNode blockNode) {
+        if (node instanceof ToyBlockNode) {
+            ToyBlockNode blockNode = (ToyBlockNode) node;
             for (ToyStatementNode statement : blockNode.getStatements()) {
                 generateBytecode(statement, bytecode);
             }
-        } else if (node instanceof ToyWriteLocalVariableNode writeNode) {
+        } else if (node instanceof ToyWriteLocalVariableNode) {
+            ToyWriteLocalVariableNode writeNode = (ToyWriteLocalVariableNode) node;
             generateBytecode(writeNode.getValueNode(), bytecode);
 
             String variableName = ((ToyStringLiteralNode) writeNode.getNameNode()).getValue();
@@ -87,7 +88,8 @@ public class AstToBciAssembler {
                     writeNode.getFrameSlot(),
                     writeNode.isNewVariable()
             );
-        } else if (node instanceof ToyReadLocalVariableNode readNode) {
+        } else if (node instanceof ToyReadLocalVariableNode) {
+            ToyReadLocalVariableNode readNode = (ToyReadLocalVariableNode) node;
             bytecode.addVariableInstruction(
                     Opcode.OP_LOAD,
                     readNode.getFrameSlot(),
@@ -95,24 +97,31 @@ public class AstToBciAssembler {
                     readNode.getFrameSlot(),
                     false
             );
-        } else if (node instanceof ToyReadArgumentNode readArgumentNode) {
+        } else if (node instanceof ToyReadArgumentNode) {
+            ToyReadArgumentNode readArgumentNode = (ToyReadArgumentNode) node;
             int parameterCount = readArgumentNode.getParameterCount();
             bytecode.addVariableInstruction(Opcode.OP_LOAD, parameterCount, null, parameterCount, false);
         }
 
         // For the comparisons we use the provided AST classes and in case we need > or >=, we just negate the results
-        else if (node instanceof ToyEqualNode equalNode) {
+        else if (node instanceof ToyEqualNode) {
+            ToyEqualNode equalNode = (ToyEqualNode) node;
             comparisonNodeHelper(equalNode.getLeftUnboxed(), equalNode.getRightUnboxed(), Opcode.OP_COMPARE, 0, bytecode);
-        } else if (node instanceof ToyLessThanNode lessThanNode) {
+        } else if (node instanceof ToyLessThanNode) {
+            ToyLessThanNode lessThanNode = (ToyLessThanNode) node;
             comparisonNodeHelper(lessThanNode.getLeftUnboxed(), lessThanNode.getRightUnboxed(), Opcode.OP_COMPARE, 2, bytecode);
-        } else if (node instanceof ToyLessOrEqualNode lessOrEqualNode) {
+        } else if (node instanceof ToyLessOrEqualNode) {
+            ToyLessOrEqualNode lessOrEqualNode = (ToyLessOrEqualNode) node;
             comparisonNodeHelper(lessOrEqualNode.getLeftUnboxed(), lessOrEqualNode.getRightUnboxed(), Opcode.OP_COMPARE, 3, bytecode);
-        } else if (node instanceof ToyLogicalNotNode toyLogicalNotNode) {
+        } else if (node instanceof ToyLogicalNotNode) {
+            ToyLogicalNotNode toyLogicalNotNode = (ToyLogicalNotNode) node;
             generateBytecode(toyLogicalNotNode.getToyLessOrEqualNode(), bytecode);
             bytecode.addInstruction(Opcode.OP_NOT, 0);
-        } else if (node instanceof ToyStringLiteralNode stringLiteralNode) {
+        } else if (node instanceof ToyStringLiteralNode) {
+            ToyStringLiteralNode stringLiteralNode = (ToyStringLiteralNode) node;
             literalNodeHelper(stringLiteralNode.getValue(), Opcode.OP_LITERAL_STRING, bytecode);
-        } else if (node instanceof ToyLongLiteralNode literalNode) {
+        } else if (node instanceof ToyLongLiteralNode) {
+            ToyLongLiteralNode literalNode = (ToyLongLiteralNode) node;
             long value = literalNode.getValue();
             final long LONG_UPPERBOUND = 2147483647;
             if (value < LONG_UPPERBOUND) {
@@ -122,23 +131,31 @@ public class AstToBciAssembler {
                 literalNodeHelper(BigInteger.valueOf(literalNode.getValue()), Opcode.OP_LITERAL_BIGINT, bytecode);
             }
 
-        } else if (node instanceof ToyBooleanLiteralNode booleanLiteralNode) {
+        } else if (node instanceof ToyBooleanLiteralNode) {
+            ToyBooleanLiteralNode booleanLiteralNode = (ToyBooleanLiteralNode) node;
             literalNodeHelper(booleanLiteralNode.isValue(), Opcode.OP_LITERAL_BOOLEAN, bytecode);
 
-        } else if (node instanceof ToyBigIntegerLiteralNode bigIntegerLiteralNode) {
+        } else if (node instanceof ToyBigIntegerLiteralNode) {
+            ToyBigIntegerLiteralNode bigIntegerLiteralNode = (ToyBigIntegerLiteralNode) node;
             literalNodeHelper(bigIntegerLiteralNode.getBigInteger(), Opcode.OP_LITERAL_BIGINT, bytecode);
 
-        } else if (node instanceof ToyAddNode addNode)
+        } else if (node instanceof ToyAddNode) {
+            ToyAddNode addNode = (ToyAddNode) node;
             binaryInstructionGenerator(addNode.getLeftUnboxed(), addNode.getRightUnboxed(), Opcode.OP_ADD, bytecode, 0);
-        else if (node instanceof ToySubNode subNode)
+        } else if (node instanceof ToySubNode) {
+            ToySubNode subNode = (ToySubNode) node;
             binaryInstructionGenerator(subNode.getLeftUnboxed(), subNode.getRightUnboxed(), Opcode.OP_SUB, bytecode, 0);
-        else if (node instanceof ToyDivNode divNode)
+        } else if (node instanceof ToyDivNode) {
+            ToyDivNode divNode = (ToyDivNode) node;
             binaryInstructionGenerator(divNode.getLeftUnboxed(), divNode.getRightUnboxed(), Opcode.OP_DIV, bytecode, 0);
-        else if (node instanceof ToyMulNode mulNode)
+        } else if (node instanceof ToyMulNode) {
+            ToyMulNode mulNode = (ToyMulNode) node;
             binaryInstructionGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
-        else if (node instanceof ToyLogicalAndNode logicalAndNode) {
+        } else if (node instanceof ToyLogicalAndNode) {
+            ToyLogicalAndNode logicalAndNode = (ToyLogicalAndNode) node;
             binaryInstructionFixerForBooleans(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_JUMP_IF_FALSE, Opcode.OP_LOGICAL_AND, bytecode, 0);
-        } else if (node instanceof ToyLogicalOrNode logicalOrNode) {
+        } else if (node instanceof ToyLogicalOrNode) {
+            ToyLogicalOrNode logicalOrNode = (ToyLogicalOrNode) node;
             binaryInstructionFixerForBooleans(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_JUMP_IF_TRUE, Opcode.OP_LOGICAL_OR, bytecode, 0);
         } else if (node instanceof ToyContinueNode) {
             int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
@@ -146,14 +163,17 @@ public class AstToBciAssembler {
         } else if (node instanceof ToyBreakNode) {
             int breakJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
             bytecode.addBreakJump(breakJumpIndex);
-        } else if (node instanceof ToyParenExpressionNode parenExpressionNode) {
+        } else if (node instanceof ToyParenExpressionNode) {
+            ToyParenExpressionNode parenExpressionNode = (ToyParenExpressionNode) node;
             generateBytecode(parenExpressionNode.getExpressionNode(), bytecode);
             bytecode.addInstruction(Opcode.OP_NOP, 0);
         }
 
 //            TODO: Redesign and think of other approaches regarding where to store variables. Main priority for today
-        else if (node instanceof ToyInvokeNode invokeNode) {
-            if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
+        else if (node instanceof ToyInvokeNode) {
+            ToyInvokeNode invokeNode = (ToyInvokeNode) node;
+            if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode) {
+                ToyFunctionLiteralNode functionNode = (ToyFunctionLiteralNode) invokeNode.getFunctionNode();
                 String functionName = functionNode.getName();
                 // TODO This is for support of objects
                 if (functionName.equals("new")) {
@@ -173,23 +193,28 @@ public class AstToBciAssembler {
                 isArgument = true;
                 generateBytecode(expression, bytecode);
             }
-            if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode functionNode) {
+            if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode) {
+                ToyFunctionLiteralNode functionNode = (ToyFunctionLiteralNode) invokeNode.getFunctionNode();
                 String functionName = functionNode.getName();
                 addFunctionToBytecode(bytecode, invokeNode, functionName);
-            } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode readLocalVariableNode) {
+            } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode) {
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
-            } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode readPropertyNode) {
+            } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode) {
+                ToyReadPropertyNode readPropertyNode = (ToyReadPropertyNode) invokeNode.getFunctionNode();
                 generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
                 Object propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
                 int propertyIndex = bytecode.addToConstantPool(propertyName);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
             }
 
-        } else if (node instanceof ToyReadPropertyNode readPropertyNode) {
+        } else if (node instanceof ToyReadPropertyNode) {
+            ToyReadPropertyNode readPropertyNode = (ToyReadPropertyNode) node;
             readObjectProperty(readPropertyNode, bytecode);
-        } else if (node instanceof ToyWritePropertyNode writePropertyNode) {
+        } else if (node instanceof ToyWritePropertyNode) {
+            ToyWritePropertyNode writePropertyNode = (ToyWritePropertyNode) node;
             writeObjectProperty(writePropertyNode, bytecode);
-        } else if (node instanceof ToyFunctionLiteralNode functionLiteralNode) {
+        } else if (node instanceof ToyFunctionLiteralNode) {
+            ToyFunctionLiteralNode functionLiteralNode = (ToyFunctionLiteralNode) node;
             String functionName = functionLiteralNode.getName();
             if (!isBuiltInFunctionForTypeChecking(functionName)) {
                 literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
@@ -202,7 +227,8 @@ public class AstToBciAssembler {
             if (isArgument && isBuiltInFunctionForTypeChecking(functionName)) {
                 literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_BUILTIN, bytecode);
             }
-        } else if (node instanceof ToyIfNode ifNode) {
+        } else if (node instanceof ToyIfNode) {
+            ToyIfNode ifNode = (ToyIfNode) node;
             generateBytecode(ifNode.getConditionNode(), bytecode);
 
             int jumpIfFalseLocation = bytecode.addInstruction(Opcode.OP_JUMP_IF_FALSE, -1);
@@ -222,7 +248,8 @@ public class AstToBciAssembler {
                 int endLocation = bytecode.getSize();
                 bytecode.updateInstruction(jumpToEndLocation, endLocation - jumpToEndLocation - 1);
             }
-        } else if (node instanceof ToyWhileNode whileNode) {
+        } else if (node instanceof ToyWhileNode) {
+            ToyWhileNode whileNode = (ToyWhileNode) node;
             int loopStart = bytecode.getSize();
 
             generateBytecode(whileNode.getConditionNode(), bytecode);
@@ -239,11 +266,14 @@ public class AstToBciAssembler {
 
             bytecode.updateContinueJumps(loopStart);
             bytecode.updateBreakJumps(loopEnd);
-        } else if (node instanceof ToyReturnNode returnNode) {
+        } else if (node instanceof ToyReturnNode) {
+            ToyReturnNode returnNode = (ToyReturnNode) node;
             generateBytecode(returnNode.getValueNode(), bytecode);
             bytecode.addInstruction(Opcode.OP_RETURN, 0);
-        } else if (node instanceof ToyUnboxNode unboxNode) generateBytecode(unboxNode.getLeftNode(), bytecode);
-        else if (node == null) {
+        } else if (node instanceof ToyUnboxNode) {
+            ToyUnboxNode unboxNode = (ToyUnboxNode) node;
+            generateBytecode(unboxNode.getLeftNode(), bytecode);
+        } else if (node == null) {
             System.out.println("Brrrrrrr null value received");
         }
 
@@ -374,8 +404,9 @@ public class AstToBciAssembler {
 
     /**
      * The helper method is used to read the object property.
+     *
      * @param readPropertyNode the node containing information about the property that will be read
-     * @param bytecode array where all instructions are stored
+     * @param bytecode         array where all instructions are stored
      */
     private static void readObjectProperty(ToyReadPropertyNode readPropertyNode, Bytecode bytecode) {
         generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
@@ -396,8 +427,9 @@ public class AstToBciAssembler {
 
     /**
      * The helper method is used to write the object property.
+     *
      * @param writePropertyNode the node containing information about the property
-     * @param bytecode array where all instructions are stored
+     * @param bytecode          array where all instructions are stored
      */
     private static void writeObjectProperty(ToyWritePropertyNode writePropertyNode, Bytecode bytecode) {
         isArgument = false;
