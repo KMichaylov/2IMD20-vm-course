@@ -19,8 +19,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private final Bytecode bytecode;
     private final List<Object> locals;
     private static GlobalScope globalScope;
-    private final Map<String, Object> stackTraceElements;
-    private String currentFunctionName;
+    private Map<String, Object> stackTraceElements;
+    private static Map<String, Map<String, Object>> stackTracePerFunction;
+    private static String currentFunctionName;
 
     /**
      * Bytecode are the bytecode instructions from the generator and locals are all the elements for the local scope
@@ -32,6 +33,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         this.locals = new ArrayList<>();
         this.stackTraceElements = stackTraceElements;
         this.currentFunctionName = "main";
+        stackTracePerFunction = new LinkedHashMap<>();
+        stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
     }
 
     /**
@@ -107,6 +110,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                         }
                         stackTraceElements.replace(instr.getVariableName(), locals.get(frameSlot));
+                        stackTracePerFunction.put(currentFunctionName, stackTraceElements);
                     }
 
                 }
@@ -375,7 +379,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         throw new RuntimeException("Function not found: " + functionName);
                     }
 
+                    // TODO Error here which throws an error, logic should be overall correct.
                     currentFunctionName = functionName;
+                    if (stackTracePerFunction.containsKey(currentFunctionName)) {
+                        stackTracePerFunction.remove(currentFunctionName);
+                        stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
+                    } else {
+                        stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
+                    }
 
                     // Create a new frame with the arguments
                     VirtualFrame newFrame = new VirtualFrame(args);
@@ -383,6 +394,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     // Invoke the function and push the return value onto the stack
                     Object returnValue = function.invoke(newFrame);
                     stack.push(returnValue);
+                    stackTracePerFunction.remove(functionName);
                 }
 
                 case OP_RETURN -> {
@@ -742,13 +754,22 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     public String generateStackTrace(String functionName) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Frame: root ").append(functionName);
-        for (Map.Entry<String, Object> entry : stackTraceElements.entrySet()) {
-            String varName = entry.getKey();
-            Object value = entry.getValue();
-            sb.append(", ").append(varName).append("=").append(value == null ? "null" : value.toString());
+        List<Map.Entry<String, Map<String, Object>>> entryList = new ArrayList<>(stackTracePerFunction.entrySet());
+        if (stackTracePerFunction.get(functionName).isEmpty() && !functionName.equals("main")) {
+            for (int i = stackTracePerFunction.size() - 1; i >= 0; i--) {
+                Map.Entry<String, Map<String, Object>> entry = entryList.get(i);
+                sb.append("Frame: root ").append(entry.getKey()).append("\n");
+            }
+            stackTracePerFunction.put("main", new LinkedHashMap<>());
+        } else {
+            sb.append("Frame: root ").append(functionName);
+            for (Map.Entry<String, Object> entry : stackTraceElements.entrySet()) {
+                String varName = entry.getKey();
+                Object value = entry.getValue();
+                sb.append(", ").append(varName).append("=").append(value == null ? "null" : value.toString());
+            }
         }
-        return sb.toString();
+        return sb.toString().trim();
     }
 
 }
