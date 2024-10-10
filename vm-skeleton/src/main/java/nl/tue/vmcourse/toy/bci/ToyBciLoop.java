@@ -1,6 +1,5 @@
 package nl.tue.vmcourse.toy.bci;
 
-import nl.tue.vmcourse.toy.ToyLauncher;
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
