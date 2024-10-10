@@ -22,6 +22,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private static Map<String, Map<String, Object>> stackTracePerFunction;
     private static String currentFunctionName;
     private static StringBuilder consoleMessages;
+    private static Map<Object, Integer> tableWithVariables = new HashMap<>();
+    private int currentFrameSlot;
 
     /**
      * Bytecode are the bytecode instructions from the generator and locals are all the elements for the local scope
@@ -90,12 +92,29 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             // TODO!!!!Currently, the mistake is in the JumpIfFalse construction, so the control flow.
             // TODO: Fix throwing of errors with something else
             switch (opcode) {
-                case OP_LITERAL_STRING, OP_FUNCTION_NAME -> pushLiteralToStack(bytecode, operand, stack, String.class);
+                case OP_LITERAL_STRING -> pushLiteralToStack(bytecode, operand, stack, String.class);
                 case OP_LITERAL_LONG -> pushLiteralToStack(bytecode, operand, stack, Long.class);
                 case OP_LITERAL_BOOLEAN -> pushLiteralToStack(bytecode, operand, stack, Boolean.class);
                 case OP_LITERAL_BIGINT -> pushLiteralToStack(bytecode, operand, stack, BigInteger.class);
+                case OP_FUNCTION_NAME -> {
+                    String literalValue = (String) bytecode.getElementFromConstantPool(operand);
+                    if (tableWithVariables.containsKey(literalValue) && currentFrameSlot != tableWithVariables.get(literalValue)) {
+                        stack.push(null);
+                    } else {
+                        stack.push(literalValue);
+                    }
+                }
+                case OP_LOAD -> {
+                    if (frameSlot != null) {
+                        currentFrameSlot = frameSlot;
+                        Object value = locals.get(frameSlot);
+                        stack.push(value);
+                        tableWithVariables.put(instr.getVariableName(), frameSlot);
+                    }
+                }
                 case OP_STORE -> {
                     if (frameSlot != null && !stack.isEmpty()) {
+                        currentFrameSlot = frameSlot;
                         if (stack.peek() instanceof Map) {
                             Map map = (Map) stack.pop();
                             map.replace(instr.getVariableName(), new Object());
@@ -110,6 +129,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
 
                         }
+                        tableWithVariables.put(instr.getVariableName(), frameSlot);
                         stackTraceElements.replace(instr.getVariableName(), locals.get(frameSlot));
                         stackTracePerFunction.put(currentFunctionName, stackTraceElements);
                     }
@@ -357,12 +377,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
                     }
                 }
-                case OP_LOAD -> {
-                    if (frameSlot != null) {
-                        Object value = locals.get(frameSlot);
-                        stack.push(value);
-                    }
-                }
                 // TODO: Check how to handle function
                 case OP_CALL -> {
                     int numberOfFunctionArguments = operand;
@@ -376,6 +390,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     while (!(stack.peek() instanceof String))
                         stack.pop();
                     functionName = (String) stack.pop();
+                    if (functionName.equals("null")) {
+                        stack.push(null);
+                        break;
+                    }
                     RootCallTarget function = globalScope.getFunction(functionName);
                     if (function == null) {
                         throw new RuntimeException("Function not found: " + functionName);
