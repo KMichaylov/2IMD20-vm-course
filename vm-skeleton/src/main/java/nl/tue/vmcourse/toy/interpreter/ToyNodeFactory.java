@@ -106,13 +106,13 @@ public class ToyNodeFactory {
             final ToyAbstractFunctionBody functionBodyNode = AstToBciAssembler.build(methodBlock);
 
             // TODO remove this println (otherwise all tests will fail...)
-            if (DUMP_AST) {
-                System.out.println("+++++");
-                System.out.println("+++++ AST for " + functionName);
-                System.out.println("+++++");
-                System.out.println(methodBlock.toString());
-                System.out.println("+++++");
-            }
+//            if (DUMP_AST) {
+//                System.out.println("+++++");
+//                System.out.println("+++++ AST for " + functionName);
+//                System.out.println("+++++");
+//                System.out.println(methodBlock.toString());
+//                System.out.println("+++++");
+//            }
 
             final ToyRootNode rootNode = new ToyRootNode(frameDescriptorBuilder.build(), functionBodyNode, functionName);
             allFunctions.put(functionName, rootNode.getCallTarget());
