@@ -104,6 +104,21 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
                 case OP_LOAD -> {
+                    if(locals.isEmpty())
+                        break;
+                    if (frameSlot != null) {
+                        currentFrameSlot = frameSlot;
+                        Object value = locals.get(frameSlot);
+                        stack.push(value);
+                        tableWithVariables.put(instr.getVariableName(), frameSlot);
+                    }
+                }
+
+                case OP_READ_ARGUMENT -> {
+                    if(locals.isEmpty()){
+                        globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
+                        break;
+                    }
                     if (frameSlot != null) {
                         currentFrameSlot = frameSlot;
                         Object value = locals.get(frameSlot);
@@ -209,7 +224,20 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
                         Object receiver = stack.pop();
                         if (receiver instanceof Map) {
-                            stack.push(((Map<?, ?>) receiver).get(propertyName));
+                            // Sometimes the property name can be a function.
+                            if (globalScope.getFunction((String) propertyName) != null) {
+                                RootCallTarget function = globalScope.getFunction((String) propertyName);
+                                int numberOfArguments = globalScope.getNumberOfArgumentsForFunction((String) propertyName);
+
+                                Object[] args = new Object[numberOfArguments];
+                                for (int i = numberOfArguments - 1; i >= 0; i--) {
+                                    args[i] = stack.pop();
+                                }
+                                VirtualFrame newFrame = new VirtualFrame(args);
+                                Object returnValue = function.invoke(newFrame);
+                                stack.push(returnValue);
+                            }
+                            else {stack.push(((Map<?, ?>) receiver).get(propertyName));}
                         } else {
                             System.out.println("Something with the getter of the object property went wrong...");
                         }
@@ -240,6 +268,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 case OP_PRINT -> {
                     Object valueToPrint = stack.pop();
+                    if(valueToPrint == null){
+                        break;
+                    }
                     consoleMessages.append(valueToPrint.toString()).append("\n");
                     //System.out.println(valueToPrint);
                 }
@@ -405,6 +436,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         throw new RuntimeException("Function not found: " + functionName);
                     }
 
+                    globalScope.setFunctionToNumberOfArguments(functionName, numberOfFunctionArguments);
+
                     // TODO Error here which throws an error, logic should be overall correct.
                     currentFunctionName = functionName;
                     if (stackTracePerFunction.containsKey(currentFunctionName)) {
@@ -427,7 +460,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (!stack.isEmpty()) {
                         return stack.pop();
                     } else {
-                        System.out.println("Stack is empty");
+//                        System.out.println("Stack is empty");
                         return null;
                     }
                 }
@@ -467,6 +500,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @param operation the corresponding arithmetic operation
      */
     private void performArithmeticOperations(Stack<Object> stack, String operation) {
+        if(stack.size() < 2){
+            return;
+        }
         Object right = stack.pop();
         Object left = stack.pop();
         Object result = switch (operation) {

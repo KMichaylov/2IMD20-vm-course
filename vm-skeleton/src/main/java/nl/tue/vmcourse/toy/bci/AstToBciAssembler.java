@@ -101,7 +101,7 @@ public class AstToBciAssembler {
         } else if (node instanceof ToyReadArgumentNode) {
             ToyReadArgumentNode readArgumentNode = (ToyReadArgumentNode) node;
             int parameterCount = readArgumentNode.getParameterCount();
-            bytecode.addVariableInstruction(Opcode.OP_LOAD, parameterCount, null, parameterCount, false);
+            bytecode.addVariableInstruction(Opcode.OP_READ_ARGUMENT, parameterCount, null, parameterCount, false);
         }
 
         // For the comparisons we use the provided AST classes and in case we need > or >=, we just negate the results

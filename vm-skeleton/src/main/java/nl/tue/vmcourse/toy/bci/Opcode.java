@@ -34,6 +34,7 @@ public enum Opcode {
     // For storing and calling functions
     OP_STORE((byte) 0x16),
     OP_LOAD((byte) 0x01),
+    OP_READ_ARGUMENT((byte) 0x18),
     OP_CALL((byte) 0x17),
 
     // Conditionals for jumping
