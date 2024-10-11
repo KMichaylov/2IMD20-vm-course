@@ -20,6 +20,7 @@ public class AstToBciAssembler {
             Map.entry("isInstance", Opcode.OP_IS_INSTANCE),
             Map.entry("nanoTime", Opcode.OP_NANO_TIME),
             Map.entry("eval", Opcode.OP_EVAL),
+            Map.entry("defineFunction", Opcode.OP_DEFINE_FUNCTION),
             Map.entry("getSize", Opcode.OP_GET_SIZE),
             Map.entry("stacktrace", Opcode.OP_STACKTRACE),
             Map.entry("hasSize", Opcode.OP_HAS_SIZE),
@@ -291,6 +292,11 @@ public class AstToBciAssembler {
                 generateBytecode(codeData, bytecode);
                 bytecode.addInstruction(Opcode.OP_EVAL, 0);
             }
+            case "defineFunction" -> {
+                ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[0];
+                generateBytecode(codeData, bytecode);
+                bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
+            }
             case "getSize" -> {
                 bytecode.addInstruction(Opcode.OP_GET_SIZE, 0);
             }
@@ -365,7 +371,7 @@ public class AstToBciAssembler {
     private static boolean isBuiltInFunctionForTypeChecking(String functionName) {
         boolean result;
         switch (functionName) {
-            case "println", "typeOf", "isInstance", "nanoTime", "eval", "getSize", "stacktrace", "new", "exit",
+            case "println", "typeOf", "isInstance", "nanoTime", "eval", "defineFunction", "getSize", "stacktrace", "new", "exit",
                  "hasSize", "subString", "hasProperty", "deleteProperty" -> result = true;
             default -> result = false;
         }

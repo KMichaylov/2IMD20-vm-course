@@ -54,6 +54,7 @@ public enum Opcode {
     OP_NANO_TIME((byte) 0x1D),
     OP_STACKTRACE((byte) 0x1F),
     OP_EVAL((byte) 0x25),
+    OP_DEFINE_FUNCTION((byte) 0x2F),
     OP_GET_SIZE((byte) 0x26),
     OP_HAS_SIZE((byte) 0x28),
     OP_SUB_STRING((byte) 0x29),

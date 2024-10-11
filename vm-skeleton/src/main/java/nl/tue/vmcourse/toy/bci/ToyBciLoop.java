@@ -21,7 +21,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private Map<String, Object> stackTraceElements;
     private static Map<String, Map<String, Object>> stackTracePerFunction;
     private static String currentFunctionName;
-    private static StringBuilder consoleMessages;
+    private static StringBuilder consoleMessages = new StringBuilder();;
     private static Map<Object, Integer> tableWithVariables = new HashMap<>();
     private int currentFrameSlot;
 
@@ -37,7 +37,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         this.currentFunctionName = "main";
         stackTracePerFunction = new LinkedHashMap<>();
         stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
-        consoleMessages = new StringBuilder();
     }
 
     /**
@@ -347,6 +346,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_EVAL -> {
                     Object obj = stack.pop();
                     Object answer = evalStream(CharStreams.fromString((String) obj));
+                    stack.push(answer);
+                }
+
+                // TODO: Since we go back to the AST, we lose the prints. Also, we don't need to evaluate a function but simply redefine it.
+                case OP_DEFINE_FUNCTION -> {
+                    String functionCode = (String) stack.pop();
+                    Object answer = evalStreamRedefine(CharStreams.fromString(functionCode));
                     stack.push(answer);
                 }
 
@@ -762,6 +768,31 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             RootCallTarget functionToEvaluate = allFunctions.values().iterator().next();
             return functionToEvaluate.invoke(globalScope);
         }
+        return null;
+    }
+
+    /**
+     * It applies the redefineFunction function on this code.
+     *
+     * @param charStream the actual program.
+     * @return the result of the program after execution.
+     */
+    public static Object evalStreamRedefine(CharStream charStream) {
+        String src = charStream.getText(Interval.of(0, charStream.size()));
+        ToyLangLexer lex = new ToyLangLexer(charStream);
+        CommonTokenStream tokens = new CommonTokenStream(lex);
+        ToyLangParser parser = new ToyLangParser(tokens);
+        ToyNodeFactory factory = new ToyNodeFactory(src);
+        parser.setFactory(factory);
+        parser.addErrorListener(new ToyLangParser.BailoutErrorListener());
+        parser.toylanguage();
+
+        Map<String, RootCallTarget> allFunctions = factory.getAllFunctions();
+
+        for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
+            globalScope.registerFunction(entry.getKey(), entry.getValue());
+        }
+
         return null;
     }
 
