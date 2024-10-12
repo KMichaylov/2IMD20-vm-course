@@ -260,11 +260,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (!((Boolean) stack.peek())) {
                         pc += operand;
                     }
+                    stack.pop();
                 }
                 case OP_JUMP_IF_TRUE -> {
                     if ((Boolean) stack.peek()) {
                         pc += operand;
                     }
+                    stack.pop();
                 }
                 case OP_PRINT -> {
                     Object valueToPrint = stack.pop();
