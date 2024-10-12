@@ -205,6 +205,7 @@ public class AstToBciAssembler {
                 generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
                 Object propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
                 int propertyIndex = bytecode.addToConstantPool(propertyName);
+                generateBytecode(readPropertyNode.getNameNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
             }
 
@@ -419,10 +420,12 @@ public class AstToBciAssembler {
         if (readPropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
             String propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
             int propertyIndex = bytecode.addToConstantPool(propertyName);
+            generateBytecode(readPropertyNode.getNameNode(), bytecode);
             bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
         } else if (readPropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
             Long propertyArrayValue = ((ToyLongLiteralNode) readPropertyNode.getNameNode()).getValue();
             int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
+            generateBytecode(readPropertyNode.getNameNode(), bytecode);
             bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
         } else {
             generateBytecode(readPropertyNode.getNameNode(), bytecode);
@@ -444,10 +447,12 @@ public class AstToBciAssembler {
         if (writePropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
             String propertyName = ((ToyStringLiteralNode) writePropertyNode.getNameNode()).getValue();
             int propertyIndex = bytecode.addToConstantPool(propertyName);
+            generateBytecode(writePropertyNode.getNameNode(), bytecode);
             bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
         } else if (writePropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
             Long propertyArrayValue = ((ToyLongLiteralNode) writePropertyNode.getNameNode()).getValue();
             int propertyIndex = bytecode.addToConstantPool(propertyArrayValue);
+            generateBytecode(writePropertyNode.getNameNode(), bytecode);
             bytecode.addInstruction(Opcode.OP_SET_PROPERTY, propertyIndex);
         } else {
             generateBytecode(writePropertyNode.getNameNode(), bytecode);

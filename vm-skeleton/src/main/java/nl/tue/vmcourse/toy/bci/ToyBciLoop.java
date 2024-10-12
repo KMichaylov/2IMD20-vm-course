@@ -21,7 +21,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private Map<String, Object> stackTraceElements;
     private static Map<String, Map<String, Object>> stackTracePerFunction;
     private static String currentFunctionName;
-    private static StringBuilder consoleMessages = new StringBuilder();;
+    private static StringBuilder consoleMessages = new StringBuilder();
+    ;
     private static Map<Object, Integer> tableWithVariables = new HashMap<>();
     private int currentFrameSlot;
 
@@ -104,7 +105,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
                 case OP_LOAD -> {
-                    if(locals.isEmpty())
+                    if (locals.isEmpty())
                         break;
                     if (frameSlot != null) {
                         currentFrameSlot = frameSlot;
@@ -115,7 +116,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_READ_ARGUMENT -> {
-                    if(locals.isEmpty()){
+                    if (locals.isEmpty()) {
                         globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
                         break;
                     }
@@ -135,12 +136,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             locals.add(map);
                         } else if (frameSlot < locals.size()) {
                             locals.set(frameSlot, stack.pop());
-                            bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
+//                            bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
                         } else {
                             locals.add(frameSlot, stack.pop());
                             // We do this only for array properties, to update the index.
-                            if (!(locals.get(frameSlot) instanceof Boolean) && !(locals.get(frameSlot) instanceof String))
-                                bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
+//                            if (!(locals.get(frameSlot) instanceof Boolean) && !(locals.get(frameSlot) instanceof String))
+//                                bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
 
                         }
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
@@ -189,11 +190,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 case OP_SET_PROPERTY -> {
                     Object propertyName = new Object();
-                    if (bytecode.getConstantPoolSize() > 0) {
-                        if (bytecode.getElementFromConstantPool(operand) instanceof String) {
-                            propertyName = bytecode.getElementFromConstantPool(operand).toString();
-                        } else if (bytecode.getElementFromConstantPool(operand) instanceof Long) {
-                            propertyName = bytecode.getElementFromConstantPool(operand).toString();
+                    if (!stack.isEmpty()) {
+                        if (stack.peek() instanceof String) {
+                            propertyName = stack.pop().toString();
+                        } else if (stack.peek() instanceof Long) {
+                            propertyName = stack.pop().toString();
                         }
                     } else {
                         propertyName = stack.pop();
@@ -212,12 +213,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_GET_PROPERTY -> {
-                    if (bytecode.getConstantPoolSize() > 0) {
+                    if (!stack.isEmpty()) {
                         Object propertyName = new Object();
-                        if (bytecode.getElementFromConstantPool(operand) instanceof String) {
-                            propertyName = bytecode.getElementFromConstantPool(operand).toString();
-                        } else if (bytecode.getElementFromConstantPool(operand) instanceof Long) {
-                            propertyName = bytecode.getElementFromConstantPool(operand).toString();
+                        if (stack.peek() instanceof String) {
+                            propertyName = stack.pop().toString();
+                        } else if (stack.peek() instanceof Long) {
+                            propertyName = stack.pop().toString();
                         }
                         while (!(stack.get(stack.size() - 1) instanceof Map)) {
                             stack.pop();
@@ -236,8 +237,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 VirtualFrame newFrame = new VirtualFrame(args);
                                 Object returnValue = function.invoke(newFrame);
                                 stack.push(returnValue);
+                            } else {
+                                stack.push(((Map<?, ?>) receiver).get(propertyName));
                             }
-                            else {stack.push(((Map<?, ?>) receiver).get(propertyName));}
                         } else {
                             System.out.println("Something with the getter of the object property went wrong...");
                         }
@@ -269,12 +271,15 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.pop();
                 }
                 case OP_PRINT -> {
-                    Object valueToPrint = stack.pop();
-                    if(valueToPrint == null){
-                        break;
+                    if (!stack.isEmpty()) {
+                        Object valueToPrint = stack.pop();
+                        if (valueToPrint == null) {
+                            break;
+                        }
+                        consoleMessages.append(valueToPrint.toString()).append("\n");
+                        //System.out.println(valueToPrint);
                     }
-                    consoleMessages.append(valueToPrint.toString()).append("\n");
-                    //System.out.println(valueToPrint);
+
                 }
 
                 case OP_BUILTIN -> {
@@ -502,7 +507,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @param operation the corresponding arithmetic operation
      */
     private void performArithmeticOperations(Stack<Object> stack, String operation) {
-        if(stack.size() < 2){
+        if (stack.size() < 2) {
             return;
         }
         Object right = stack.pop();
@@ -528,7 +533,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     private Object add(Object left, Object right) {
         if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-            return ((Number) left).intValue() + ((Number) right).intValue();
+            return (long) (((Long) left).intValue() + ((Long) right).intValue());
         } else if (left instanceof BigInteger && right instanceof BigInteger) {
             return ((BigInteger) left).add((BigInteger) right);
         } else if (left instanceof BigInteger && right instanceof Long) {
@@ -552,7 +557,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     private Object subtract(Object left, Object right) {
         if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-            return ((Number) left).intValue() - ((Number) right).intValue();
+            return (long) (((Long) left).intValue() - ((Long) right).intValue());
         } else if (left instanceof BigInteger && right instanceof BigInteger) {
             return ((BigInteger) left).subtract((BigInteger) right);
         } else if (left instanceof BigInteger && right instanceof Long) {
@@ -573,7 +578,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     private Object multiply(Object left, Object right) {
         if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-            return ((Number) left).intValue() * ((Number) right).intValue();
+            return (long) (((Long) left).intValue() * ((Long) right).intValue());
         } else if (left instanceof BigInteger && right instanceof BigInteger) {
             return ((BigInteger) left).multiply((BigInteger) right);
         } else if (left instanceof BigInteger && right instanceof Long) {
@@ -594,7 +599,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     private Object divide(Object left, Object right) {
         if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger) && !right.toString().equals("0")) {
-            return ((Number) left).intValue() / ((Number) right).intValue();
+            return (long) (((Long) left).intValue() / ((Long) right).intValue());
         } else if (left instanceof BigInteger && right instanceof BigInteger) {
             return ((BigInteger) left).divide((BigInteger) right);
         } else if (left instanceof BigInteger && right instanceof Long) {
