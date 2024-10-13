@@ -89,7 +89,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             Integer frameSlot = instr.getFrameSlot();
             int operand = instr.getOperand();
             // TODO: refactor the switch statement. Export common logic into separate methods, after the general structure is there
-            // TODO!!!!Currently, the mistake is in the JumpIfFalse construction, so the control flow.
             // TODO: Fix throwing of errors with something else
             switch (opcode) {
                 case OP_LITERAL_STRING -> pushLiteralToStack(bytecode, operand, stack, String.class);
@@ -136,12 +135,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             locals.add(map);
                         } else if (frameSlot < locals.size()) {
                             locals.set(frameSlot, stack.pop());
-//                            bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
                         } else {
                             locals.add(frameSlot, stack.pop());
-                            // We do this only for array properties, to update the index.
-//                            if (!(locals.get(frameSlot) instanceof Boolean) && !(locals.get(frameSlot) instanceof String))
-//                                bytecode.replaceConstantPoolElement(operand, Long.valueOf(String.valueOf(locals.get(frameSlot))));
 
                         }
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
