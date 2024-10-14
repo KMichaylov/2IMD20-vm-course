@@ -16,8 +16,9 @@ import java.util.*;
 
 public class ToyBciLoop extends ToyAbstractFunctionBody {
     private final Bytecode bytecode;
-    private final List<Object> locals;
+    private HashMap<Integer, List<Object>> locals;
     private static GlobalScope globalScope;
+    private static int currentDepth;
     private Map<String, Object> stackTraceElements;
     private static Map<String, Map<String, Object>> stackTracePerFunction;
     private static String currentFunctionName;
@@ -33,11 +34,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     public ToyBciLoop(Bytecode bytecode, Map<String, Object> stackTraceElements) {
         this.bytecode = bytecode;
-        this.locals = new ArrayList<>();
+        this.locals = new HashMap<>();
         this.stackTraceElements = stackTraceElements;
         this.currentFunctionName = "main";
         stackTracePerFunction = new LinkedHashMap<>();
         stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
+        currentDepth = 0;
     }
 
     /**
@@ -67,14 +69,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     public Object execute(VirtualFrame frame) {
         Stack<Object> stack = new Stack<>();
-        locals.clear();
+        this.locals.put(currentDepth, frame.getLocals());
 
         if (frame.getArguments() != null) {
             for (int i = 0; i < frame.getArguments().length; i++) {
                 Object arg = frame.getArguments()[i];
                 List<Object> argumentsToBeAdded = resolveArgument(arg);
                 if (argumentsToBeAdded != null && !argumentsToBeAdded.isEmpty()) {
-                    locals.addAll(argumentsToBeAdded);
+                    locals.get(currentDepth).addAll(argumentsToBeAdded);
                 }
             }
         }
@@ -104,24 +106,24 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
                 case OP_LOAD -> {
-                    if (locals.isEmpty())
+                    if (locals.get(currentDepth).isEmpty())
                         break;
                     if (frameSlot != null) {
                         currentFrameSlot = frameSlot;
-                        Object value = locals.get(frameSlot);
+                        Object value = locals.get(currentDepth).get(frameSlot);
                         stack.push(value);
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                     }
                 }
 
                 case OP_READ_ARGUMENT -> {
-                    if (locals.isEmpty()) {
+                    if (locals.get(currentDepth).isEmpty()) {
                         globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
                         break;
                     }
                     if (frameSlot != null) {
                         currentFrameSlot = frameSlot;
-                        Object value = locals.get(frameSlot);
+                        Object value = locals.get(currentDepth).get(frameSlot);
                         stack.push(value);
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                     }
@@ -132,15 +134,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (stack.peek() instanceof Map) {
                             Map map = (Map) stack.pop();
                             map.replace(instr.getVariableName(), new Object());
-                            locals.add(map);
-                        } else if (frameSlot < locals.size()) {
-                            locals.set(frameSlot, stack.pop());
+                            locals.get(currentDepth).add(map);
+                        } else if (frameSlot < locals.get(currentDepth).size()) {
+                            locals.get(currentDepth).set(frameSlot, stack.pop());
                         } else {
-                            locals.add(frameSlot, stack.pop());
-
+                            locals.get(currentDepth).add(frameSlot, stack.pop());
                         }
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
-                        stackTraceElements.replace(instr.getVariableName(), locals.get(frameSlot));
+                        stackTraceElements.replace(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
                         stackTracePerFunction.put(currentFunctionName, stackTraceElements);
                     }
 
@@ -230,7 +231,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                     args[i] = stack.pop();
                                 }
                                 VirtualFrame newFrame = new VirtualFrame(args);
-                                Object returnValue = function.invoke(newFrame);
+                                Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                                 stack.push(returnValue);
                             } else {
                                 stack.push(((Map<?, ?>) receiver).get(propertyName));
@@ -252,7 +253,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 case OP_JUMP -> {
                     pc += operand;
-                    stack.pop();
                 }
                 case OP_JUMP_IF_FALSE -> {
                     if (!((Boolean) stack.peek())) {
@@ -272,8 +272,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (valueToPrint == null) {
                             break;
                         }
-                        consoleMessages.append(valueToPrint.toString()).append("\n");
-//                        System.out.println(valueToPrint);
+//                        consoleMessages.append(valueToPrint.toString()).append("\n");
+                        System.out.println(valueToPrint);
                     }
 
                 }
@@ -320,7 +320,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_GET_SIZE -> {
-                    Object obj = locals.get(operand);
+                    Object obj = locals.get(currentDepth).get(operand);
                     if (obj instanceof Map<?, ?>) {
                         stack.pop();
                         stack.push(((Map<?, ?>) obj).size());
@@ -432,7 +432,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         index--;
                     }
                     if (index >= 0) {
-                        if(globalScope.getFunction((String) stack.get(index)) != null){
+                        if (globalScope.getFunction((String) stack.get(index)) != null) {
                             functionName = (String) stack.get(index);
                             stack.remove(index);
                         }
@@ -460,10 +460,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                     // Create a new frame with the arguments
                     VirtualFrame newFrame = new VirtualFrame(args);
-
+                    currentDepth++;
                     // Invoke the function and push the return value onto the stack
-                    Object returnValue = function.invoke(newFrame);
+                    Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                     stack.push(returnValue);
+                    currentDepth--;
                     stackTracePerFunction.remove(functionName);
                 }
 
@@ -813,7 +814,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
         if (!allFunctions.isEmpty()) {
             RootCallTarget functionToEvaluate = allFunctions.values().iterator().next();
-            return functionToEvaluate.invoke(globalScope);
+            return functionToEvaluate.invoke(new ArrayList<>(), globalScope);
         }
         return null;
     }
