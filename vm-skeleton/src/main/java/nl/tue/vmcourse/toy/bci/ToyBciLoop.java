@@ -152,9 +152,15 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_MUL -> performArithmeticOperations(stack, "MUL");
 
                 case OP_LOGICAL_AND -> {
-                    if (stack.size() < 2) {
+                    if (stack.isEmpty()) {
                         stack.push(false);
                         break;
+                    } else if (stack.size() == 1) {
+                        if (stack.peek().equals(false)) {
+                            stack.push(false);
+                        } else {
+                            stack.push(true);
+                        }
                     }
                     Object left = stack.pop();
                     Object right = stack.pop();
@@ -166,9 +172,16 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_LOGICAL_OR -> {
-                    if (stack.size() < 2) {
+
+                    if (stack.isEmpty()) {
                         stack.push(true);
                         break;
+                    } else if (stack.size() == 1) {
+                        if (stack.peek().equals(true)) {
+                            stack.push(true);
+                        } else {
+                            stack.push(false);
+                        }
                     }
                     Object left = stack.pop();
                     Object right = stack.pop();
