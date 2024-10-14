@@ -294,9 +294,14 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_EVAL, 0);
             }
             case "defineFunction" -> {
-                ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[0];
-                generateBytecode(codeData, bytecode);
-                bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
+                if(invokeNode.getToyExpressionNodes().length >= 1) {
+                    ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[0];
+                    generateBytecode(codeData, bytecode);
+                    bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
+                }
+                else{
+                    bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
+                }
             }
             case "getSize" -> {
                 bytecode.addInstruction(Opcode.OP_GET_SIZE, 0);

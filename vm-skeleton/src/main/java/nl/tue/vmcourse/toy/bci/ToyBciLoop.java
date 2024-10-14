@@ -165,11 +165,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     Object right = stack.pop();
                     Object left = stack.pop();
-                    if(!(left instanceof Boolean)) {
+                    if (!(left instanceof Boolean)) {
                         consoleMessages.append(errorMessages.generateBooleanTypeError(left, "&&"));
                         return consoleMessages;
                     }
-                    if(!(right instanceof Boolean)){
+                    if (!(right instanceof Boolean)) {
                         consoleMessages.append(errorMessages.generateBooleanTypeError(right, "&&"));
                         return consoleMessages;
                     }
@@ -194,11 +194,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     Object left = stack.pop();
                     Object right = stack.pop();
-                    if(!(left instanceof Boolean)) {
+                    if (!(left instanceof Boolean)) {
                         consoleMessages.append(errorMessages.generateBooleanTypeError(left, "||"));
                         return consoleMessages;
                     }
-                    if(!(right instanceof Boolean)){
+                    if (!(right instanceof Boolean)) {
                         consoleMessages.append(errorMessages.generateTypeError(left, right, "||"));
                         return consoleMessages;
                     }
@@ -440,6 +440,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 // TODO: Since we go back to the AST, we lose the prints. Also, we don't need to evaluate a function but simply redefine it.
                 case OP_DEFINE_FUNCTION -> {
+                    if (stack.isEmpty()) {
+                        consoleMessages.append("Type error: operation \"defineFunction\" not defined for NULL\n");
+                        return consoleMessages;
+                    }
+                    if (!(stack.peek() instanceof String)) {
+                        consoleMessages.append(errorMessages.generateTypeErrorForDefineFunction("defineFunction", stack.peek()));
+                        return consoleMessages;
+                    }
                     String functionCode = (String) stack.pop();
                     Object answer = evalStreamRedefine(CharStreams.fromString(functionCode));
                     stack.push(answer);
