@@ -1,1 +1,1 @@
-Type error at 1453769-multiply-string.sl line 6 col 13: operation "*" not defined for Number 8000000000000000000000000, String "9"
+Type error: operation "*" not defined for Number 8000000000000000000000000, String "9"

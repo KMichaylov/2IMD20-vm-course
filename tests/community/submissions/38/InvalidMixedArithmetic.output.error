@@ -1,4 +1,4 @@
 24brandon
 brandon3
 brandon24
-Type error at InvalidMixedArithmetic.sl line 5 col 11: operation "-" not defined for String "brandon36", Number 12
+Type error: operation "-" not defined for String "brandon36", Number 12

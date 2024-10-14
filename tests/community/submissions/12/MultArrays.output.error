@@ -1,1 +1,1 @@
-Type error at MultArrays.sl line 9 col 13: operation "*" not defined for Object Object, Number 2
+Type error: operation "*" not defined for Object Object, Number 2

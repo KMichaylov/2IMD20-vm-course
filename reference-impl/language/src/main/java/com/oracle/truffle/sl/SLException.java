@@ -75,13 +75,6 @@ public class SLException extends AbstractTruffleException {
         StringBuilder result = new StringBuilder();
         result.append("Type error");
 
-        if (operation != null) {
-            SourceSection ss = operation.getEncapsulatingSourceSection();
-            if (ss != null && ss.isAvailable()) {
-                result.append(" at ").append(ss.getSource().getName()).append(" line ").append(ss.getStartLine()).append(" col ").append(ss.getStartColumn());
-            }
-        }
-
         result.append(": operation");
         if (operation != null) {
             NodeInfo nodeInfo = SLLanguage.lookupNodeInfo(operation.getClass());
