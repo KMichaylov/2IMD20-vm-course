@@ -2,5 +2,4 @@ String
 String
 String
 Number
-Error(s) parsing script:
--- line 1 col 47: missing ';' at 'a'
+Error(s) parsing script :(
