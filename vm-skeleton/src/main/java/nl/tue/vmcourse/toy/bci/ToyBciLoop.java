@@ -23,7 +23,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private static Map<String, Map<String, Object>> stackTracePerFunction;
     private static String currentFunctionName;
     private static StringBuilder consoleMessages = new StringBuilder();
-    ;
+    private ErrorMessages errorMessages;
     private static Map<Object, Integer> tableWithVariables = new HashMap<>();
     private int currentFrameSlot;
 
@@ -40,6 +40,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         stackTracePerFunction = new LinkedHashMap<>();
         stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
         currentDepth = 0;
+        errorMessages = new ErrorMessages();
     }
 
     /**
@@ -561,7 +562,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if (left instanceof String || right instanceof String) {
             return left.toString() + right.toString();
         } else {
-            throw new RuntimeException("Unsupported types for addition");
+            consoleMessages.append(errorMessages.generateTypeError(left, right, "+"));
+            return null;
         }
     }
 
@@ -583,7 +585,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if (left instanceof Long && right instanceof BigInteger) {
             return (BigInteger.valueOf((Long) left)).subtract((BigInteger) right);
         } else {
-            throw new RuntimeException("Unsupported types for subtraction");
+            consoleMessages.append(errorMessages.generateTypeError(left, right, "-"));
+            return null;
         }
     }
 
@@ -596,7 +599,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     private Object multiply(Object left, Object right) {
         if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-            return (long) (((Long) left).intValue() * ((Long) right).intValue());
+            return ((long) ((Long) left).intValue() * ((Long) right).intValue());
         } else if (left instanceof BigInteger && right instanceof BigInteger) {
             return ((BigInteger) left).multiply((BigInteger) right);
         } else if (left instanceof BigInteger && right instanceof Long) {
@@ -604,7 +607,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if (left instanceof Long && right instanceof BigInteger) {
             return (BigInteger.valueOf((Long) left)).multiply((BigInteger) right);
         } else {
-            throw new RuntimeException("Unsupported types for multiplication");
+            consoleMessages.append(errorMessages.generateTypeError(left, right, "*"));
+            return null;
         }
     }
 
@@ -625,7 +629,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if (left instanceof Long && right instanceof BigInteger) {
             return (BigInteger.valueOf((Long) left)).divide((BigInteger) right);
         } else {
-            throw new RuntimeException("Unsupported types for division");
+            consoleMessages.append(errorMessages.generateTypeError(left, right, "/"));
+            return null;
         }
     }
 
@@ -799,7 +804,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         }
         return "NULL";
     }
-
 
     // TODO Change the place of this!
 
