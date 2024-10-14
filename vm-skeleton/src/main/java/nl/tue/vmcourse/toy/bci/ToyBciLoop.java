@@ -192,8 +192,16 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             stack.push(false);
                         }
                     }
-                    Object right = stack.pop();
                     Object left = stack.pop();
+                    Object right = stack.pop();
+                    if(!(left instanceof Boolean)) {
+                        consoleMessages.append(errorMessages.generateBooleanTypeError(left, "||"));
+                        return consoleMessages;
+                    }
+                    if(!(right instanceof Boolean)){
+                        consoleMessages.append(errorMessages.generateTypeError(left, right, "||"));
+                        return consoleMessages;
+                    }
                     if (left.equals(true) || right.equals(true)) {
                         stack.push(true);
                     } else {
@@ -485,9 +493,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
 
                     }
-                    if (functionName.equals("null")) {
+                    if (functionName == null || functionName.equals("null")) {
                         stack.push(null);
-                        break;
+                        return consoleMessages.append("Undefined function: true");
                     }
                     RootCallTarget function = globalScope.getFunction(functionName);
                     if (function == null) {
