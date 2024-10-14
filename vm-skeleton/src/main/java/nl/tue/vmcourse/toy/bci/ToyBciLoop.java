@@ -269,6 +269,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     pc += operand;
                 }
                 case OP_JUMP_IF_FALSE -> {
+                    if (!(stack.peek() instanceof Boolean)) {
+                        consoleMessages.append(errorMessages.generateTypeError(stack.peek(), "if"));
+                        return consoleMessages;
+                    }
                     if (!((Boolean) stack.peek())) {
                         pc += operand;
                     }
