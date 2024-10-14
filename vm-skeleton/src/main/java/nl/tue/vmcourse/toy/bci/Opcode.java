@@ -40,6 +40,8 @@ public enum Opcode {
     // Conditionals for jumping
     OP_JUMP_IF_TRUE((byte) 0x19),
     OP_JUMP_IF_FALSE((byte) 0x1A),
+    OP_JUMP_IF_TRUE_BOOLEAN((byte) 0x31),
+    OP_JUMP_IF_FALSE_BOOLEAN((byte) 0x32),
 
     // Idle operations
     OP_NOP((byte) 0x1B),

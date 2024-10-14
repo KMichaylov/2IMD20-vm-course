@@ -163,8 +163,16 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             stack.push(true);
                         }
                     }
-                    Object left = stack.pop();
                     Object right = stack.pop();
+                    Object left = stack.pop();
+                    if(!(left instanceof Boolean)) {
+                        consoleMessages.append(errorMessages.generateBooleanTypeError(left, "&&"));
+                        return consoleMessages;
+                    }
+                    if(!(right instanceof Boolean)){
+                        consoleMessages.append(errorMessages.generateBooleanTypeError(right, "&&"));
+                        return consoleMessages;
+                    }
                     if (left.equals(true) && right.equals(true)) {
                         stack.push(true);
                     } else {
@@ -184,8 +192,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             stack.push(false);
                         }
                     }
-                    Object left = stack.pop();
                     Object right = stack.pop();
+                    Object left = stack.pop();
                     if (left.equals(true) || right.equals(true)) {
                         stack.push(true);
                     } else {
@@ -268,8 +276,29 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_JUMP -> {
                     pc += operand;
                 }
+
+                case OP_JUMP_IF_FALSE_BOOLEAN -> {
+                    if (!(stack.peek() instanceof Boolean)) {
+                        break;
+                    }
+                    if (!((Boolean) stack.peek())) {
+                        pc += operand;
+                    }
+                    stack.pop();
+                }
+                case OP_JUMP_IF_TRUE_BOOLEAN -> {
+                    if (!(stack.peek() instanceof Boolean)) {
+                        break;
+                    }
+                    if ((Boolean) stack.peek()) {
+                        pc += operand;
+                    }
+                    stack.pop();
+                }
+
                 case OP_JUMP_IF_FALSE -> {
                     if (!(stack.peek() instanceof Boolean)) {
+                        // TODO: Since I use the same thing for loops and if statements, I should somehow get the operator.
                         consoleMessages.append(errorMessages.generateTypeError(stack.peek(), "if"));
                         return consoleMessages;
                     }

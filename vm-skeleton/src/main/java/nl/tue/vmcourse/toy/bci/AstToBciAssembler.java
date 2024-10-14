@@ -154,10 +154,10 @@ public class AstToBciAssembler {
             binaryInstructionGenerator(mulNode.getLeftUnboxed(), mulNode.getRightUnboxed(), Opcode.OP_MUL, bytecode, 0);
         } else if (node instanceof ToyLogicalAndNode) {
             ToyLogicalAndNode logicalAndNode = (ToyLogicalAndNode) node;
-            binaryInstructionFixerForBooleans(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_JUMP_IF_FALSE, Opcode.OP_LOGICAL_AND, bytecode, 0);
+            binaryInstructionFixerForBooleans(logicalAndNode.getLeftUnboxed(), logicalAndNode.getRightUnboxed(), Opcode.OP_JUMP_IF_TRUE_BOOLEAN, Opcode.OP_LOGICAL_AND, bytecode, 0);
         } else if (node instanceof ToyLogicalOrNode) {
             ToyLogicalOrNode logicalOrNode = (ToyLogicalOrNode) node;
-            binaryInstructionFixerForBooleans(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_JUMP_IF_TRUE, Opcode.OP_LOGICAL_OR, bytecode, 0);
+            binaryInstructionFixerForBooleans(logicalOrNode.getLeftUnboxed(), logicalOrNode.getRightUnboxed(), Opcode.OP_JUMP_IF_TRUE_BOOLEAN, Opcode.OP_LOGICAL_OR, bytecode, 0);
         } else if (node instanceof ToyContinueNode) {
             int continueJumpIndex = bytecode.addInstruction(Opcode.OP_JUMP, -1);
             bytecode.addContinueJump(continueJumpIndex);

@@ -12,6 +12,11 @@ public class ErrorMessages {
         return "Type error: operation \"" + operation + "\" not defined for " + objType + " \"" + obj + "\"\n";
     }
 
+    public String generateBooleanTypeError(Object obj, String operation) {
+        String objType = obj instanceof Number ? "Number" : obj.getClass().getSimpleName();
+        return "Type error: operation \"" + operation + "\" not defined for " + objType + " \"" + obj + "\", ANY\n";
+    }
+
     public String generateDivisionByZeroError(Object left) {
         String leftType = left instanceof Number ? "Number" : left.getClass().getSimpleName();
         return "Type error: division by zero for " + leftType + " " + left + "\n";
