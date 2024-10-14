@@ -1,6 +1,7 @@
 package nl.tue.vmcourse.toy;
 
 import nl.tue.vmcourse.toy.bci.GlobalScope;
+import nl.tue.vmcourse.toy.interpreter.ToySyntaxErrorException;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 import nl.tue.vmcourse.toy.parser.ToyLangLexer;
@@ -47,6 +48,8 @@ public class ToyLauncher {
         ToyLangParser parser = new ToyLangParser(tokens);
         ToyNodeFactory factory = new ToyNodeFactory(src);
         parser.setFactory(factory);
+        lex.removeErrorListeners();
+        parser.removeErrorListeners();
         parser.addErrorListener(new ToyLangParser.BailoutErrorListener());
         parser.toylanguage();
 
@@ -77,8 +80,8 @@ public class ToyLauncher {
         try {
             Object result = evalStream(charStream);
             System.out.println(result);
-        } catch (RuntimeException error) {
-            System.err.println(error.getMessage());
+        } catch (ToySyntaxErrorException e) {
+            System.err.println(e.getMessage());
         }
     }
 }

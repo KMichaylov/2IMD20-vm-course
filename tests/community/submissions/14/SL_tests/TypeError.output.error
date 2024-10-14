@@ -1,1 +1,1 @@
-Type error at TypeError.sl line 2 col 11: operation "*" not defined for NULL, Number 5
+Type error: operation "*" not defined for NULL, Number 5

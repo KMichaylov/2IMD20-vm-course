@@ -138,7 +138,7 @@ public class SimpleLanguageParser extends Parser {
 	    int col = charPositionInLine + 1;
 	    String location = "-- line " + line + " col " + col + ": ";
 	    int length = token == null ? 1 : Math.max(token.getStopIndex() - token.getStartIndex(), 0);
-	    throw new SLParseError(source, line, col, length, String.format("Error(s) parsing script:%n" + location + message));
+		throw new SLParseError(source, line, col, length, "Error(s) parsing script :(");
 	}
 
 	public static Map<TruffleString, RootCallTarget> parseSL(SLLanguage language, Source source) {

@@ -1,2 +1,1 @@
-Error(s) parsing script:
--- line 6 col 13: extraneous input '=' expecting {'(', 'true', 'false', IDENTIFIER, STRING_LITERAL, NUMERIC_LITERAL}
+Error(s) parsing script :(

@@ -1,25 +1,9 @@
-function f1()
+function stackOverflow()
 {
-	f4();
-	f2();
+    return stackOverflow();
 }
 
-function f2()
-{
-	f3();
-}
 
-function f3()
-{
-	println(stacktrace());
-}
-
-function f4()
-{
-	f3();
-}
-
-function main()
-{
-	f1();
+function main() {
+  stackOverflow();
 }

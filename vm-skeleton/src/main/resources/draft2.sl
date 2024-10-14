@@ -1,13 +1,14 @@
-/*
- * Comparing stacktraces doesn't work.
- */
+
+function foo(f, i) {
+  i = i + 1;
+  if(i < 5)
+  {
+    f(f, i);
+    println(i);
+  }
+  return i;
+}
 
 function main() {
-    stackComparer = stacktrace();
-    a = 5;
-    b = 6;
-    c = a + b;
-    println("Current stacktrace:");
-    println(stackComparer);
-    println(stacktrace());
+  foo(foo, 0);
 }
