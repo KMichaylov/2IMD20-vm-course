@@ -252,16 +252,19 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 case OP_JUMP -> {
                     pc += operand;
+                    stack.pop();
                 }
                 case OP_JUMP_IF_FALSE -> {
                     if (!((Boolean) stack.peek())) {
                         pc += operand;
                     }
+                    stack.pop();
                 }
                 case OP_JUMP_IF_TRUE -> {
                     if ((Boolean) stack.peek()) {
                         pc += operand;
                     }
+                    stack.pop();
                 }
                 case OP_PRINT -> {
                     if (!stack.isEmpty()) {
@@ -423,10 +426,18 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         args[i] = stack.pop();
                     }
 
-                    String functionName;
-                    while (!(stack.peek() instanceof String))
-                        stack.pop();
-                    functionName = (String) stack.pop();
+                    String functionName = null;
+                    int index = stack.size() - 1;
+                    while (index >= 0 && !(stack.get(index) instanceof String)) {
+                        index--;
+                    }
+                    if (index >= 0) {
+                        if(globalScope.getFunction((String) stack.get(index)) != null){
+                            functionName = (String) stack.get(index);
+                            stack.remove(index);
+                        }
+
+                    }
                     if (functionName.equals("null")) {
                         stack.push(null);
                         break;
