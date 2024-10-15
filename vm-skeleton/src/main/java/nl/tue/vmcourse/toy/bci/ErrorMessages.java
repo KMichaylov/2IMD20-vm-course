@@ -22,7 +22,6 @@ public class ErrorMessages {
         }
     }
 
-
     public String generateTypeError(Object left, Object right, String operation) {
         String leftType = returnTypeOfObject(left);
         String rightType = returnTypeOfObject(right);
@@ -48,6 +47,10 @@ public class ErrorMessages {
 
     public String generateUndefinedFunction(String functionName) {
         return "Undefined function: " + functionName + "\n";
+    }
+
+    public String generateUndefinedObjectProperty(String propertyName){
+        return "Undefined property: " + propertyName + "\n";
     }
 
 }

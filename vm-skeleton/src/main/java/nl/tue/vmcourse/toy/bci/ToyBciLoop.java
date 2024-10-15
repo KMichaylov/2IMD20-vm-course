@@ -265,7 +265,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                                 stack.push(returnValue);
                             } else {
-                                stack.push(((Map<?, ?>) receiver).get(propertyName));
+                                Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
+                                if (propertyValue == null) {
+                                    consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                                    return consoleMessages;
+                                }
+                                stack.push(propertyValue);
                             }
                         } else {
                             System.out.println("Something with the getter of the object property went wrong...");
