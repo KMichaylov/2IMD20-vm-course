@@ -81,7 +81,7 @@ public class ToyLauncher {
             Object result = evalStream(charStream);
             System.out.println(result);
         } catch (ToySyntaxErrorException e) {
-            System.err.println(e.getMessage());
+            System.out.println("Error(s) parsing script :(");
         }
     }
 }
