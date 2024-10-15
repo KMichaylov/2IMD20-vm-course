@@ -2,6 +2,7 @@ package nl.tue.vmcourse.toy.bci;
 
 import nl.tue.vmcourse.toy.interpreter.ToyAbstractFunctionBody;
 import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
+import nl.tue.vmcourse.toy.interpreter.ToySyntaxErrorException;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
 import nl.tue.vmcourse.toy.parser.ToyLangLexer;
@@ -457,18 +458,21 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object right = stack.pop();
                     Object left = stack.pop();
 
-                    boolean result = switch (operand) {
-                        case 0 -> equalsComparison(left, right);            // for ==
-                        case 1 -> !equalsComparison(left, right);           // for !=
-                        case 2 -> lessThanComparison(left, right);          // for <
-                        case 3 -> lessThanOrEqualComparison(left, right);   // for <=
-                        case 4 -> greaterThanComparison(left, right);       // for >
-                        case 5 -> greaterThanOrEqualComparison(left, right);// for >=
-                        // TODO: Check later what exactly to do with default, what error to throw
-                        default -> throw new RuntimeException("Unknown comparison type");
-                    };
-
-                    stack.push(result);
+                    try {
+                        boolean result = switch (operand) {
+                            case 0 -> equalsComparison(left, right);            // for ==
+                            case 1 -> !equalsComparison(left, right);           // for !=
+                            case 2 -> lessThanComparison(left, right);          // for <
+                            case 3 -> lessThanOrEqualComparison(left, right);   // for <=
+                            case 4 -> greaterThanComparison(left, right);       // for >
+                            case 5 -> greaterThanOrEqualComparison(left, right);// for >=
+                            // TODO: Check later what exactly to do with default, what error to throw
+                            default -> throw new RuntimeException("Unknown comparison type");
+                        };
+                        stack.push(result);
+                    } catch (ToySyntaxErrorException e) {
+                        return null;
+                    }
                 }
                 case OP_NOT -> {
                     if (!stack.isEmpty()) {
@@ -504,8 +508,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
 
                     }
-                    if (functionName == null || functionName.equals("null")) {
-                        if(!stack.isEmpty()){
+                    if (functionName == null) {
+                        if (!stack.isEmpty()) {
                             String message = errorMessages.generateUndefinedFunction(String.valueOf(stack.pop()));
                             return consoleMessages.append(message);
                         } else {
@@ -529,6 +533,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
                     }
 
+
+                    if (functionName.equals("null")) {
+                        stack.push("NULL");
+                        break;
+                    }
                     // Create a new frame with the arguments
                     VirtualFrame newFrame = new VirtualFrame(args);
                     currentDepth++;
@@ -707,7 +716,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if (left instanceof Boolean && right instanceof Boolean) {
             return left.equals(right);
         }
-        throw new RuntimeException("Invalid comparison types for '=='.");
+        consoleMessages.append(errorMessages.generateTypeError(left, right, "=="));
+        throw new ToySyntaxErrorException("Cannot compare non-numeric values with '=='.");
     }
 
     /**
@@ -721,7 +731,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (left instanceof Number && right instanceof Number) {
             return numericCompare((Number) left, (Number) right) < 0;
         }
-        throw new RuntimeException("Cannot compare non-numeric values with '<'.");
+        consoleMessages.append(errorMessages.generateTypeError(left, right, "<"));
+        throw new ToySyntaxErrorException("Cannot compare non-numeric values with '<'.");
     }
 
     /**
@@ -735,7 +746,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (left instanceof Number && right instanceof Number) {
             return numericCompare((Number) left, (Number) right) <= 0;
         }
-        throw new RuntimeException("Cannot compare non-numeric values with '<='.");
+        consoleMessages.append(errorMessages.generateTypeError(left, right, "<="));
+        throw new ToySyntaxErrorException("Cannot compare non-numeric values with '<='.");
     }
 
     /**
@@ -749,7 +761,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (left instanceof Number && right instanceof Number) {
             return numericCompare((Number) left, (Number) right) > 0;
         }
-        throw new RuntimeException("Cannot compare non-numeric values with '>'.");
+        consoleMessages.append(errorMessages.generateTypeError(left, right, ">"));
+        throw new ToySyntaxErrorException("Cannot compare non-numeric values with '>'.");
     }
 
     /**
@@ -763,7 +776,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (left instanceof Number && right instanceof Number) {
             return numericCompare((Number) left, (Number) right) >= 0;
         }
-        throw new RuntimeException("Cannot compare non-numeric values with '>='.");
+        consoleMessages.append(errorMessages.generateTypeError(left, right, ">="));
+        throw new ToySyntaxErrorException("Cannot compare non-numeric values with '>='.");
     }
 
 
