@@ -711,7 +711,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private boolean equalsComparison(Object left, Object right) {
         if (left instanceof Number && right instanceof Number) {
             return numericEquals((Number) left, (Number) right);
-        } else if (left instanceof String && right instanceof String) {
+        } else if (left instanceof String && right instanceof String || left.equals("NULL") || right.equals("NULL")) {
             return left.equals(right);
         } else if (left instanceof Boolean && right instanceof Boolean) {
             return left.equals(right);
