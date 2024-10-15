@@ -46,4 +46,8 @@ public class ErrorMessages {
         return "Type error: operation \"" + functionName + "\" not defined for " + objType + " " + argument + "\n";
     }
 
+    public String generateUndefinedFunction(String functionName) {
+        return "Undefined function: " + functionName + "\n";
+    }
+
 }

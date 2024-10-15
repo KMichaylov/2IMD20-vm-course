@@ -498,12 +498,20 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (globalScope.getFunction((String) stack.get(index)) != null) {
                             functionName = (String) stack.get(index);
                             stack.remove(index);
+                        } else {
+                            String message = "Undefined function: " + stack.get(index) + "\n";
+                            return consoleMessages.append(message);
                         }
 
                     }
                     if (functionName == null || functionName.equals("null")) {
-                        stack.push(null);
-                        return consoleMessages.append("Undefined function: true");
+                        if(!stack.isEmpty()){
+                            String message = errorMessages.generateUndefinedFunction(String.valueOf(stack.pop()));
+                            return consoleMessages.append(message);
+                        } else {
+                            String message = errorMessages.generateUndefinedFunction(String.valueOf(locals.get(currentDepth).get(currentFrameSlot)));
+                            return consoleMessages.append(message);
+                        }
                     }
                     RootCallTarget function = globalScope.getFunction(functionName);
                     if (function == null) {
