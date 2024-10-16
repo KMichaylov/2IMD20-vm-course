@@ -405,6 +405,15 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
 
+                case OP_HELLO_EQUALS_WORLD -> {
+                    for (int i = 0; i < locals.get(currentDepth).size(); i++) {
+                        if ("hello".equals(bytecode.getElementFromConstantPool(i))) {
+                            locals.get(currentDepth).set(i, "world");
+                            break;
+                        }
+                    }
+                }
+
                 case OP_HAS_SIZE -> {
                     Object obj = stack.pop();
                     if (obj instanceof Map || obj instanceof String) {

@@ -63,6 +63,7 @@ public enum Opcode {
     OP_SUB_STRING((byte) 0x29),
     OP_HAS_PROPERTY((byte) 0x2D),
     OP_DELETE_PROPERTY((byte) 0x2E),
+    OP_HELLO_EQUALS_WORLD((byte) 0x33),
 
     // For object support
     OP_NEW((byte) 0x2A),
