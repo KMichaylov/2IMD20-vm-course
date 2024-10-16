@@ -75,6 +75,7 @@ public class ToyLauncher {
         parser.setFactory(factory);
         lex.removeErrorListeners();
         parser.removeErrorListeners();
+        lex.addErrorListener(new ToyLangParser.BailoutErrorListener());
         parser.addErrorListener(new ToyLangParser.BailoutErrorListener());
         parser.toylanguage();
 
