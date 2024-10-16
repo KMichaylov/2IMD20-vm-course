@@ -167,10 +167,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object left = stack.pop();
                     if (!(left instanceof Boolean)) {
                         consoleMessages.append(errorMessages.generateBooleanTypeError(left, "&&"));
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
                         return consoleMessages;
                     }
                     if (!(right instanceof Boolean)) {
                         consoleMessages.append(errorMessages.generateBooleanTypeError(right, "&&"));
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
                         return consoleMessages;
                     }
                     if (left.equals(true) && right.equals(true)) {
@@ -196,10 +200,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object right = stack.pop();
                     if (!(left instanceof Boolean)) {
                         consoleMessages.append(errorMessages.generateBooleanTypeError(left, "||"));
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
                         return consoleMessages;
                     }
                     if (!(right instanceof Boolean)) {
                         consoleMessages.append(errorMessages.generateTypeError(left, right, "||"));
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
                         return consoleMessages;
                     }
                     if (left.equals(true) || right.equals(true)) {
@@ -248,6 +256,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
                         if(!(stack.peek() instanceof Map)) {
                             consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                            System.err.println(consoleMessages.toString());
+                            System.exit(1);
                         }
                         Object receiver = stack.pop();
                         if (receiver instanceof Map) {
@@ -267,6 +277,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
                                 if (propertyValue == null) {
                                     consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                                    System.err.println(consoleMessages.toString());
+                                    System.exit(1);
                                     return consoleMessages;
                                 }
                                 stack.push(propertyValue);
@@ -313,6 +325,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (!(stack.peek() instanceof Boolean)) {
                         // TODO: Since I use the same thing for loops and if statements, I should somehow get the operator.
                         consoleMessages.append(errorMessages.generateTypeError(stack.peek(), "if"));
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
                         return consoleMessages;
                     }
                     if (!((Boolean) stack.peek())) {
@@ -447,10 +461,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_DEFINE_FUNCTION -> {
                     if (stack.isEmpty()) {
                         consoleMessages.append("Type error: operation \"defineFunction\" not defined for NULL\n");
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
                         return consoleMessages;
                     }
                     if (!(stack.peek() instanceof String)) {
                         consoleMessages.append(errorMessages.generateTypeErrorForDefineFunction("defineFunction", stack.peek()));
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
                         return consoleMessages;
                     }
                     String functionCode = (String) stack.pop();
@@ -508,16 +526,25 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             stack.remove(index);
                         } else {
                             String message = "Undefined function: " + stack.get(index) + "\n";
-                            return consoleMessages.append(message);
+                            consoleMessages.append(message);
+                            System.err.println(consoleMessages.toString());
+                            System.exit(1);
+                            return consoleMessages;
                         }
 
                     }
                     if (functionName == null) {
                         if (!stack.isEmpty()) {
                             String message = errorMessages.generateUndefinedFunction(String.valueOf(stack.pop()));
+                            consoleMessages.append(message);
+                            System.err.println(consoleMessages.toString());
+                            System.exit(1);
                             return consoleMessages.append(message);
                         } else {
                             String message = errorMessages.generateUndefinedFunction(String.valueOf(locals.get(currentDepth).get(currentFrameSlot)));
+                            consoleMessages.append(message);
+                            System.err.println(consoleMessages.toString());
+                            System.exit(1);
                             return consoleMessages.append(message);
                         }
                     }
@@ -633,6 +660,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return left.toString() + right.toString();
         } else {
             consoleMessages.append(errorMessages.generateTypeError(left, right, "+"));
+            System.err.println(consoleMessages.toString());
+            System.exit(1);
             return null;
         }
     }
@@ -656,6 +685,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return (BigInteger.valueOf((Long) left)).subtract((BigInteger) right);
         } else {
             consoleMessages.append(errorMessages.generateTypeError(left, right, "-"));
+            System.err.println(consoleMessages.toString());
+            System.exit(1);
             return null;
         }
     }
@@ -678,6 +709,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return (BigInteger.valueOf((Long) left)).multiply((BigInteger) right);
         } else {
             consoleMessages.append(errorMessages.generateTypeError(left, right, "*"));
+            System.err.println(consoleMessages.toString());
+            System.exit(1);
             return null;
         }
     }
@@ -700,6 +733,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return (BigInteger.valueOf((Long) left)).divide((BigInteger) right);
         } else {
             consoleMessages.append(errorMessages.generateTypeError(left, right, "/"));
+            System.err.println(consoleMessages.toString());
+            System.exit(1);
             return null;
         }
     }
@@ -721,6 +756,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return left.equals(right);
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, "=="));
+        System.err.println(consoleMessages.toString());
+        System.exit(1);
         throw new ToySyntaxErrorException("Cannot compare non-numeric values with '=='.");
     }
 
@@ -736,6 +773,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return numericCompare((Number) left, (Number) right) < 0;
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, "<"));
+        System.err.println(consoleMessages.toString());
+        System.exit(1);
         throw new ToySyntaxErrorException("Cannot compare non-numeric values with '<'.");
     }
 
@@ -751,6 +790,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return numericCompare((Number) left, (Number) right) <= 0;
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, "<="));
+        System.err.println(consoleMessages.toString());
+        System.exit(1);
         throw new ToySyntaxErrorException("Cannot compare non-numeric values with '<='.");
     }
 
@@ -766,6 +807,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return numericCompare((Number) left, (Number) right) > 0;
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, ">"));
+        System.err.println(consoleMessages.toString());
+        System.exit(1);
         throw new ToySyntaxErrorException("Cannot compare non-numeric values with '>'.");
     }
 
@@ -781,6 +824,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return numericCompare((Number) left, (Number) right) >= 0;
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, ">="));
+        System.err.println(consoleMessages.toString());
+        System.exit(1);
         throw new ToySyntaxErrorException("Cannot compare non-numeric values with '>='.");
     }
 
