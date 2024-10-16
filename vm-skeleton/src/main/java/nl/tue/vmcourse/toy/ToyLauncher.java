@@ -13,6 +13,35 @@ import java.util.Map;
 
 public class ToyLauncher {
 
+    public static final boolean JIT_ENABLED = System.getProperty("toy.Jit") != null;
+    public static final boolean IC_ENABLED;
+    public static final boolean ROPES_ENABLED;
+    public static final boolean ARRAYS_ENABLED;
+
+    static {
+        // In your final submission, you want to remove this (otherwise, tests may fail!)
+        if (JIT_ENABLED) {
+            System.out.println("Toy Jit enabled -- all other optimizations are enabled by default");
+            IC_ENABLED = true;
+            ROPES_ENABLED = true;
+            ARRAYS_ENABLED = true;
+        } else {
+            IC_ENABLED = System.getProperty("toy.InlineCaches") != null;
+            ROPES_ENABLED = System.getProperty("toy.StringRopes") != null;
+            ARRAYS_ENABLED = System.getProperty("toy.ArrayStrategies") != null;
+
+            if (IC_ENABLED) {
+                System.out.println("Toy Inline Caches enabled");
+            }
+            if (ROPES_ENABLED) {
+                System.out.println("Toy String Ropes enabled");
+            }
+            if (ARRAYS_ENABLED) {
+                System.out.println("Toy Array Strategies enabled");
+            }
+        }
+    }
+
     public static Object eval(String code) {
         return evalStream(CharStreams.fromString(code));
     }
