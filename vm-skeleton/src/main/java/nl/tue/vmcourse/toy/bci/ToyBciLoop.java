@@ -909,7 +909,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     // TODO: Extract this logic
     private String checkValueType(Object value) {
-        if (value == null) {
+        if (value == null || value.equals("NULL")) {
             return "NULL";
         } else if (globalScope.getFunction(value.toString()) != null) {
             return "Function";
