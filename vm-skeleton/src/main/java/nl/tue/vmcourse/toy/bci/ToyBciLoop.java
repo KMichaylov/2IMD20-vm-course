@@ -101,11 +101,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_LITERAL_BIGINT -> pushLiteralToStack(bytecode, operand, stack, BigInteger.class);
                 case OP_FUNCTION_NAME -> {
                     String literalValue = (String) bytecode.getElementFromConstantPool(operand);
-                    if (tableWithVariables.containsKey(literalValue) && currentFrameSlot != tableWithVariables.get(literalValue)) {
-                        stack.push(null);
-                    } else {
-                        stack.push(literalValue);
-                    }
+                    stack.push(literalValue);
                 }
                 case OP_LOAD -> {
                     if (locals.get(currentDepth).isEmpty())
@@ -247,8 +243,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         } else if (stack.peek() instanceof Long) {
                             propertyName = stack.pop().toString();
                         }
-                        while (!(stack.get(stack.size() - 1) instanceof Map)) {
-                            stack.pop();
+                        if(!(stack.peek() instanceof Map)) {
+                            consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
                         }
                         Object receiver = stack.pop();
                         if (receiver instanceof Map) {
@@ -333,8 +329,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (valueToPrint == null) {
                             break;
                         }
-//                        consoleMessages.append(valueToPrint.toString()).append("\n");
-                        System.out.println(valueToPrint);
+                        consoleMessages.append(valueToPrint.toString()).append("\n");
+//                        System.out.println(valueToPrint);
                     }
 
                 }
