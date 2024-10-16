@@ -358,7 +358,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 // TODO: Extract some logic into separate method
                 case OP_TYPEOF -> {
                     Object valueToCheckTypeOf = stack.pop();
-                    if (valueToCheckTypeOf == null) {
+                    if (valueToCheckTypeOf == null || valueToCheckTypeOf.equals("NULL")) {
                         stack.push("NULL");
                     } else if (globalScope.getFunction(valueToCheckTypeOf.toString()) != null ||
                             valueToCheckTypeOf.equals("Function")) {
@@ -750,7 +750,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private boolean equalsComparison(Object left, Object right) {
         if (left instanceof Number && right instanceof Number) {
             return numericEquals((Number) left, (Number) right);
-        } else if (left instanceof String && right instanceof String || left.equals("NULL") || right.equals("NULL")) {
+        } else if (left instanceof String && right instanceof String || left.equals("NULL") || right.equals("NULL") || left instanceof Number || right instanceof Number) {
             return left.equals(right);
         } else if (left instanceof Boolean && right instanceof Boolean) {
             return left.equals(right);
