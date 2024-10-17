@@ -346,8 +346,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (valueToPrint == null) {
                             break;
                         }
-                        consoleMessages.append(valueToPrint.toString()).append("\n");
+                        else if(valueToPrint instanceof Map){
+                            consoleMessages.append("Object").append("\n");
+                            break;
+                        } else{
+                            consoleMessages.append(valueToPrint.toString()).append("\n");
 //                        System.out.println(valueToPrint);
+                        }
+
                     }
 
                 }
