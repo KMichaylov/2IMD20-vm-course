@@ -850,18 +850,18 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (left instanceof BigInteger) {
             if (right instanceof BigInteger) {
                 return ((BigInteger) left).compareTo((BigInteger) right);
-            } else if (right instanceof Long) {
-                return ((BigInteger) left).compareTo(BigInteger.valueOf((Long) right));
+            } else if (right instanceof Long || right instanceof Integer) {
+                return ((BigInteger) left).compareTo(BigInteger.valueOf(right.longValue()));
             } else {
-                throw new IllegalArgumentException("Incompatible types for comparison: " + right.getClass().getName());
+                // TODO
             }
-        } else if (left instanceof Long) {
+        } else if (left instanceof Long || left instanceof Integer) {
             if (right instanceof BigInteger) {
-                return -((BigInteger) right).compareTo(BigInteger.valueOf((Long) left));
-            } else if (right instanceof Long) {
-                return Long.compare((Long) left, (Long) right);
+                return -((BigInteger) right).compareTo(BigInteger.valueOf(left.longValue()));
+            } else if (right instanceof Long || right instanceof Integer) {
+                return Long.compare(left.longValue(), right.longValue());
             } else {
-                System.out.println("Incompatible types");
+                // TODO
             }
         } else {
             if (left == null || right == null) {
@@ -885,11 +885,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         if (left instanceof BigInteger) {
             if (right instanceof BigInteger) {
                 return left.equals(right);
-            } else if (right instanceof Long) {
-                return left.equals(BigInteger.valueOf((Long) right));
+            } else if (right instanceof Long || right instanceof Integer) {
+                return left.equals(BigInteger.valueOf(right.longValue()));
             } else {
                 //TODO
-                System.out.println("Incompatible types");
+
             }
         } else if (left instanceof Long) {
             if (right instanceof BigInteger) {
@@ -898,12 +898,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 return left.longValue() == right.longValue();
             } else {
 //                Todo
-                System.out.println("Incompatible types");
             }
         } else {
             if (left == null || right == null) {
                 // TODO
-                System.out.println("Cannot compare if one or two are null values");
             }
             return left.longValue() == right.longValue();
         }
