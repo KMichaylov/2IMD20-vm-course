@@ -3,11 +3,13 @@ package nl.tue.vmcourse.toy.bci;
 public class ErrorMessages {
 
     private String returnTypeOfObject(Object obj) {
-        if(obj instanceof Number) {
+        if (obj == null || obj.equals("NULL")) {
+            return null;
+        } else if (obj instanceof Number) {
             return "Number";
-        } else if(obj instanceof String) {
+        } else if (obj instanceof String) {
             return "String";
-        } else if(obj instanceof Boolean) {
+        } else if (obj instanceof Boolean) {
             return "Boolean";
         } else {
             return obj.getClass().getSimpleName();
@@ -15,7 +17,7 @@ public class ErrorMessages {
     }
 
     private String returnValueOfObject(Object obj) {
-        if(obj instanceof String) {
+        if (obj instanceof String) {
             return "\"" + obj + "\"";
         } else {
             return obj.toString();
@@ -35,12 +37,16 @@ public class ErrorMessages {
         return "Type error: operation \"" + operation + "\" not defined for " + objType + " \"" + obj + "\"\n";
     }
 
+    public String generateTypeErrorNull(String operation) {
+        return "Type error: operation \"" + operation + "\" not defined for " + "NULL" + ", " + "NULL" + "\n";
+    }
+
     public String generateBooleanTypeError(Object obj, String operation) {
         String objType = returnTypeOfObject(obj);
         return "Type error: operation \"" + operation + "\" not defined for " + objType + " \"" + obj + "\", ANY\n";
     }
 
-    public String generateTypeErrorForDefineFunction(String functionName,Object argument) {
+    public String generateTypeErrorForDefineFunction(String functionName, Object argument) {
         String objType = returnTypeOfObject(argument);
         return "Type error: operation \"" + functionName + "\" not defined for " + objType + " " + argument + "\n";
     }
@@ -49,7 +55,7 @@ public class ErrorMessages {
         return "Undefined function: " + functionName + "\n";
     }
 
-    public String generateUndefinedObjectProperty(String propertyName){
+    public String generateUndefinedObjectProperty(String propertyName) {
         return "Undefined property: " + propertyName + "\n";
     }
 
