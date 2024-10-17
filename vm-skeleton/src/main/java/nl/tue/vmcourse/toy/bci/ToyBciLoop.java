@@ -768,6 +768,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return left.equals(right);
         } else if (left instanceof Boolean && right instanceof Boolean) {
             return left.equals(right);
+        } else if (left instanceof HashMap && right instanceof HashMap) {
+            return left == right;
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, "=="));
         System.err.println(consoleMessages.toString());
