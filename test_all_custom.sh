@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Folder containing the input files
-folder="./tests/community/submissions/39"
+folder="./tests"
 
 # Check if the provided SL executable exists and is executable
 if [ -e "$1" ] && [ -x "$1" ]; then
@@ -15,6 +15,7 @@ ok=0
 fail=0
 fatals=0
 iters=0
+timeout_limit=5  # Timeout in seconds
 
 # Initialize log files
 touch fatal_errors.log
@@ -49,9 +50,17 @@ for file in $(find $folder -type f -name "*.sl"); do
 
   tmpfile=$(mktemp)
 
-  # Execute the sl command and capture output and error
-  $sl "$file.sl" &> "$tmpfile"
+  # Execute the sl command with a timeout of 5 seconds and capture output and error
+  timeout $timeout_limit $sl "$file.sl" &> "$tmpfile"
   exit_code=$?
+
+  # Check if the command timed out
+  if [ $exit_code -eq 124 ]; then
+    echo "[ERROR] Test $file.sl exceeded the time limit of $timeout_limit seconds!"
+    echo "[ERROR] $file.sl exceeded the time limit." >> suspicious.log
+    ((fail++))
+    continue
+  fi
 
   # Check if the command was successful (exit code 0)
   if [ $exit_code -eq 0 ]; then
