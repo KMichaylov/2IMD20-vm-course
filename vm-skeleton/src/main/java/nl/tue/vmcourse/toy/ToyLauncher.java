@@ -95,6 +95,9 @@ public class ToyLauncher {
                 globalScope.registerFunction(entry.getKey(), entry.getValue());
             }
             return mainFunction.invoke(globalScope);
+        } else {
+            System.err.println("No function main() defined in SL source file.");
+            System.exit(1);
         }
         return null;
     }
