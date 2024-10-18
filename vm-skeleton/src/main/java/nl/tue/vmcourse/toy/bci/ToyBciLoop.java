@@ -369,7 +369,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 // TODO: Extract some logic into separate method
                 case OP_TYPEOF -> {
                     Object valueToCheckTypeOf = stack.pop();
-                    if (valueToCheckTypeOf == null || valueToCheckTypeOf.equals("NULL")) {
+                    if (valueToCheckTypeOf == null || valueToCheckTypeOf.equals("NULL") || valueToCheckTypeOf.equals("Number")) {
                         stack.push("NULL");
                     } else if (globalScope.getFunction(valueToCheckTypeOf.toString()) != null ||
                             valueToCheckTypeOf.equals("Function")) {
