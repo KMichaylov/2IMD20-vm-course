@@ -238,10 +238,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     Object value = stack.pop();
                     Object receiver = stack.pop();
-                    if (receiver instanceof Map) {
+                    if (receiver instanceof Map && ((propertyName instanceof String) || (propertyName instanceof Number))) {
                         ((Map<String, Object>) receiver).put((String) propertyName, value);
                     } else {
-                        System.out.println("Something with setter of the property went wrong...");
+                        System.err.println("Element is not a valid array.");
+                        System.exit(1);
+                        return consoleMessages;
                     }
 
                 }
