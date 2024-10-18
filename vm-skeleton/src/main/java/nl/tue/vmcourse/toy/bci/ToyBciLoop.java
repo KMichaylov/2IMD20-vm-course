@@ -111,7 +111,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         break;
                     if (frameSlot != null) {
                         currentFrameSlot = frameSlot;
-                        Object value = locals.get(currentDepth).get(frameSlot);
+                        Object value = frameSlot < locals.get(currentDepth).size() ? locals.get(currentDepth).get(frameSlot) : null;
                         stack.push(value);
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                     }
@@ -124,7 +124,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     if (frameSlot != null) {
                         currentFrameSlot = frameSlot;
-                        Object value = locals.get(currentDepth).get(frameSlot);
+                        Object value = frameSlot < locals.get(currentDepth).size() ? locals.get(currentDepth).get(frameSlot) : null;
                         stack.push(value);
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                     }
@@ -344,6 +344,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (!stack.isEmpty()) {
                         Object valueToPrint = stack.pop();
                         if (valueToPrint == null) {
+                            consoleMessages.append("NULL").append("\n");
                             break;
                         }
                         else if(valueToPrint instanceof Map){
