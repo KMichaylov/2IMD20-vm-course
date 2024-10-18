@@ -257,7 +257,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         } else if (stack.peek() instanceof Long) {
                             propertyName = stack.pop().toString();
                         }
-                        if(!(stack.peek() instanceof Map)) {
+                        if (!(stack.peek() instanceof Map)) {
                             consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
                             System.err.println(consoleMessages.toString());
                             System.exit(1);
@@ -349,13 +349,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (valueToPrint == null) {
                             consoleMessages.append("NULL").append("\n");
                             break;
-                        }
-                        else if(valueToPrint instanceof Map){
+                        } else if (valueToPrint instanceof Map) {
                             consoleMessages.append("Object").append("\n");
                             break;
-                        } else{
+                        }
+                        if (currentFunctionName.equals("main")) {
+                            System.out.println(valueToPrint);
+                        } else {
                             consoleMessages.append(valueToPrint.toString()).append("\n");
-//                        System.out.println(valueToPrint);
                         }
 
                     }
@@ -498,7 +499,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_COMPARE -> {
-                    if(stack.size() == 1){
+                    if (stack.size() == 1) {
                         break;
                     }
                     Object right = stack.pop();
@@ -598,7 +599,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     currentDepth++;
 
                     // Use the stack overflow error
-                    if(currentDepth > STACKOVERFLOW_THRESHOLD){
+                    if (currentDepth > STACKOVERFLOW_THRESHOLD) {
                         consoleMessages.append("Resource exhausted: Stack overflow");
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
@@ -679,7 +680,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @return the sum, or concatenation in case one of the values is a string
      */
     private Object add(Object left, Object right) {
-        if(left.equals("NULL") && right.equals("NULL")) {
+        if (left.equals("NULL") && right.equals("NULL")) {
             consoleMessages.append(errorMessages.generateTypeErrorNull("+"));
             System.err.println(consoleMessages.toString());
             System.exit(1);
@@ -693,7 +694,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if (left instanceof Long && right instanceof BigInteger) {
             return (BigInteger.valueOf((Long) left)).add((BigInteger) right);
         } else if ((left instanceof String || right instanceof String)) {
-            if(right==null){
+            if (right == null) {
                 right = "NULL";
             }
             return left.toString() + right.toString();
