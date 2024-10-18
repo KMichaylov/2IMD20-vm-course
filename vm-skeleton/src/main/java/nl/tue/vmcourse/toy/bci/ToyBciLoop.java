@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class ToyBciLoop extends ToyAbstractFunctionBody {
+    public static final int STACKOVERFLOW_THRESHOLD = 255;
     private final Bytecode bytecode;
     private HashMap<Integer, List<Object>> locals;
     private static GlobalScope globalScope;
@@ -592,6 +593,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     // Create a new frame with the arguments
                     VirtualFrame newFrame = new VirtualFrame(args);
                     currentDepth++;
+
+                    // Use the stack overflow error
+                    if(currentDepth > STACKOVERFLOW_THRESHOLD){
+                        consoleMessages.append("Resource exhausted: Stack overflow");
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
+                    }
                     // Invoke the function and push the return value onto the stack
                     Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                     stack.push(returnValue);
