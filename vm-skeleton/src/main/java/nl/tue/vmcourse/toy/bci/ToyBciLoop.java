@@ -488,7 +488,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         return consoleMessages;
                     }
                     String functionCode = (String) stack.pop();
+                    int depth = currentDepth;
                     Object answer = evalStreamRedefine(CharStreams.fromString(functionCode));
+                    currentDepth = depth;
                     stack.push(answer);
                 }
 
