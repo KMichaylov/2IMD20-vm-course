@@ -980,6 +980,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         ToyLangParser parser = new ToyLangParser(tokens);
         ToyNodeFactory factory = new ToyNodeFactory(src);
         parser.setFactory(factory);
+        lex.removeErrorListeners();
+        parser.removeErrorListeners();
+        lex.addErrorListener(new ToyLangParser.BailoutErrorListener());
         parser.addErrorListener(new ToyLangParser.BailoutErrorListener());
         parser.toylanguage();
 
