@@ -676,7 +676,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @return the sum, or concatenation in case one of the values is a string
      */
     private Object add(Object left, Object right) {
-        if(left.equals("NULL") || right.equals("NULL")) {
+        if(left.equals("NULL") && right.equals("NULL")) {
             consoleMessages.append(errorMessages.generateTypeErrorNull("+"));
             System.err.println(consoleMessages.toString());
             System.exit(1);
@@ -690,6 +690,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if (left instanceof Long && right instanceof BigInteger) {
             return (BigInteger.valueOf((Long) left)).add((BigInteger) right);
         } else if ((left instanceof String || right instanceof String)) {
+            if(right==null){
+                right = "NULL";
+            }
             return left.toString() + right.toString();
         } else {
             consoleMessages.append(errorMessages.generateTypeError(left, right, "+"));
