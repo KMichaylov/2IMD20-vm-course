@@ -204,7 +204,12 @@ public class AstToBciAssembler {
             } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode) {
                 ToyReadPropertyNode readPropertyNode = (ToyReadPropertyNode) invokeNode.getFunctionNode();
                 generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
-                Object propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
+                Object propertyName = null;
+                if (readPropertyNode.getNameNode() instanceof ToyStringLiteralNode) {
+                    propertyName = ((ToyStringLiteralNode) readPropertyNode.getNameNode()).getValue();
+                } else if (readPropertyNode.getNameNode() instanceof ToyLongLiteralNode) {
+                    propertyName = ((ToyLongLiteralNode) readPropertyNode.getNameNode()).getValue();
+                }
                 int propertyIndex = bytecode.addToConstantPool(propertyName);
                 generateBytecode(readPropertyNode.getNameNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
@@ -295,12 +300,11 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_EVAL, 0);
             }
             case "defineFunction" -> {
-                if(invokeNode.getToyExpressionNodes().length >= 1) {
+                if (invokeNode.getToyExpressionNodes().length >= 1) {
                     ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[0];
                     generateBytecode(codeData, bytecode);
                     bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
-                }
-                else{
+                } else {
                     bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
                 }
             }
@@ -379,7 +383,8 @@ public class AstToBciAssembler {
     private static boolean isBuiltInFunctionForTypeChecking(String functionName) {
         boolean result;
         switch (functionName) {
-            case "println", "typeOf", "isInstance", "nanoTime", "eval", "defineFunction", "getSize", "stacktrace", "new", "exit",
+            case "println", "typeOf", "isInstance", "nanoTime", "eval", "defineFunction", "getSize", "stacktrace",
+                 "new", "exit",
                  "hasSize", "subString", "hasProperty", "deleteProperty", "helloEqualsWorld" -> result = true;
             default -> result = false;
         }
