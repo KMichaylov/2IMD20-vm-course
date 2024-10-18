@@ -498,6 +498,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_COMPARE -> {
+                    if(stack.size() == 1){
+                        break;
+                    }
                     Object right = stack.pop();
                     Object left = stack.pop();
 
