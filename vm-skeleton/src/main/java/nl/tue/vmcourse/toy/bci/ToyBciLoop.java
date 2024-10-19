@@ -740,7 +740,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     private Object multiply(Object left, Object right) {
         if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-            return ((long) ((Long) left).intValue() * ((Long) right).intValue());
+            long leftLong = ((Number) left).longValue();
+            long rightLong = ((Number) right).longValue();
+            BigInteger product = BigInteger.valueOf(leftLong).multiply(BigInteger.valueOf(rightLong));
+            if (product.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0) {
+                return product;
+            }
+            return leftLong * rightLong;
         } else if (left instanceof BigInteger && right instanceof BigInteger) {
             return ((BigInteger) left).multiply((BigInteger) right);
         } else if (left instanceof BigInteger && right instanceof Long) {
