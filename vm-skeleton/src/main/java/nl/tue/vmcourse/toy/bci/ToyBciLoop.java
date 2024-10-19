@@ -219,7 +219,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_NEW -> {
-                    Map<String, Object> newObject = new HashMap<>();
+                    Map<Object, Object> newObject = new HashMap<>();
                     stack.push(newObject);
                 }
 
@@ -230,8 +230,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             propertyName = stack.pop().toString();
                         } else if (stack.peek() instanceof Long) {
                             propertyName = stack.pop().toString();
+                        } else if(stack.peek() instanceof  Object){
+                            propertyName = stack.pop();
                         }
                     } else {
+                        System.out.println("Here");
                         propertyName = stack.pop();
                     }
                     while (!(stack.get(stack.size() - 2) instanceof Map)) {
@@ -239,8 +242,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     Object value = stack.pop();
                     Object receiver = stack.pop();
-                    if (receiver instanceof Map && ((propertyName instanceof String) || (propertyName instanceof Number))) {
-                        ((Map<String, Object>) receiver).put((String) propertyName, value);
+                    if (receiver instanceof Map && ((propertyName instanceof String) || (propertyName instanceof Number) || (propertyName instanceof Object))) {
+                        ((Map<Object, Object>) receiver).put(propertyName, value);
                     } else {
                         System.err.println("Element is not a valid array.");
                         System.exit(1);
@@ -251,11 +254,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 case OP_GET_PROPERTY -> {
                     if (!stack.isEmpty()) {
-                        Object propertyName = new Object();
+                        Object propertyName = null;
                         if (stack.peek() instanceof String) {
                             propertyName = stack.pop().toString();
                         } else if (stack.peek() instanceof Long) {
                             propertyName = stack.pop().toString();
+                        } else if(stack.peek() instanceof  Map){
+                            propertyName = stack.pop();
                         }
                         if (!(stack.peek() instanceof Map)) {
                             consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
@@ -264,6 +269,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
                         Object receiver = stack.pop();
                         if (receiver instanceof Map) {
+                            if(propertyName instanceof String){
                             // Sometimes the property name can be a function.
                             if (globalScope.getFunction((String) propertyName) != null) {
                                 RootCallTarget function = globalScope.getFunction((String) propertyName);
@@ -277,6 +283,16 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                                 stack.push(returnValue);
                             } else {
+                                Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
+                                if (propertyValue == null) {
+                                    consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                                    System.err.println(consoleMessages.toString());
+                                    System.exit(1);
+                                    return consoleMessages;
+                                }
+                                stack.push(propertyValue);
+                            }
+                        } else {
                                 Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
                                 if (propertyValue == null) {
                                     consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
