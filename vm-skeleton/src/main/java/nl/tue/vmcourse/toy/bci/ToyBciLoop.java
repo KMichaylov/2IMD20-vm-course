@@ -237,6 +237,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         System.out.println("Here");
                         propertyName = stack.pop();
                     }
+
+                    if (stack.size() < 2 || !((stack.get(stack.size() - 2) instanceof HashMap)))
+                    {
+                        consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                        System.err.println(consoleMessages.toString());
+                        System.exit(1);
+                        return consoleMessages;
+                    }
                     while (!(stack.get(stack.size() - 2) instanceof Map)) {
                         stack.pop();
                     }
@@ -565,7 +573,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (globalScope.getFunction((String) stack.get(index)) != null) {
                             functionName = (String) stack.get(index);
                             stack.remove(index);
-                        } else {
+                        } else if(stack.get(index).equals("null")){
+                           break;
+
+                        }else {
                             String message = "Undefined function: " + stack.get(index) + "\n";
                             consoleMessages.append(message);
                             System.err.println(consoleMessages.toString());
