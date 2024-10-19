@@ -112,7 +112,8 @@ public class ToyLauncher {
         CharStream charStream = CharStreams.fromFileName(args[args.length - 1]);
         try {
             Object result = evalStream(charStream);
-            System.out.println(result);
+            if(result != null)
+                System.out.println(result);
         } catch (ToySyntaxErrorException e) {
             System.err.println("Error(s) parsing script :(");
             System.exit(1);

@@ -281,8 +281,6 @@ public class AstToBciAssembler {
         } else if (node instanceof ToyUnboxNode) {
             ToyUnboxNode unboxNode = (ToyUnboxNode) node;
             generateBytecode(unboxNode.getLeftNode(), bytecode);
-        } else if (node == null) {
-            System.out.println("Brrrrrrr null value received");
         }
 
 
