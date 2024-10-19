@@ -573,7 +573,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (globalScope.getFunction((String) stack.get(index)) != null) {
                             functionName = (String) stack.get(index);
                             stack.remove(index);
-                        } else if(stack.get(index).equals("null")){
+                        } else if(stack.get(index).equals("null") || stack.get(index).equals("NULL")){
                            break;
 
                         }else {
