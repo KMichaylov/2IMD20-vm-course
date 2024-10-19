@@ -230,7 +230,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             propertyName = stack.pop().toString();
                         } else if (stack.peek() instanceof Long) {
                             propertyName = stack.pop().toString();
-                        } else if(stack.peek() instanceof  Object){
+                        } else if (stack.peek() instanceof Object) {
                             propertyName = stack.pop();
                         }
                     } else {
@@ -238,8 +238,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         propertyName = stack.pop();
                     }
 
-                    if (stack.size() < 2 || !((stack.get(stack.size() - 2) instanceof HashMap)))
-                    {
+                    if (stack.size() < 2 || !((stack.get(stack.size() - 2) instanceof HashMap))) {
                         consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
@@ -267,7 +266,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             propertyName = stack.pop().toString();
                         } else if (stack.peek() instanceof Long) {
                             propertyName = stack.pop().toString();
-                        } else if(stack.peek() instanceof  Map){
+                        } else if (stack.peek() instanceof Map) {
                             propertyName = stack.pop();
                         }
                         if (!(stack.peek() instanceof Map)) {
@@ -277,30 +276,30 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
                         Object receiver = stack.pop();
                         if (receiver instanceof Map) {
-                            if(propertyName instanceof String){
-                            // Sometimes the property name can be a function.
-                            if (globalScope.getFunction((String) propertyName) != null) {
-                                RootCallTarget function = globalScope.getFunction((String) propertyName);
-                                int numberOfArguments = globalScope.getNumberOfArgumentsForFunction((String) propertyName);
+                            if (propertyName instanceof String) {
+                                // Sometimes the property name can be a function.
+                                if (globalScope.getFunction((String) propertyName) != null) {
+                                    RootCallTarget function = globalScope.getFunction((String) propertyName);
+                                    int numberOfArguments = globalScope.getNumberOfArgumentsForFunction((String) propertyName);
 
-                                Object[] args = new Object[numberOfArguments];
-                                for (int i = numberOfArguments - 1; i >= 0; i--) {
-                                    args[i] = stack.pop();
+                                    Object[] args = new Object[numberOfArguments];
+                                    for (int i = numberOfArguments - 1; i >= 0; i--) {
+                                        args[i] = stack.pop();
+                                    }
+                                    VirtualFrame newFrame = new VirtualFrame(args);
+                                    Object returnValue = function.invoke(new ArrayList<>(), newFrame);
+                                    stack.push(returnValue);
+                                } else {
+                                    Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
+                                    if (propertyValue == null) {
+                                        consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                                        System.err.println(consoleMessages.toString());
+                                        System.exit(1);
+                                        return consoleMessages;
+                                    }
+                                    stack.push(propertyValue);
                                 }
-                                VirtualFrame newFrame = new VirtualFrame(args);
-                                Object returnValue = function.invoke(new ArrayList<>(), newFrame);
-                                stack.push(returnValue);
                             } else {
-                                Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
-                                if (propertyValue == null) {
-                                    consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
-                                    System.err.println(consoleMessages.toString());
-                                    System.exit(1);
-                                    return consoleMessages;
-                                }
-                                stack.push(propertyValue);
-                            }
-                        } else {
                                 Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
                                 if (propertyValue == null) {
                                     consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
@@ -573,10 +572,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (globalScope.getFunction((String) stack.get(index)) != null) {
                             functionName = (String) stack.get(index);
                             stack.remove(index);
-                        } else if(stack.get(index).equals("null") || stack.get(index).equals("NULL")){
-                           break;
+                        } else if (stack.get(index).equals("null") || stack.get(index).equals("NULL")) {
+                            break;
 
-                        }else {
+                        } else {
                             String message = "Undefined function: " + stack.get(index) + "\n";
                             consoleMessages.append(message);
                             System.err.println(consoleMessages.toString());
@@ -834,6 +833,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if (left instanceof Boolean && right instanceof Boolean) {
             return left.equals(right);
         } else if (left instanceof HashMap && right instanceof HashMap) {
+            return left == right;
+        } else if (left.equals("null") || right.equals("null")) {
             return left == right;
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, "=="));
