@@ -731,6 +731,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @return the difference of the two values
      */
     private Object subtract(Object left, Object right) {
+        if (left instanceof Integer) {
+            left = ((Integer) left).longValue();
+        }
+        if (right instanceof Integer) {
+            right = ((Integer) right).longValue();
+        }
         if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
             return (long) (((Long) left).intValue() - ((Long) right).intValue());
         } else if (left instanceof BigInteger && right instanceof BigInteger) {
