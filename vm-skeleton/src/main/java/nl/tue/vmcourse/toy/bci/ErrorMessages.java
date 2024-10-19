@@ -17,7 +17,7 @@ public class ErrorMessages {
     }
 
     private String returnValueOfObject(Object obj) {
-        if (obj instanceof String) {
+        if (obj instanceof String && !obj.equals("NULL")) {
             return "\"" + obj + "\"";
         } else {
             return obj.toString();
@@ -25,11 +25,12 @@ public class ErrorMessages {
     }
 
     public String generateTypeError(Object left, Object right, String operation) {
-        String leftType = returnTypeOfObject(left);
-        String rightType = returnTypeOfObject(right);
+        String leftType = left == null ? "" : returnTypeOfObject(left);
+        String rightType = right == null ? "" : returnTypeOfObject(right);
         String leftValue = returnValueOfObject(left);
         String rightValue = returnValueOfObject(right);
-        return "Type error: operation \"" + operation + "\" not defined for " + leftType + " " + leftValue + ", " + rightType + " " + rightValue + "\n";
+        String message = "Type error: operation \"" + operation + "\" not defined for " + (leftType == null ? "" : leftType) + " " + leftValue + ", " + (rightType == null ? "" : rightType) + " " + rightValue + "\n";
+        return message.replaceAll(" {2}", " ");
     }
 
     public String generateTypeError(Object obj, String operation) {
