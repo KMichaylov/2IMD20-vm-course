@@ -1,5 +1,7 @@
 package nl.tue.vmcourse.toy.bci;
 
+import java.util.Map;
+
 public class ErrorMessages {
 
     private String returnTypeOfObject(Object obj) {
@@ -11,7 +13,9 @@ public class ErrorMessages {
             return "String";
         } else if (obj instanceof Boolean) {
             return "Boolean";
-        } else {
+        } else if (obj instanceof Object){
+            return "Object";
+        }else {
             return obj.getClass().getSimpleName();
         }
     }
@@ -19,7 +23,10 @@ public class ErrorMessages {
     private String returnValueOfObject(Object obj) {
         if (obj instanceof String && !obj.equals("NULL")) {
             return "\"" + obj + "\"";
-        } else {
+        } else if (obj instanceof Map){
+            return "Object";
+        }
+        else {
             return obj.toString();
         }
     }
