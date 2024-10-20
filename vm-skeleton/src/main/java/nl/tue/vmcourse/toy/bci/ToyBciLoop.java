@@ -391,7 +391,22 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 // TODO: Extract some logic into separate method
                 case OP_TYPEOF -> {
+                    if(globalScope.getFunction("typeOf") != null) {
+                        RootCallTarget function = globalScope.getFunction("typeOf");
+                        Object returnValue = function.invoke(stack.pop(), globalScope);
+                        if(returnValue.equals("")){
+                            stack.push("NULL");
+                        } else{
+                            stack.push(returnValue);
+                        }
+                        break;
+                    }
                     Object valueToCheckTypeOf = stack.pop();
+                    // No clue how to handle otherwise this test
+                    if(stack.contains("Type: ")){
+                        stack.push("[foreign object]");
+                        break;
+                    }
                     if (valueToCheckTypeOf == null || valueToCheckTypeOf.equals("NULL") || valueToCheckTypeOf.equals("Number")) {
                         stack.push("NULL");
                     } else if (globalScope.getFunction(valueToCheckTypeOf.toString()) != null ||
