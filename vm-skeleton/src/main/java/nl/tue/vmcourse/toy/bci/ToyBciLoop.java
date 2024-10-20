@@ -366,7 +366,18 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     stack.pop();
                 }
+                // TODO Extract the logic into separate method
                 case OP_PRINT -> {
+                    if(globalScope.getFunction("println") != null) {
+                        RootCallTarget function = globalScope.getFunction("println");
+                        Object returnValue = function.invoke(new ArrayList<>(), globalScope);
+                        if(returnValue.equals("")){
+                            stack.push("NULL");
+                        } else{
+                            stack.push(returnValue);
+                        }
+                        break;
+                    }
                     if (!stack.isEmpty()) {
                         Object valueToPrint = stack.pop();
                         if (valueToPrint == null) {
