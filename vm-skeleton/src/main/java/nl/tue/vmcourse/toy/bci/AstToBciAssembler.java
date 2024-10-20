@@ -288,7 +288,10 @@ public class AstToBciAssembler {
 
     private static void addFunctionToBytecode(Bytecode bytecode, ToyInvokeNode invokeNode, String functionName) {
         switch (functionName) {
-            case "println" -> bytecode.addInstruction(Opcode.OP_PRINT, 0);
+            case "println" -> {
+                int numArgs = invokeNode.getToyExpressionNodes().length;
+                bytecode.addInstruction(Opcode.OP_PRINT, numArgs);
+            }
             case "typeOf" -> bytecode.addInstruction(Opcode.OP_TYPEOF, 0);
             case "isInstance" -> bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
             case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);

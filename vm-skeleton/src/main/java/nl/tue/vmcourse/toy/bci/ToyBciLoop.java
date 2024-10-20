@@ -380,6 +380,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     if (!stack.isEmpty()) {
                         Object valueToPrint = stack.pop();
+                        if(operand > 1){
+                            valueToPrint = stack.pop();
+                        }
+                        if(operand == 0){
+//                            stack.pop();
+                            consoleMessages.append("\n");
+                            break;
+                        }
                         if (valueToPrint == null) {
                             consoleMessages.append("NULL").append("\n");
                             break;
