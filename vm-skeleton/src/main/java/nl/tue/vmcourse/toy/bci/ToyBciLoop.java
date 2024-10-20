@@ -424,7 +424,17 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(stackTrace);
                 }
                 case OP_NANO_TIME -> {
-                    stack.push(System.nanoTime());
+                    if(globalScope.getFunction("nanoTime") != null) {
+                        RootCallTarget function = globalScope.getFunction("nanoTime");
+                        Object returnValue = function.invoke(new ArrayList<>(), globalScope);
+                        if(returnValue.equals("")){
+                            stack.push("NULL");
+                        } else{
+                            stack.push(returnValue);
+                        }
+                    } else {
+                        stack.push(System.nanoTime());
+                    }
                 }
 
                 case OP_GET_SIZE -> {
