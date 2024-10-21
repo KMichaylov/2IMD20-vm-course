@@ -112,7 +112,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         break;
                     if (frameSlot != null) {
                         currentFrameSlot = frameSlot;
-                        Object value = frameSlot < locals.get(currentDepth).size() ? locals.get(currentDepth).get(frameSlot) : null;
+                        Object value = frameSlot < locals.get(currentDepth).size() ? locals.get(currentDepth).get(frameSlot) : "NULL";
                         stack.push(value);
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                     }
@@ -121,11 +121,15 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_READ_ARGUMENT -> {
                     if (locals.get(currentDepth).isEmpty()) {
                         globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
+                        if(globalScope.getNumberOfArgumentsForFunction(currentFunctionName) > 0){
+                            stack.push("NULL");
+                            locals.get(currentDepth).add("NULL");
+                        }
                         break;
                     }
                     if (frameSlot != null) {
                         currentFrameSlot = frameSlot;
-                        Object value = frameSlot < locals.get(currentDepth).size() ? locals.get(currentDepth).get(frameSlot) : null;
+                        Object value = frameSlot < locals.get(currentDepth).size() ? locals.get(currentDepth).get(frameSlot) : "NULL";
                         stack.push(value);
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                     }
@@ -389,9 +393,17 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             break;
                         }
                         if (valueToPrint == null) {
+                            if (currentFunctionName.equals("main")) {
+                                System.out.println("NULL");
+                                break;
+                            }
                             consoleMessages.append("NULL").append("\n");
                             break;
                         } else if (valueToPrint instanceof Map) {
+                            if (currentFunctionName.equals("main")) {
+                                System.out.println("Object");
+                                break;
+                            }
                             consoleMessages.append("Object").append("\n");
                             break;
                         }
