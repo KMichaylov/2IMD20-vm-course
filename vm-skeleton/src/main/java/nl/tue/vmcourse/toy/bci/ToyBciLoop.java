@@ -206,13 +206,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object left = stack.pop();
                     Object right = stack.pop();
                     if (!(left instanceof Boolean)) {
-                        consoleMessages.append(errorMessages.generateBooleanTypeError(left, "||"));
+                        consoleMessages.append(errorMessages.generateTypeError(right, left, "||"));
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
                         return consoleMessages;
                     }
                     if (!(right instanceof Boolean)) {
-                        consoleMessages.append(errorMessages.generateTypeError(left, right, "||"));
+                        consoleMessages.append(errorMessages.generateTypeError(right, left, "||"));
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
                         return consoleMessages;
