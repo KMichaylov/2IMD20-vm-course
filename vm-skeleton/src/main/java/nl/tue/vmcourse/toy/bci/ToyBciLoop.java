@@ -158,10 +158,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_MUL -> performArithmeticOperations(stack, "MUL");
 
                 case OP_LOGICAL_AND -> {
+//                    if (!stack.contains(false) || !stack.contains(true)) {
+
                     if (stack.isEmpty()) {
                         stack.push(false);
                         break;
-                    } else if (stack.size() == 1) {
+                    } else if (stack.peek() instanceof Boolean) {
                         if (stack.peek().equals(false)) {
                             stack.push(false);
                         } else {
@@ -194,7 +196,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (stack.isEmpty()) {
                         stack.push(true);
                         break;
-                    } else if (stack.size() == 1) {
+                    } else if (stack.peek() instanceof Boolean) {
                         if (stack.peek().equals(true)) {
                             stack.push(true);
                         } else {
@@ -339,7 +341,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (!((Boolean) stack.peek())) {
                         pc += operand;
                     }
-                    stack.pop();
+//                    stack.pop();
                 }
                 case OP_JUMP_IF_TRUE_BOOLEAN -> {
                     if (!(stack.peek() instanceof Boolean)) {
@@ -348,7 +350,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if ((Boolean) stack.peek()) {
                         pc += operand;
                     }
-                    stack.pop();
+//                    stack.pop();
                 }
 
                 case OP_JUMP_IF_FALSE -> {
