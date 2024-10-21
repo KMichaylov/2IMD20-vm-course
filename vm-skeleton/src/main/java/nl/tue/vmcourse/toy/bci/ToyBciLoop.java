@@ -393,7 +393,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 System.out.println("NULL");
                                 break;
                             }
-                            consoleMessages.append("NULL").append("\n");
+                            System.out.println("NULL");
                             break;
                         }
                         if (valueToPrint == null) {
@@ -414,7 +414,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (currentFunctionName.equals("main")) {
                             System.out.println(valueToPrint);
                         } else {
-                            consoleMessages.append(valueToPrint.toString()).append("\n");
+                            System.out.println(valueToPrint);
                         }
 
                     } else {
@@ -422,7 +422,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             System.out.println("NULL");
                             break;
                         }
-                        consoleMessages.append("NULL").append("\n");
+                        System.out.println("NULL");
                         break;
                     }
 
