@@ -649,8 +649,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             return consoleMessages;
                         }
 
+                    } else if(locals.get(currentDepth).get(currentFrameSlot) instanceof String){
+                        functionName = (String) locals.get(currentDepth).get(currentFrameSlot);
+                        if(globalScope.getFunction(functionName) == null){
+                            functionName = null;
+                        }
                     }
-                    if (functionName == null) {
+                    else if (functionName == null) {
                         if (!stack.isEmpty()) {
                             String message = errorMessages.generateUndefinedFunction(String.valueOf(stack.pop()));
                             consoleMessages.append(message);
