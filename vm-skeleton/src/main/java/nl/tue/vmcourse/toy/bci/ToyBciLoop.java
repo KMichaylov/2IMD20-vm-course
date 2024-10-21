@@ -121,7 +121,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_READ_ARGUMENT -> {
                     if (locals.get(currentDepth).isEmpty()) {
                         globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
-                        if(globalScope.getNumberOfArgumentsForFunction(currentFunctionName) > 0){
+                        if (globalScope.getNumberOfArgumentsForFunction(currentFunctionName) > 0) {
                             stack.push("NULL");
                             locals.get(currentDepth).add("NULL");
                         }
@@ -137,14 +137,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_STORE -> {
                     if (frameSlot != null && !stack.isEmpty()) {
                         currentFrameSlot = frameSlot;
-                        if (stack.peek() instanceof Map) {
-                            Map map = (Map) stack.pop();
-                            map.replace(instr.getVariableName(), new Object());
-                            locals.get(currentDepth).add(map);
-                        } else if (frameSlot < locals.get(currentDepth).size()) {
+                        if (frameSlot < locals.get(currentDepth).size()) {
                             locals.get(currentDepth).set(frameSlot, stack.pop());
                         } else {
-                            locals.get(currentDepth).add(frameSlot, stack.pop());
+                            while (locals.get(currentDepth).size() <= frameSlot) {
+                                locals.get(currentDepth).add("NULL");
+                            }
+                            locals.get(currentDepth).set(frameSlot, stack.pop());
                         }
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                         stackTraceElements.replace(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
@@ -374,22 +373,22 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 // TODO Extract the logic into separate method
                 case OP_PRINT -> {
-                    if(globalScope.getFunction("println") != null) {
+                    if (globalScope.getFunction("println") != null) {
                         RootCallTarget function = globalScope.getFunction("println");
                         Object returnValue = function.invoke(new ArrayList<>(), globalScope);
-                        if(returnValue.equals("")){
+                        if (returnValue.equals("")) {
                             stack.push("NULL");
-                        } else{
+                        } else {
                             stack.push(returnValue);
                         }
                         break;
                     }
                     if (!stack.isEmpty()) {
                         Object valueToPrint = stack.pop();
-                        if(operand > 1){
+                        if (operand > 1) {
                             valueToPrint = stack.pop();
                         }
-                        if(operand == 0){
+                        if (operand == 0) {
                             if (currentFunctionName.equals("main")) {
                                 System.out.println("NULL");
                                 break;
@@ -434,19 +433,19 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
                 // TODO: Extract some logic into separate method
                 case OP_TYPEOF -> {
-                    if(globalScope.getFunction("typeOf") != null) {
+                    if (globalScope.getFunction("typeOf") != null) {
                         RootCallTarget function = globalScope.getFunction("typeOf");
                         Object returnValue = function.invoke(stack.pop(), globalScope);
-                        if(returnValue.equals("")){
+                        if (returnValue.equals("")) {
                             stack.push("NULL");
-                        } else{
+                        } else {
                             stack.push(returnValue);
                         }
                         break;
                     }
                     Object valueToCheckTypeOf = stack.pop();
                     // No clue how to handle otherwise this test
-                    if(stack.contains("Type: ")){
+                    if (stack.contains("Type: ")) {
                         stack.push("[foreign object]");
                         break;
                     }
@@ -482,12 +481,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(stackTrace);
                 }
                 case OP_NANO_TIME -> {
-                    if(globalScope.getFunction("nanoTime") != null) {
+                    if (globalScope.getFunction("nanoTime") != null) {
                         RootCallTarget function = globalScope.getFunction("nanoTime");
                         Object returnValue = function.invoke(new ArrayList<>(), globalScope);
-                        if(returnValue.equals("")){
+                        if (returnValue.equals("")) {
                             stack.push("NULL");
-                        } else{
+                        } else {
                             stack.push(returnValue);
                         }
                     } else {
@@ -651,13 +650,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             return consoleMessages;
                         }
 
-                    } else if(locals.get(currentDepth).get(currentFrameSlot) instanceof String){
+                    } else if (locals.get(currentDepth).get(currentFrameSlot) instanceof String) {
                         functionName = (String) locals.get(currentDepth).get(currentFrameSlot);
-                        if(globalScope.getFunction(functionName) == null){
+                        if (globalScope.getFunction(functionName) == null) {
                             functionName = null;
                         }
-                    }
-                    else if (functionName == null) {
+                    } else if (functionName == null) {
                         if (!stack.isEmpty()) {
                             String message = errorMessages.generateUndefinedFunction(String.valueOf(stack.pop()));
                             consoleMessages.append(message);
