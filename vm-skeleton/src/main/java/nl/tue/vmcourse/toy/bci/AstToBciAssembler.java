@@ -228,8 +228,9 @@ public class AstToBciAssembler {
                 literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
 
                 // If we do not pass the literal as an argument, we do not need to call it.
-                if (!isArgument)
-                    bytecode.addInstruction(Opcode.OP_CALL, 0);
+                // TODO: Think of a better approach to this. BY removing this, we kill the Object and Object, object dynamic.
+//                if (!isArgument)
+//                    bytecode.addInstruction(Opcode.OP_CALL, 0);
             }
 
             if (isArgument && isBuiltInFunctionForTypeChecking(functionName)) {
