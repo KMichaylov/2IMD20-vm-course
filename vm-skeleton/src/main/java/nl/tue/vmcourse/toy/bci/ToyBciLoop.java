@@ -1122,6 +1122,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
         for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
             globalScope.registerFunction(entry.getKey(), entry.getValue());
+            globalScope.setFunctionToNumberOfArguments(entry.getKey(), factory.getFunctionParameterCount(entry.getKey()));
         }
 
         if (!allFunctions.isEmpty()) {
@@ -1151,6 +1152,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
         for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
             globalScope.registerFunction(entry.getKey(), entry.getValue());
+            globalScope.setFunctionToNumberOfArguments(entry.getKey(), factory.getFunctionParameterCount(entry.getKey()));
+
         }
 
         return null;
