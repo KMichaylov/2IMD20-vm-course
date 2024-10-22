@@ -213,6 +213,8 @@ public class AstToBciAssembler {
                 int propertyIndex = bytecode.addToConstantPool(propertyName);
                 generateBytecode(readPropertyNode.getNameNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
+            } else {
+                generateBytecode(invokeNode.getFunctionNode(), bytecode);
             }
 
         } else if (node instanceof ToyReadPropertyNode) {
