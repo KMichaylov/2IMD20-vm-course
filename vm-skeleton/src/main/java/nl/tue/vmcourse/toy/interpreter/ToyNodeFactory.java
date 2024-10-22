@@ -43,6 +43,7 @@ public class ToyNodeFactory {
     }
 
     private final Map<String, RootCallTarget> allFunctions;
+    private final Map<String, Integer> functionParameterCounts = new HashMap<>();
 
     /* State while parsing a function. */
     private final String sourceString;
@@ -63,6 +64,10 @@ public class ToyNodeFactory {
 
     public Map<String, RootCallTarget> getAllFunctions() {
         return allFunctions;
+    }
+
+    public Integer getFunctionParameterCount(String functionName) {
+        return functionParameterCounts.get(functionName);
     }
 
     public void startFunction(Token nameToken, Token bodyStartToken) {
@@ -116,6 +121,7 @@ public class ToyNodeFactory {
 
             final ToyRootNode rootNode = new ToyRootNode(frameDescriptorBuilder.build(), functionBodyNode, functionName);
             allFunctions.put(functionName, rootNode.getCallTarget());
+            functionParameterCounts.put(functionName, parameterCount);
         }
 
         functionStartPos = 0;

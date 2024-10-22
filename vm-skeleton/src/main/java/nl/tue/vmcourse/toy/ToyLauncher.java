@@ -93,6 +93,7 @@ public class ToyLauncher {
             for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
                 // here, we add the global scope for functions and then create the bytecode for each function.
                 globalScope.registerFunction(entry.getKey(), entry.getValue());
+                globalScope.setFunctionToNumberOfArguments(entry.getKey(), factory.getFunctionParameterCount(entry.getKey()));
             }
             return mainFunction.invoke(globalScope);
         } else {
