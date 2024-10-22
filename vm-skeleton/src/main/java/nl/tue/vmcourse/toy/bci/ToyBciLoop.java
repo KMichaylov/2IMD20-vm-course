@@ -24,6 +24,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private Map<String, Object> stackTraceElements;
     private static Map<String, Map<String, Object>> stackTracePerFunction;
     private static String currentFunctionName;
+    private static String previousFunctionName;
     private static StringBuilder consoleMessages = new StringBuilder();
     private ErrorMessages errorMessages;
     private static Map<Object, Integer> tableWithVariables = new HashMap<>();
@@ -39,6 +40,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         this.locals = new HashMap<>();
         this.stackTraceElements = stackTraceElements;
         this.currentFunctionName = "main";
+        this.previousFunctionName = "";
         stackTracePerFunction = new LinkedHashMap<>();
         stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
         currentDepth = 0;
@@ -146,8 +148,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             locals.get(currentDepth).set(frameSlot, stack.pop());
                         }
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
-                        stackTraceElements.replace(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
-                        stackTracePerFunction.put(currentFunctionName, stackTraceElements);
+                        if(currentFunctionName.equals(previousFunctionName)){
+                            stackTraceElements.put(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
+                            stackTracePerFunction.put(currentFunctionName, stackTraceElements);
+                        } else{
+                            stackTraceElements.replace(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
+                            stackTracePerFunction.put(currentFunctionName, stackTraceElements);
+                        }
                     }
 
                 }
@@ -645,7 +652,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 // TODO: Check how to handle function
                 case OP_CALL -> {
                     int numberOfFunctionArguments = operand;
-
+                    previousFunctionName = currentFunctionName;
                     Object[] args = new Object[numberOfFunctionArguments];
                     for (int i = numberOfFunctionArguments - 1; i >= 0; i--) {
                         args[i] = stack.pop();
