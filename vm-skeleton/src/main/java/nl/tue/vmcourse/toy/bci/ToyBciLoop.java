@@ -516,8 +516,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (obj instanceof Map<?, ?>) {
                         stack.push(((Map<?, ?>) obj).size());
                     }
-                    if (obj instanceof String) {
+                    else if (obj instanceof String) {
                         stack.push(((String) obj).length());
+                    } else {
+                        System.err.println("Element is not a valid array.");
+                        System.exit(1);
+                        return consoleMessages;
                     }
                 }
 
