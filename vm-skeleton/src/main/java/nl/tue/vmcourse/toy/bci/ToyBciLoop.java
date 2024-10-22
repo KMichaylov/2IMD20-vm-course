@@ -294,15 +294,32 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                     VirtualFrame newFrame = new VirtualFrame(args);
                                     Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                                     stack.push(returnValue);
-                                } else {
+                                }
+                                else {
                                     Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
-                                    if (propertyValue == null) {
-                                        consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
-                                        System.err.println(consoleMessages.toString());
-                                        System.exit(1);
-                                        return consoleMessages;
+                                    if (propertyValue instanceof String && globalScope.getFunction((String) propertyValue) != null) {
+                                        RootCallTarget function = globalScope.getFunction((String) propertyValue);
+                                        int numberOfArguments = 0;
+                                        if(globalScope.getNumberOfArgumentsForFunction((String) propertyValue) != null){
+                                            numberOfArguments = globalScope.getNumberOfArgumentsForFunction((String) propertyValue);
+                                        }
+
+                                        Object[] args = new Object[numberOfArguments];
+                                        for (int i = numberOfArguments - 1; i >= 0; i--) {
+                                            args[i] = stack.pop();
+                                        }
+                                        VirtualFrame newFrame = new VirtualFrame(args);
+                                        Object returnValue = function.invoke(new ArrayList<>(), newFrame);
+                                        stack.push(returnValue);
+                                    } else{
+                                        if (propertyValue == null) {
+                                            consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                                            System.err.println(consoleMessages.toString());
+                                            System.exit(1);
+                                            return consoleMessages;
+                                        }
+                                        stack.push(propertyValue);
                                     }
-                                    stack.push(propertyValue);
                                 }
                             } else {
                                 Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
