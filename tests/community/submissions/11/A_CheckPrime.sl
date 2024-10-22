@@ -12,17 +12,17 @@ function main() {
 
 function primeCheck(input) {
     if (input <= 1) {
-        return False;
+        return false;
     }
     i = 2;
     while (i * i < input) {
         if (modulo(input, i) == 0) {
-            return False;
+            return false;
         }
 
         i = i + 1;
     }
-    return True;
+    return true;
 }
 
 

@@ -21,6 +21,5 @@ function f4()
 
 function main()
 {
-	registerShutdownHook(f3);
 	f1();
 }
