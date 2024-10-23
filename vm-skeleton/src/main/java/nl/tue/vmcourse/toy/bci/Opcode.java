@@ -64,6 +64,7 @@ public enum Opcode {
     OP_HAS_PROPERTY((byte) 0x2D),
     OP_DELETE_PROPERTY((byte) 0x2E),
     OP_HELLO_EQUALS_WORLD((byte) 0x33),
+    OP_EXECUTABLE((byte) 0x34),
 
     // For object support
     OP_NEW((byte) 0x2A),

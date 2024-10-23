@@ -540,6 +540,15 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
 
+                case OP_EXECUTABLE -> {
+                    if(stack.peek() != null){
+                        if(stack.pop() instanceof String)
+                            stack.push(true);
+                        else
+                            stack.push(false);
+                    }
+                }
+
                 case OP_HAS_SIZE -> {
                     Object obj = stack.pop();
                     if (obj instanceof Map || obj instanceof String) {

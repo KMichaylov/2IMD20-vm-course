@@ -27,7 +27,8 @@ public class AstToBciAssembler {
             Map.entry("subString", Opcode.OP_SUB_STRING),
             Map.entry("hasProperty", Opcode.OP_HAS_PROPERTY),
             Map.entry("deleteProperty", Opcode.OP_DELETE_PROPERTY),
-            Map.entry("helloEqualsWorld", Opcode.OP_HELLO_EQUALS_WORLD)
+            Map.entry("helloEqualsWorld", Opcode.OP_HELLO_EQUALS_WORLD),
+            Map.entry("isExecutable", Opcode.OP_EXECUTABLE)
     );
 
     /**
@@ -329,6 +330,10 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_DELETE_PROPERTY, 0);
             }
             case "helloEqualsWorld" -> bytecode.addInstruction(Opcode.OP_HELLO_EQUALS_WORLD, 0);
+            case "isExecutable" -> {
+                generateBytecode(invokeNode.getToyExpressionNodes()[0], bytecode);
+                bytecode.addInstruction(Opcode.OP_EXECUTABLE, 0);
+            }
             // The operand is the number of arguments
             default -> bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
         }
@@ -389,7 +394,7 @@ public class AstToBciAssembler {
         switch (functionName) {
             case "println", "typeOf", "isInstance", "nanoTime", "eval", "defineFunction", "getSize", "stacktrace",
                  "new", "exit",
-                 "hasSize", "subString", "hasProperty", "deleteProperty", "helloEqualsWorld" -> result = true;
+                 "hasSize", "subString", "hasProperty", "deleteProperty", "helloEqualsWorld", "isExecutable" -> result = true;
             default -> result = false;
         }
         return result;
