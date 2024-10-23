@@ -169,7 +169,7 @@ function multipleFixedIntergerAndFixedInteger(a, b) {
 
 // a * b, where a and b represent Decimal
 function multipleFixedIntergerAndFixedInteger_Decimal(a, b) {
-    return performMultiple(a, b, True);
+    return performMultiple(a, b, true);
 }
 
 function performMultiple(a, b, isDecimal) {
@@ -227,7 +227,7 @@ function performMultiple(a, b, isDecimal) {
 
     ret = createFixedInteger(len_a);
 
-    if (isDecimal == True) {
+    if (isDecimal == true) {
         i = 0;
         while (i < len_a) {
             ret[i] = re[i];

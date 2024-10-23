@@ -44,7 +44,7 @@ function printLargeInt(input) {
             i = i + 1;
             continue;
         }
-        started = True;
+        started = true;
         printString = printString + input[i];
         i = i + 1;
     }
