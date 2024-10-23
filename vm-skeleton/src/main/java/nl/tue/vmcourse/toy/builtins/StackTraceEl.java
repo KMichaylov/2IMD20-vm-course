@@ -1,7 +1,6 @@
 package nl.tue.vmcourse.toy.builtins;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.AbstractMap.SimpleEntry;
@@ -25,7 +24,6 @@ public class StackTraceEl {
                 return;
             }
         }
-        // If the key does not exist, add a new entry
         addElement(key, value);
     }
 
