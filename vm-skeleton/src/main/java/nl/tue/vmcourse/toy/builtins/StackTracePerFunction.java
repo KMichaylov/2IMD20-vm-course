@@ -1,34 +1,42 @@
 package nl.tue.vmcourse.toy.builtins;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class StackTracePerFunction {
-    private Map<String, Map<String, Object>> stackTracePerFunction;
+    private List<Map.Entry<String, StackTraceEl>> stackTracePerFunction;
 
     public StackTracePerFunction() {
-        this.stackTracePerFunction = new LinkedHashMap<>();
+        this.stackTracePerFunction = new ArrayList<>();
     }
 
-    public void put(String functionName, Map<String, Object> stackTraceElements) {
-        stackTracePerFunction.put(functionName, stackTraceElements);
+    public void put(String functionName, StackTraceEl stackTraceElements) {
+        stackTracePerFunction.add(new AbstractMap.SimpleEntry<>(functionName, stackTraceElements));
     }
 
-    public Map<String, Object> get(String functionName) {
-        return stackTracePerFunction.get(functionName);
+    public StackTraceEl get(String functionName) {
+        for (Map.Entry<String, StackTraceEl> entry : stackTracePerFunction) {
+            if (entry.getKey().equals(functionName)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     public boolean containsKey(String functionName) {
-        return stackTracePerFunction.containsKey(functionName);
+        for (Map.Entry<String, StackTraceEl> entry : stackTracePerFunction) {
+            if (entry.getKey().equals(functionName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void remove(String functionName) {
-        stackTracePerFunction.remove(functionName);
+        stackTracePerFunction.removeIf(entry -> entry.getKey().equals(functionName));
     }
 
-    public Set<Map.Entry<String, Map<String, Object>>> entrySet() {
-        return stackTracePerFunction.entrySet();
+    public Set<Map.Entry<String, StackTraceEl>> entrySet() {
+        return new HashSet<>(stackTracePerFunction);
     }
 
     public int size() {
