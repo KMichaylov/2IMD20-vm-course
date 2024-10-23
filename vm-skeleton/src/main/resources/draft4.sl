@@ -1,28 +1,17 @@
-/*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
- * Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
- */
+// This test tests a simple generator use case for functions with the eval primitive
+
+function generator(number){
+    if (number == 1){
+        return "function func(i) {return i * 2;}";
+    }
+}
 
 function main() {
-  t = 10 == 10; // true
-  f = 10 != 10; // false
-  println(left(f) && right(f));
-  println(left(f) && right(t));
-  println(left(t) && right(f));
-  println(left(t) && right(t));
-  println("");
-  println(left(f) || right(f));
-  println(left(f) || right(t));
-  println(left(t) || right(f));
-  println(left(t) || right(t));
-}
-
-function left(x) {
-  println("left");
-  return x;
-}
-
-function right(x) {
-  println("right");
-  return x;
+    i = 1;
+    j = 1;
+    functionlist = new();
+    functionlist[i] = generator(i);
+    eval("sl", functionlist[i]);
+    j = func(j, j);
+    println(j);
 }
