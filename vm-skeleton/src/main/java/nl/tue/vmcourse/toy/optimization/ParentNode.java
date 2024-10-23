@@ -1,5 +1,8 @@
 package nl.tue.vmcourse.toy.optimization;
 
+/**
+ * Just a parent node which has links to left and right children.
+ */
 public class ParentNode extends Node {
         Node left;
         Node right;
