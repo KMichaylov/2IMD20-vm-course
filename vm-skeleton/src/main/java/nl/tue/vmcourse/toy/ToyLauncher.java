@@ -46,6 +46,36 @@ public class ToyLauncher {
     private static final GlobalScope globalScope = new GlobalScope();
 
 
+    private static boolean isOptimizationSupported(String[] args) {
+        boolean optimizationSupported = true;
+
+        for (String arg : args) {
+            switch (arg) {
+                case "-jit":
+                    if (!JIT_ENABLED) {
+                        optimizationSupported = false;
+                    }
+                    break;
+                case "-inline-caches":
+                    if (!IC_ENABLED) {
+                        optimizationSupported = false;
+                    }
+                    break;
+                case "-string-ropes":
+                    if (!ROPES_ENABLED) {
+                        optimizationSupported = true;
+                    }
+                    break;
+                case "-array-strategies":
+                    if (!ARRAYS_ENABLED) {
+                        optimizationSupported = false;
+                    }
+                    break;
+            }
+        }
+        return optimizationSupported;
+    }
+
     public static Object eval(String code) {
         return evalStream(CharStreams.fromString(code));
     }
@@ -109,11 +139,19 @@ public class ToyLauncher {
             System.out.println("Usage: toy [file]");
             System.exit(1);
         }
+
+        boolean optimizationSupported = isOptimizationSupported(args);
+
+        if (!optimizationSupported) {
+            System.out.println("Optimization not supported");
+            System.exit(1);
+        }
+
         // TODO, ignores other args for now.
         CharStream charStream = CharStreams.fromFileName(args[args.length - 1]);
         try {
             Object result = evalStream(charStream);
-            if(result != null)
+            if (result != null)
                 System.out.println(result);
         } catch (ToySyntaxErrorException e) {
             System.err.println("Error(s) parsing script :(");
