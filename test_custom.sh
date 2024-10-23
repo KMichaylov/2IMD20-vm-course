@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Folder containing the input files
-folder="./tests/community/submissions/39"
+folder="./tests/community/submissions/16"
 
 # Check if the provided SL executable exists and is executable
 if [ -e "$1" ] && [ -x "$1" ]; then
