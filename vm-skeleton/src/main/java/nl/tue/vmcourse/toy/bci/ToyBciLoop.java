@@ -148,10 +148,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             locals.get(currentDepth).set(frameSlot, stack.pop());
                         }
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
-                        if(currentFunctionName.equals(previousFunctionName)){
+                        if (currentFunctionName.equals(previousFunctionName)) {
                             stackTraceElements.put(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
                             stackTracePerFunction.put(currentFunctionName, stackTraceElements);
-                        } else{
+                        } else {
                             stackTraceElements.replace(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
                             stackTracePerFunction.put(currentFunctionName, stackTraceElements);
                         }
@@ -301,13 +301,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                     VirtualFrame newFrame = new VirtualFrame(args);
                                     Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                                     stack.push(returnValue);
-                                }
-                                else {
+                                } else {
                                     Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
                                     if (propertyValue instanceof String && globalScope.getFunction((String) propertyValue) != null) {
                                         RootCallTarget function = globalScope.getFunction((String) propertyValue);
                                         int numberOfArguments = 0;
-                                        if(globalScope.getNumberOfArgumentsForFunction((String) propertyValue) != null){
+                                        if (globalScope.getNumberOfArgumentsForFunction((String) propertyValue) != null) {
                                             numberOfArguments = globalScope.getNumberOfArgumentsForFunction((String) propertyValue);
                                         }
 
@@ -318,7 +317,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                         VirtualFrame newFrame = new VirtualFrame(args);
                                         Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                                         stack.push(returnValue);
-                                    } else{
+                                    } else {
                                         if (propertyValue == null) {
                                             consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
                                             System.err.println(consoleMessages.toString());
@@ -472,9 +471,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (stack.contains("Type: ")) {
                         stack.push("[foreign object]");
                         break;
-                    }
-                    if (valueToCheckTypeOf == null || valueToCheckTypeOf.equals("NULL") || valueToCheckTypeOf.equals("Number")) {
+                    } else if (valueToCheckTypeOf == null || valueToCheckTypeOf.equals("NULL")) {
                         stack.push("NULL");
+                    } else if (valueToCheckTypeOf.equals("Number")) {
+                        stack.push("String");
                     } else if (globalScope.getFunction(valueToCheckTypeOf.toString()) != null ||
                             valueToCheckTypeOf.equals("Function")) {
                         stack.push("Function");
@@ -522,8 +522,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     Object obj = stack.pop();
                     if (obj instanceof Map<?, ?>) {
                         stack.push(((Map<?, ?>) obj).size());
-                    }
-                    else if (obj instanceof String) {
+                    } else if (obj instanceof String) {
                         stack.push(((String) obj).length());
                     } else {
                         System.err.println("Element is not a valid array.");
