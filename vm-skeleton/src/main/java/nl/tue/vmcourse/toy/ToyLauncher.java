@@ -46,24 +46,18 @@ public class ToyLauncher {
     private static final GlobalScope globalScope = new GlobalScope();
 
 
-    private static boolean isOptimizationSupported(String[] args) {
+    private static boolean isOptimizationSupported(String arg) {
         boolean optimizationSupported = true;
 
-        for (String arg : args) {
-            switch (arg) {
-                case "-jit":
-                    optimizationSupported = false;
-                    break;
-                case "-inline-caches":
-                    optimizationSupported = false;
-                    break;
-                case "-string-ropes":
-                    optimizationSupported = true;
-                    break;
-                case "-array-strategies":
-                    optimizationSupported = false;
-                    break;
-            }
+        switch (arg) {
+            case "-jit":
+                return false;
+            case "-inline-caches":
+                return false;
+            case "-string-ropes":
+                return true;
+            case "-array-strategies":
+                return false;
         }
         return optimizationSupported;
     }
@@ -132,7 +126,7 @@ public class ToyLauncher {
             System.exit(1);
         }
 
-        boolean optimizationSupported = isOptimizationSupported(args);
+        boolean optimizationSupported = isOptimizationSupported(args[args.length - 2]);
 
         if (!optimizationSupported) {
             System.out.println("Optimization not supported");
