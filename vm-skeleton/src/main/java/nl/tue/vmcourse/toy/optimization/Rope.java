@@ -49,6 +49,18 @@ public class Rope {
         }
     }
 
+    public int getSizeOfRope() {
+        return getSize(this.root);
+    }
+
+    private int getSize(Node node) {
+        if (node instanceof SingleNodeElement) {
+            return ((SingleNodeElement) node).data.length();
+        }
+        ParentNode parent = (ParentNode) node;
+        return getSize(parent.left) + getSize(parent.right);
+    }
+
     private String getStringRepresentation(Node node) {
         if (node instanceof SingleNodeElement) {
             return ((SingleNodeElement) node).data;
