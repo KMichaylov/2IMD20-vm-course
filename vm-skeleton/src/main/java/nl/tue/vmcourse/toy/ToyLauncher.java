@@ -133,12 +133,12 @@ public class ToyLauncher {
             System.exit(1);
         }
 
-        boolean optimizationSupported = isOptimizationSupported(args[args.length - 2]);
-
-        if (!optimizationSupported) {
-            System.out.println("Optimization not supported");
-            System.exit(1);
-        }
+//        boolean optimizationSupported = isOptimizationSupported(args[args.length - 2]);
+//
+//        if (!optimizationSupported) {
+//            System.out.println("Optimization not supported");
+//            System.exit(1);
+//        }
 
         // TODO, ignores other args for now.
         CharStream charStream = CharStreams.fromFileName(args[args.length - 1]);
