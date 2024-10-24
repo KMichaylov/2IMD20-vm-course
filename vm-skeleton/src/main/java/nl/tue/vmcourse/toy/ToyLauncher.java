@@ -44,19 +44,26 @@ public class ToyLauncher {
 //    }
 
     private static final GlobalScope globalScope = new GlobalScope();
-
+    public static boolean JIT_ENABLED = false;
+    public static boolean IC_ENABLED = false;
+    public static boolean ROPES_ENABLED = false;
+    public static boolean ARRAYS_ENABLED = false;
 
     private static boolean isOptimizationSupported(String arg) {
         boolean optimizationSupported = true;
 
         switch (arg) {
             case "-jit":
+                JIT_ENABLED = true;
                 return false;
             case "-inline-caches":
+                IC_ENABLED = true;
                 return false;
             case "-string-ropes":
+                ROPES_ENABLED = true;
                 return true;
             case "-array-strategies":
+                ARRAYS_ENABLED = true;
                 return false;
         }
         return optimizationSupported;
