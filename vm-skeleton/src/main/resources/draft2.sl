@@ -1,14 +1,30 @@
+function main() {
+  a = new();
 
-function foo(f, i) {
-  i = i + 1;
-  if(i < 5)
-  {
-    f(f, i);
-    println(i);
-  }
-  return i;
+  a[bar()] = bar;
+  println("-----");
+
+  a[2]();
+  println("-----");
+
+  a[3] = call;
+  println("-----");
+
+  a[3];
+  println("-----");
 }
 
-function main() {
-  foo(foo, 0);
+function foo() {
+  println(1);
+  return 1;
+}
+
+function bar() {
+  println(2);
+  return 2;
+}
+
+function call() {
+  println(3);
+  return 3;
 }
