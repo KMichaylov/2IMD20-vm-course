@@ -132,7 +132,7 @@ public class ToyLauncher {
             System.out.println("Usage: toy [file]");
             System.exit(1);
         }
-
+//TODO: Uncomment this when you will need to provide more arguments
 //        boolean optimizationSupported = isOptimizationSupported(args[args.length - 2]);
 //
 //        if (!optimizationSupported) {

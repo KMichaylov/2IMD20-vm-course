@@ -5,6 +5,7 @@ import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 import nl.tue.vmcourse.toy.interpreter.ToySyntaxErrorException;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
+import nl.tue.vmcourse.toy.optimization.Rope;
 import nl.tue.vmcourse.toy.parser.ToyLangLexer;
 import nl.tue.vmcourse.toy.parser.ToyLangParser;
 import org.antlr.v4.runtime.CharStream;
@@ -14,6 +15,8 @@ import org.antlr.v4.runtime.misc.Interval;
 
 import java.math.BigInteger;
 import java.util.*;
+
+import static nl.tue.vmcourse.toy.ToyLauncher.ROPES_ENABLED;
 
 public class ToyBciLoop extends ToyAbstractFunctionBody {
     public static final int STACKOVERFLOW_THRESHOLD = 255;
@@ -98,7 +101,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             // TODO: refactor the switch statement. Export common logic into separate methods, after the general structure is there
             // TODO: Fix throwing of errors with something else
             switch (opcode) {
-                case OP_LITERAL_STRING -> pushLiteralToStack(bytecode, operand, stack, String.class);
+                case OP_LITERAL_STRING -> {
+                    if (ROPES_ENABLED) {
+                        pushLiteralToStack(bytecode, operand, stack, Rope.class);
+                    } else {
+                        pushLiteralToStack(bytecode, operand, stack, String.class);
+                    }
+                }
                 case OP_LITERAL_LONG -> pushLiteralToStack(bytecode, operand, stack, Long.class);
                 case OP_LITERAL_BOOLEAN -> pushLiteralToStack(bytecode, operand, stack, Boolean.class);
                 case OP_LITERAL_BIGINT -> pushLiteralToStack(bytecode, operand, stack, BigInteger.class);
@@ -482,7 +491,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push("Number");
                     } else if (valueToCheckTypeOf instanceof Boolean) {
                         stack.push("Boolean");
-                    } else if (valueToCheckTypeOf instanceof String) {
+                    } else if (valueToCheckTypeOf instanceof String || valueToCheckTypeOf instanceof Rope) {
                         stack.push("String");
                     } else if (valueToCheckTypeOf instanceof Map) {
                         stack.push("Object");
@@ -524,6 +533,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push(((Map<?, ?>) obj).size());
                     } else if (obj instanceof String) {
                         stack.push(((String) obj).length());
+                    } else if (obj instanceof Rope){
+                        stack.push(((Rope) obj).getSizeOfRope());
                     } else {
                         System.err.println("Element is not a valid array.");
                         System.exit(1);
@@ -541,8 +552,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_EXECUTABLE -> {
-                    if(stack.peek() != null){
-                        if(stack.pop() instanceof String)
+                    if (stack.peek() != null) {
+                        if (stack.pop() instanceof String)
                             stack.push(true);
                         else
                             stack.push(false);
@@ -568,7 +579,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         int start = Math.toIntExact((Long) startObj);
                         int end = Math.toIntExact((Long) endObj);
                         stack.push(((String) strObj).substring(start, end));
-                    } else {
+                    } else if(strObj instanceof Rope && startObj instanceof Long && endObj instanceof Long){
+                        int start = Math.toIntExact((Long) startObj);
+                        int end = Math.toIntExact((Long) endObj);
+                        stack.push(((Rope) strObj).substring(start, end));
+                    }
+                        else {
                         consoleMessages.append("Not a string: cannot substring");
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
@@ -776,8 +792,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @param <T>      the generic which allows for type casting
      */
     private <T> void pushLiteralToStack(Bytecode bytecode, int operand, Stack<Object> stack, Class<T> type) {
-        T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
-        stack.push(literalValue);
+        if (type.equals(Rope.class)) {
+            stack.push(new Rope(bytecode.getElementFromConstantPool(operand).toString()));
+        } else{
+            T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
+            stack.push(literalValue);
+        }
     }
 
 
