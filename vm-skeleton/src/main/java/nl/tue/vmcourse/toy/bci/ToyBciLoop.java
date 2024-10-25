@@ -310,7 +310,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                     VirtualFrame newFrame = new VirtualFrame(args);
                                     Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                                     stack.push(returnValue);
-                                } else {
+                                }  else{
                                     Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
                                     if (propertyValue instanceof String && globalScope.getFunction((String) propertyValue) != null) {
                                         RootCallTarget function = globalScope.getFunction((String) propertyValue);
@@ -323,16 +323,17 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                         for (int i = numberOfArguments - 1; i >= 0; i--) {
                                             args[i] = stack.pop();
                                         }
-                                        VirtualFrame newFrame = new VirtualFrame(args);
-                                        Object returnValue = function.invoke(new ArrayList<>(), newFrame);
-                                        stack.push(returnValue);
-                                    } else {
-                                        if (propertyValue == null) {
-                                            consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
-                                            System.err.println(consoleMessages.toString());
-                                            System.exit(1);
-                                            return consoleMessages;
+                                        stack.push(propertyValue);
+                                        for (int i = 0; i < args.length; i++) {
+                                            stack.push(args[i]);
                                         }
+                                    }
+                                    else if (propertyValue == null) {
+                                        consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                                        System.err.println(consoleMessages.toString());
+                                        System.exit(1);
+                                        return consoleMessages;
+                                    } else{
                                         stack.push(propertyValue);
                                     }
                                 }
