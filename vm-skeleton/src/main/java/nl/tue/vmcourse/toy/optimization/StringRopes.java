@@ -1,25 +1,25 @@
 package nl.tue.vmcourse.toy.optimization;
 
 // TODO: If not fast enough, consider changing the String to char
-public class Rope {
+public class StringRopes {
     private Node root;
 
-    public Rope(String data) {
+    public StringRopes(String data) {
         this.root = new SingleNodeElement(data);
     }
 
-    private Rope(Node node) {
+    private StringRopes(Node node) {
         this.root = node;
     }
 
-    public Rope concatenation(Rope ropeInstance){
-        this.root = concatenation(this.root, ropeInstance.root);
+    public StringRopes concatenation(StringRopes stringRopesInstance){
+        this.root = concatenation(this.root, stringRopesInstance.root);
         return this;
     }
 
-    public Rope substring(int start, int end){
+    public StringRopes substring(int start, int end){
         Node sub = substring(this.root, start, end);
-        return new Rope(sub);
+        return new StringRopes(sub);
     }
 
     private Node concatenation(Node left, Node right){
