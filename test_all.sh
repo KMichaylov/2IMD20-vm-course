@@ -15,7 +15,6 @@ fail=0
 fatals=0
 iters=0
 
-# Initialize log files
 touch fatal_errors.log
 echo "" > fatal_errors.log
 
@@ -28,16 +27,21 @@ echo "" > wrong_stdout.log
 touch suspicious.log
 echo "" > suspicious.log
 
-# Suppress errors when no .tmp files exist
-rm -f *.tmp
+rm *.tmp
 
-# Iterate over all .sl files in the folder
+x=130
+# Iterate over all files in the folder
+#for file in "$folder"/*.sl; do
 for file in $(find $folder -type f -name "*.sl"); do
-  # Skip if it's not a regular file
+  #  Skip if it's not a regular file
   [ -f "$file" ] || continue
   file="${file%.*}"
 
   ((iters++))
+
+  # if [ "$iters" -lt 240 ]; then
+  #     continue  # Skip this iteration
+  # fi
 
   # Output and error files (assuming they are in the same folder and named after the input file)
   output_file="${file}.output"
@@ -45,22 +49,22 @@ for file in $(find $folder -type f -name "*.sl"); do
 
   echo "[$iters]"
   echo "[INFO] running $file.sl ..."
-
-  tmpfile=$(mktemp)
-
   # Execute the sl command and capture output and error
+  tmpfile=$(mktemp)
+  # echo $tmpfile
   $sl "$file.sl" &> $tmpfile
+
+  # output=$($sl < "$file.sl" 2> >(tee /dev/stderr))
 
   # Check if the command was successful (exit code 0)
   if [ $? -eq 0 ]; then
     # If successful, compare the output with the .output file
     if [ -f "$output_file" ]; then
-      # Strip out trailing carriage return (CR) and empty lines for compatibility between Linux and Windows
-      diff <(sed 's/\r$//' "$tmpfile" | sed '/^$/d') <(sed 's/\r$//' "$output_file" | sed '/^$/d') > /dev/null
+      # diff <(echo "$output") "$output_file" > /dev/null
+      diff $tmpfile $output_file
       if [ $? -eq 0 ]; then
         echo "[ OK ] Output for $file matches expected output."
         ((ok++))
-
       else
         echo "[ERROR] Output for $file does not match expected output!"
         echo "[ERROR] $file " >> wrong_stdout.log
@@ -71,7 +75,14 @@ for file in $(find $folder -type f -name "*.sl"); do
         cat $output_file
         echo ""
         echo "--- Diff ---"
-        diff -y $tmpfile "$output_file"
+        diff -y <(echo "$output") "$output_file"
+        echo $?
+        echo ""
+        diff -c <(echo "$output") "$output_file"
+        echo $?echo $?
+        echo ""
+        diff -u <(echo "$output") "$output_file"
+        echo $?
         exit -1
       fi
     else
@@ -82,8 +93,8 @@ for file in $(find $folder -type f -name "*.sl"); do
   else
     # If the command failed, compare the error with the .error file
     if [ -f "$error_file" ]; then
-      # Handle line ending compatibility and empty lines for errors
-      diff <(sed 's/\r$//' "$tmpfile" | sed '/^$/d') <(sed 's/\r$//' "$error_file" | sed '/^$/d') > /dev/null
+      # diff <(echo "$output") "$error_file" > /dev/null
+      diff $tmpfile $error_file
       if [ $? -eq 0 ]; then
         echo "[ OK!] Error output for $file matches expected error."
         ((ok++))
@@ -97,7 +108,14 @@ for file in $(find $folder -type f -name "*.sl"); do
         cat $error_file
         echo ""
         echo "--- Diff ---"
-        diff -y $tmpfile "$error_file"
+        diff -y <(echo "$output") "$error_file"
+        echo $?
+        echo ""
+        diff -c <(echo "$output") "$error_file"
+        echo $?echo $?
+        echo ""
+        diff -u <(echo "$output") "$error_file"
+        echo $?
         exit -1
       fi
     else
