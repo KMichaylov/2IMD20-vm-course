@@ -679,6 +679,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     int numberOfFunctionArguments = operand;
                     previousFunctionName = currentFunctionName;
                     Object[] args = new Object[numberOfFunctionArguments];
+                    if(numberOfFunctionArguments > stack.size()){
+                        break;
+                    }
                     for (int i = numberOfFunctionArguments - 1; i >= 0; i--) {
                         args[i] = stack.pop();
                     }
