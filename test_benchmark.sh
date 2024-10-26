@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Folder containing the benchmark files
-folder="./benchmarks/MatMul.sl"
+folder="./benchmarks"
+timeout_duration=25 # Timeout duration in seconds
 
 # Check if the provided SL executable exists and is executable
 if [ -e "$1" ] && [ -x "$1" ]; then
@@ -13,6 +14,7 @@ fi
 
 ok=0
 fail=0
+timeout_count=0
 iters=0
 
 # Initialize log files
@@ -38,14 +40,19 @@ for file in $(find $folder -type f -name "*.sl"); do
 
   tmpfile=$(mktemp)
 
-  # Measure the execution time using `time` and capture the output
-  { time $sl "$file.sl" &> "$tmpfile"; } 2> time_output.tmp
+  # Measure the execution time using `time` and capture the output with a timeout
+  { time timeout $timeout_duration $sl "$file.sl" &> "$tmpfile"; } 2> time_output.tmp
   exit_code=$?
 
   # Extract the real time from the `time` command output
   elapsed=$(grep real time_output.tmp | awk '{print $2}')
 
-  if [ $exit_code -eq 0 ]; then
+  # Check if the timeout command caused a non-zero exit
+  if [ $exit_code -eq 124 ]; then
+    echo "[TIMEOUT] $file exceeded the timeout of $timeout_duration seconds."
+    echo "[TIMEOUT] $file" >> fatal_errors.log
+    ((timeout_count++))
+  elif [ $exit_code -eq 0 ]; then
     echo "[ OK ] $file executed successfully in $elapsed."
     echo "[ OK ] $file: $elapsed" >> execution_times.log
     ((ok++))
@@ -62,4 +69,5 @@ done
 echo "========== ALL DONE =========="
 echo "  successful runs: ${ok}"
 echo "  failed runs: ${fail}"
+echo "  timed out runs: ${timeout_count}"
 echo ""
