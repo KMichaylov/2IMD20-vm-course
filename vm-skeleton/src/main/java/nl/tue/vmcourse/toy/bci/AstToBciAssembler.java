@@ -217,6 +217,8 @@ public class AstToBciAssembler {
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
             } else {
                 generateBytecode(invokeNode.getFunctionNode(), bytecode);
+                if(invokeNode.getToyExpressionNodes().length == 0)
+                    bytecode.addInstruction(Opcode.OP_CALL, 0);
             }
 
         } else if (node instanceof ToyReadPropertyNode) {

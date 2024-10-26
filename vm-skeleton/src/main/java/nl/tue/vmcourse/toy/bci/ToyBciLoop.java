@@ -696,6 +696,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             break;
 
                         } else {
+                            if(stack.get(index).equals("Function")){
+                                System.err.println("Undefined function: SLType[Function]");
+                                System.exit(1);
+                            }
                             String message = "Undefined function: " + stack.get(index) + "\n";
                             consoleMessages.append(message);
                             System.err.println(consoleMessages.toString());
