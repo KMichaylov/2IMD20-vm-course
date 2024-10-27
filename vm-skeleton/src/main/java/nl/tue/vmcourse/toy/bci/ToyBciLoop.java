@@ -77,6 +77,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     public Object execute(VirtualFrame frame) {
         Stack<Object> stack = new Stack<>();
+        Stack<Object> functionArguments = new Stack<>();
         this.locals.put(currentDepth, frame.getLocals());
 
         if (frame.getArguments() != null) {
@@ -142,6 +143,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         currentFrameSlot = frameSlot;
                         Object value = frameSlot < locals.get(currentDepth).size() ? locals.get(currentDepth).get(frameSlot) : "NULL";
                         stack.push(value);
+                        functionArguments.push(value);
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                     }
                 }
@@ -694,7 +696,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (index >= 0) {
                         if (globalScope.getFunction((String) stack.get(index)) != null) {
                             functionName = (String) stack.get(index);
-                            stack.remove(index);
+                            if(!functionArguments.contains(functionName))
+                                stack.remove(index);
                         } else if (stack.get(index).equals("null") || stack.get(index).equals("NULL")) {
                             break;
 
