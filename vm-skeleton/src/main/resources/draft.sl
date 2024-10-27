@@ -1,14 +1,19 @@
-function main() {
+/*
+ * Testing wether nested functions work.
+ */
 
-	s = "a_string";
-	println(getSize(s));
-	println(hasSize(s));
-
-	s2 = subString(s, 0, 3);
-	println(s2);
-	println(typeOf(s2));
-	println(getSize(s2));
-	println(hasSize(s2));
-
-	s3 = subString(32, 42, 33);
+function multiply(a, b) {
+  return a * b;
 }
+
+function divide(a, b) {
+  return a / b;
+}
+
+function complexFunc(m, d) {
+  println(m(d(2, 2), m(2, 3)));
+}
+
+function main() {
+    complexFunc(multiply, divide);
+}  
