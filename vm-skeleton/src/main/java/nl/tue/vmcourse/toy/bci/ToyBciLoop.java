@@ -453,7 +453,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                     } else {
                         if (currentFunctionName.equals("main")) {
-                            System.out.println("NULL");
+//                            System.out.println("NULL");
                             break;
                         }
                         System.out.println("NULL");
