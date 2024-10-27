@@ -312,7 +312,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                     VirtualFrame newFrame = new VirtualFrame(args);
                                     Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                                     stack.push(returnValue);
-                                }  else{
+                                } else {
                                     Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
                                     if (propertyValue instanceof String && globalScope.getFunction((String) propertyValue) != null) {
                                         RootCallTarget function = globalScope.getFunction((String) propertyValue);
@@ -329,13 +329,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                         for (int i = 0; i < args.length; i++) {
                                             stack.push(args[i]);
                                         }
-                                    }
-                                    else if (propertyValue == null) {
+                                    } else if (propertyValue == null) {
                                         consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
                                         System.err.println(consoleMessages.toString());
                                         System.exit(1);
                                         return consoleMessages;
-                                    } else{
+                                    } else {
                                         stack.push(propertyValue);
                                     }
                                 }
@@ -536,7 +535,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push(((Map<?, ?>) obj).size());
                     } else if (obj instanceof String) {
                         stack.push(((String) obj).length());
-                    } else if (obj instanceof StringRopes){
+                    } else if (obj instanceof StringRopes) {
                         stack.push(((StringRopes) obj).getSizeOfRope());
                     } else {
                         System.err.println("Element is not a valid array.");
@@ -582,12 +581,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         int start = Math.toIntExact((Long) startObj);
                         int end = Math.toIntExact((Long) endObj);
                         stack.push(((String) strObj).substring(start, end));
-                    } else if(strObj instanceof StringRopes && startObj instanceof Long && endObj instanceof Long){
+                    } else if (strObj instanceof StringRopes && startObj instanceof Long && endObj instanceof Long) {
                         int start = Math.toIntExact((Long) startObj);
                         int end = Math.toIntExact((Long) endObj);
                         stack.push(((StringRopes) strObj).substring(start, end));
-                    }
-                        else {
+                    } else {
                         consoleMessages.append("Not a string: cannot substring");
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
@@ -681,7 +679,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     int numberOfFunctionArguments = operand;
                     previousFunctionName = currentFunctionName;
                     Object[] args = new Object[numberOfFunctionArguments];
-                    if(numberOfFunctionArguments > stack.size()){
+                    if (numberOfFunctionArguments > stack.size()) {
                         break;
                     }
                     for (int i = numberOfFunctionArguments - 1; i >= 0; i--) {
@@ -696,13 +694,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (index >= 0) {
                         if (globalScope.getFunction((String) stack.get(index)) != null) {
                             functionName = (String) stack.get(index);
-                            if(!functionArguments.contains(functionName))
-                                stack.remove(index);
+                            stack.remove(index);
                         } else if (stack.get(index).equals("null") || stack.get(index).equals("NULL")) {
                             break;
 
                         } else {
-                            if(stack.get(index).equals("Function")){
+                            if (stack.get(index).equals("Function")) {
                                 System.err.println("Undefined function: SLType[Function]");
                                 System.exit(1);
                             }
@@ -713,8 +710,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             return consoleMessages;
                         }
 
-                    } else if (locals.get(currentDepth).get(currentFrameSlot) instanceof String) {
-                        functionName = (String) locals.get(currentDepth).get(currentFrameSlot);
+                    } else if (locals.get(currentDepth).get(frameSlot) instanceof String) {
+                        functionName = (String) locals.get(currentDepth).get(frameSlot);
                         if (globalScope.getFunction(functionName) == null) {
                             functionName = null;
                         }
@@ -805,7 +802,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private <T> void pushLiteralToStack(Bytecode bytecode, int operand, Stack<Object> stack, Class<T> type) {
         if (type.equals(StringRopes.class)) {
             stack.push(new StringRopes(bytecode.getElementFromConstantPool(operand).toString()));
-        } else{
+        } else {
             T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
             stack.push(literalValue);
         }

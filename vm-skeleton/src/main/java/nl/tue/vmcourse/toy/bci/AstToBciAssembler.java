@@ -201,7 +201,8 @@ public class AstToBciAssembler {
                 String functionName = functionNode.getName();
                 addFunctionToBytecode(bytecode, invokeNode, functionName);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode) {
-                bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+                int frameIndex = ((ToyReadLocalVariableNode) invokeNode.getFunctionNode()).getFrameSlot();
+                bytecode.addVariableInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length,null, frameIndex, false);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode) {
                 ToyReadPropertyNode readPropertyNode = (ToyReadPropertyNode) invokeNode.getFunctionNode();
                 generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
