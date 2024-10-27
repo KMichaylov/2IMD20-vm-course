@@ -38,9 +38,9 @@ function printLargeInt(input) {
     size = getSize(input);
     printString = "";
     i = 0;
-    started = False;
+    started = false;
     while(i < size) {
-        if (input[i] == 0 && started == False) {
+        if (input[i] == 0 && started == false) {
             i = i + 1;
             continue;
         }
