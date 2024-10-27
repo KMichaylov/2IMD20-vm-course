@@ -134,8 +134,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (locals.get(currentDepth).isEmpty()) {
                         globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
                         if (globalScope.getNumberOfArgumentsForFunction(currentFunctionName) > 0) {
-                            stack.push("NULL");
-                            locals.get(currentDepth).add("NULL");
+//                            stack.push("NULL");
+//                            locals.get(currentDepth).add("NULL");
                         }
                         break;
                     }
