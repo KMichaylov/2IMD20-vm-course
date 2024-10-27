@@ -304,9 +304,15 @@ public class AstToBciAssembler {
             case "isInstance" -> bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
             case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
             case "eval" -> {
-                ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[1];
-                generateBytecode(codeData, bytecode);
-                bytecode.addInstruction(Opcode.OP_EVAL, 0);
+                if(invokeNode.getToyExpressionNodes().length > 1){
+                    ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[1];
+                    generateBytecode(codeData, bytecode);
+                    bytecode.addInstruction(Opcode.OP_EVAL, 0);
+                }
+                else {
+                    bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
+//                    generateBytecode(invokeNode.getToyExpressionNodes()[0], bytecode);
+                }
             }
             case "defineFunction" -> {
                 if (invokeNode.getToyExpressionNodes().length >= 1) {

@@ -1170,7 +1170,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
         if (!allFunctions.isEmpty()) {
             RootCallTarget functionToEvaluate = allFunctions.values().iterator().next();
-            return functionToEvaluate.invoke(new ArrayList<>(), globalScope);
+            String name = null;
+            for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
+            name = entry.getKey();
+            }
+            Object ans = functionToEvaluate.invoke(new ArrayList<>(), globalScope);
+            if(ans == null || ans.equals(""))
+                return name;
+            return ans;
         }
         return null;
     }
