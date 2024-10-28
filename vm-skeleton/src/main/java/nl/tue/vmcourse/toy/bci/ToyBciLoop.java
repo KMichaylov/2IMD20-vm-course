@@ -764,7 +764,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     // Invoke the function and push the return value onto the stack
                     Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                     stack.push(returnValue);
-                    currentDepth--;
+                    if(currentDepth > 0)
+                        currentDepth--;
                     stackTracePerFunction.remove(functionName);
                 }
 
