@@ -70,6 +70,14 @@ public class GlobalScope {
     }
 
     /**
+     * Juts return all functions from the global scope.
+     * @return functions as a hashmap
+     */
+    public Map<String, RootCallTarget> getAllFunctions() {
+        return functions;
+    }
+
+    /**
      * Gets the number of arguments for the specific function.
      * @param name of the function
      * @return the number of arguments as integer value
