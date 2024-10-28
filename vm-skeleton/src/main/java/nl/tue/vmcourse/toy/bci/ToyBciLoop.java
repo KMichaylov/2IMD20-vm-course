@@ -94,6 +94,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         int pc = 0;
         if (frame.getArguments().length > 0 && frame.getArguments()[0] instanceof GlobalScope) {
             globalScope = (GlobalScope) frame.getArguments()[0];
+            for (String currentFunctionName : globalScope.getAllFunctions().keySet()) {
+                globalScope.setFunctionToNumberOfArguments(currentFunctionName, globalScope.getNumberOfArgumentsForFunction(currentFunctionName));
+            }
         }
 //        bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
@@ -134,10 +137,12 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 case OP_READ_ARGUMENT -> {
                     if (locals.get(currentDepth).isEmpty()) {
-                        globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
-                        if (globalScope.getNumberOfArgumentsForFunction(currentFunctionName) > 0) {
-//                            stack.push("NULL");
-//                            locals.get(currentDepth).add("NULL");
+//                        globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
+                        if (globalScope.getNumberOfArgumentsForFunction(currentFunctionName) >= 0) {
+                            if(!isEval) {
+                                stack.push("NULL");
+                                locals.get(currentDepth).add("NULL");
+                            }
                         }
                         break;
                     }
@@ -423,6 +428,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         Object valueToPrint = stack.pop();
                         if (operand > 1) {
                             valueToPrint = stack.pop();
+                            stack.push("NULL");
                         }
                         if (operand == 0) {
                             if (currentFunctionName.equals("main")) {
@@ -737,7 +743,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         throw new RuntimeException("Function not found: " + functionName);
                     }
 
-                    globalScope.setFunctionToNumberOfArguments(functionName, numberOfFunctionArguments);
+//                    globalScope.setFunctionToNumberOfArguments(functionName, numberOfFunctionArguments);
 
                     // TODO Error here which throws an error, logic should be overall correct.
                     currentFunctionName = functionName;
