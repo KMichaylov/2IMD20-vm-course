@@ -11,6 +11,7 @@ import java.util.Map;
 public class AstToBciAssembler {
 
     private static boolean isArgument = false;
+    private static boolean isEval = false;
 
     // Todo add as an optimization the ability to scan the file to see if there is any stacktrace in the source.
     private static final Map<String, Object> stackTraceElements = new LinkedHashMap<>();
@@ -40,7 +41,7 @@ public class AstToBciAssembler {
     public static ToyAbstractFunctionBody build(ToyStatementNode methodBlock) {
         Bytecode bytecode = compileAst(methodBlock);
         // TODO code is one argument; depending in impl other arguments might be needed (e.g., constant pool?)
-        return new ToyBciLoop(bytecode, stackTraceElements);
+        return new ToyBciLoop(bytecode, stackTraceElements, isEval);
     }
 
     /**
@@ -308,6 +309,7 @@ public class AstToBciAssembler {
                     ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[1];
                     generateBytecode(codeData, bytecode);
                     bytecode.addInstruction(Opcode.OP_EVAL, 0);
+                    isEval = true;
                 }
                 else {
                     bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);

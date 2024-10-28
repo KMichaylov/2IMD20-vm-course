@@ -32,13 +32,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     private ErrorMessages errorMessages;
     private static Map<Object, Integer> tableWithVariables = new HashMap<>();
     private int currentFrameSlot;
+    private boolean isEval;
 
     /**
      * Bytecode are the bytecode instructions from the generator and locals are all the elements for the local scope
      *
      * @param bytecode
      */
-    public ToyBciLoop(Bytecode bytecode, Map<String, Object> stackTraceElements) {
+    public ToyBciLoop(Bytecode bytecode, Map<String, Object> stackTraceElements, boolean isEval) {
         this.bytecode = bytecode;
         this.locals = new HashMap<>();
         this.stackTraceElements = stackTraceElements;
@@ -48,6 +49,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         stackTracePerFunction.put(currentFunctionName, new LinkedHashMap<>());
         currentDepth = 0;
         errorMessages = new ErrorMessages();
+        this.isEval = isEval;
     }
 
     /**
@@ -753,7 +755,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     // Create a new frame with the arguments
                     VirtualFrame newFrame = new VirtualFrame(args);
-                    currentDepth++;
+                    if(!isEval)
+                        currentDepth++;
 
                     // Use the stack overflow error
                     if (currentDepth > STACKOVERFLOW_THRESHOLD) {
@@ -764,7 +767,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     // Invoke the function and push the return value onto the stack
                     Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                     stack.push(returnValue);
-                    if(currentDepth > 0)
+                    if(currentDepth > 0 && !isEval)
                         currentDepth--;
                     stackTracePerFunction.remove(functionName);
                 }
