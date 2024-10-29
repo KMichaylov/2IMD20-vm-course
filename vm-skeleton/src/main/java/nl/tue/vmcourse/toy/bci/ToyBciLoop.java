@@ -981,6 +981,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return left == right;
         } else if (left.equals("null") || right.equals("null")) {
             return left == right;
+        } else if(left.equals("None") || right.equals("None")) {
+            return left == right;
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, "=="));
         System.err.println(consoleMessages.toString());
