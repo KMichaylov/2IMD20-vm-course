@@ -164,7 +164,7 @@ function multipleFixedIntegerAndInt(a, b) {
 
 // a * b, where a and b represent Integer
 function multipleFixedIntergerAndFixedInteger(a, b) {
-    return performMultiple(a, b, False);
+    return performMultiple(a, b, false);
 }
 
 // a * b, where a and b represent Decimal
