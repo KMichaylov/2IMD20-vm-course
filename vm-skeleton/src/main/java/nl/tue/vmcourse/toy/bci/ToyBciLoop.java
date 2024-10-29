@@ -120,7 +120,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_FUNCTION_NAME -> {
                     String literalValue = (String) bytecode.getElementFromConstantPool(operand);
                     stack.push(literalValue);
-                    if (tableWithVariables.containsKey(literalValue) && currentFrameSlot != tableWithVariables.get(literalValue)) {
+                    if (tableWithVariables.containsKey(literalValue) && currentFrameSlot != tableWithVariables.get(literalValue) && globalScope.getFunction(literalValue) == null) {
                         stack.push(null);
                     }
                 }
