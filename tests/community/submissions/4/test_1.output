@@ -1,0 +1,18 @@
+Pong!
+-4
+Ping!
+3
+Pong!
+-2
+Ping!
+1
+Pong!
+0
+Goal!
+Frame: root somerecursion, a=0
+Frame: root somerecursion, a=0
+Frame: root somerecursion, a=1
+Frame: root somerecursion, a=-2
+Frame: root somerecursion, a=3
+Frame: root somerecursion, a=-4
+Frame: root main
