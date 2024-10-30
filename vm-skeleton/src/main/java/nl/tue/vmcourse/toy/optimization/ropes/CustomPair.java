@@ -1,4 +1,4 @@
-package nl.tue.vmcourse.toy.optimization;
+package nl.tue.vmcourse.toy.optimization.ropes;
 
 public class CustomPair<T, U> {
     private final T firstElement;

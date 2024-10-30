@@ -1,4 +1,4 @@
-package nl.tue.vmcourse.toy.optimization;
+package nl.tue.vmcourse.toy.optimization.ropes;
 
 // TODO: If not fast enough, consider changing the String to char
 public class StringRopes {

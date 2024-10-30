@@ -1,4 +1,4 @@
-package nl.tue.vmcourse.toy.optimization;
+package nl.tue.vmcourse.toy.optimization.ropes;
 
 /**
  * Just the top level class for the ropes optimization.

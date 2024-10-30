@@ -1,4 +1,4 @@
-package nl.tue.vmcourse.toy.optimization;
+package nl.tue.vmcourse.toy.optimization.ropes;
 
 /**
  * Add structure for single node element with its data

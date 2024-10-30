@@ -1,4 +1,4 @@
-package nl.tue.vmcourse.toy.optimization;
+package nl.tue.vmcourse.toy.optimization.ropes;
 
 /**
  * Just a parent node which has links to left and right children.
