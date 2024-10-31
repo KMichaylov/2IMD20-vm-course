@@ -38,7 +38,8 @@ public class AstToBciAssembler {
      * @param methodBlock the AST for the whole method that should be parsed
      * @return the result of the execution of bytecode commands
      */
-    public static ToyAbstractFunctionBody build(ToyStatementNode methodBlock) {
+    public static ToyAbstractFunctionBody build(ToyStatementNode methodBlock, String functionName) {
+//        System.out.println("Function name: " + functionName);
         Bytecode bytecode = compileAst(methodBlock);
         // TODO code is one argument; depending in impl other arguments might be needed (e.g., constant pool?)
         return new ToyBciLoop(bytecode, stackTraceElements, isEval);

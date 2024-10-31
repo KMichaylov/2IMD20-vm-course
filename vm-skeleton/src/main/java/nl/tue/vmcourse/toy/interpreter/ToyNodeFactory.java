@@ -108,7 +108,7 @@ public class ToyNodeFactory {
             final ToyStatementNode methodBlock = finishBlock(methodNodes);
             assert lexicalScope == null : "Wrong scoping of blocks in parser";
 
-            final ToyAbstractFunctionBody functionBodyNode = AstToBciAssembler.build(methodBlock);
+            final ToyAbstractFunctionBody functionBodyNode = AstToBciAssembler.build(methodBlock, functionName);
 
             // TODO remove this println (otherwise all tests will fail...)
 //            if (DUMP_AST) {
