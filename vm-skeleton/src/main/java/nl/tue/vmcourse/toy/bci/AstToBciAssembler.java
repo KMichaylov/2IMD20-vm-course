@@ -81,7 +81,12 @@ public class AstToBciAssembler {
                 variableName = null;
             }
 
+            if(bytecode.getInstruction(bytecode.getSize() - 1).getOpcode() == Opcode.OP_READ_ARGUMENT){
+                bytecode.updateInstruction( bytecode.getSize() - 1, variableName);
+            }
+
             if (writeNode.getValueNode() instanceof ToyReadArgumentNode) {
+                stackTraceElements.put(variableName, null);
                 return;
             }
             stackTraceElements.put(variableName, null);

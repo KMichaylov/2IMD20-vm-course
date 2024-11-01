@@ -64,6 +64,11 @@ public class Bytecode {
         instructions.set(index, new Instruction(oldInstruction.getOpcode(), operand));
     }
 
+    public void updateInstruction(int index, String variableName) {
+        Instruction oldInstruction = instructions.get(index);
+        instructions.set(index, new Instruction(oldInstruction.getOpcode(), oldInstruction.getOperand(), variableName, oldInstruction.getFrameSlot(), oldInstruction.isNewVariable()));
+    }
+
     /**
      * Get an instruction at the given index.
      *
