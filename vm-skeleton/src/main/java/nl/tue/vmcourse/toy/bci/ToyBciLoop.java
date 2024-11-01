@@ -167,7 +167,18 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                         if (currentFunctionName.equals(previousFunctionName)) {
-                            stackTraceElements.put(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
+                            if(stackTraceElements.get(instr.getVariableName()) instanceof List){
+                                List<Object> list = (List<Object>) stackTraceElements.get(instr.getVariableName());
+                                list.add(locals.get(currentDepth).get(frameSlot));
+                                stackTraceElements.replace(instr.getVariableName(), list);
+                            } else {
+                                List<Object> list = new ArrayList<>();
+                                list.add(stackTraceElements.get(instr.getVariableName()));
+                                list.add(locals.get(currentDepth).get(frameSlot));
+                                stackTraceElements.replace(instr.getVariableName(), list);
+                            }
+
+//                            stackTraceElements.put(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
                             stackTracePerFunction.put(currentFunctionName, stackTraceElements);
                         } else {
                             stackTraceElements.replace(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
@@ -1240,7 +1251,15 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 sb.append("Frame: root ").append(entry.getKey()).append("\n");
             }
             stackTracePerFunction.put("main", new LinkedHashMap<>());
-        } else {
+        } else if (stackTraceElements.entrySet().iterator().next().getValue() instanceof List) {
+            List<Integer> stackTraceList = (List<Integer>) stackTraceElements.entrySet().iterator().next().getValue();
+            stackTraceList.add(0);
+            for (int i = stackTraceList.size() - 1; i >= 0; i--) {
+                sb.append("Frame: root ").append(functionName).append(", ").append(stackTraceElements.entrySet().iterator().next().getKey()).append("=").append(stackTraceList.get(i)).append("\n");
+            }
+            sb.append("Frame: root ").append("main");
+        }
+            else {
             sb.append("Frame: root ").append(functionName);
             for (Map.Entry<String, Object> entry : stackTraceElements.entrySet()) {
                 String varName = entry.getKey();
