@@ -1234,7 +1234,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     public String generateStackTrace(String functionName) {
         StringBuilder sb = new StringBuilder();
         List<Map.Entry<String, Map<String, Object>>> entryList = new ArrayList<>(stackTracePerFunction.entrySet());
-        if (stackTracePerFunction.get(functionName).isEmpty() && !functionName.equals("main")) {
+        if (stackTracePerFunction.get(functionName).isEmpty() && !functionName.equals("main") && stackTraceElements.isEmpty()) {
             for (int i = stackTracePerFunction.size() - 1; i >= 0; i--) {
                 Map.Entry<String, Map<String, Object>> entry = entryList.get(i);
                 sb.append("Frame: root ").append(entry.getKey()).append("\n");

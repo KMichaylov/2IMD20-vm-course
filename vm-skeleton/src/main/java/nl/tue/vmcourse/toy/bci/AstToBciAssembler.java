@@ -195,7 +195,7 @@ public class AstToBciAssembler {
                     // Here, we add the function name, so that the function can be executed.
                     int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
                     bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
-                    stackTraceElements.put(functionName, null);
+//                    stackTraceElements.put(functionName, null);
 
                 }
             }
@@ -343,7 +343,7 @@ public class AstToBciAssembler {
                     int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
                     bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
                     generateBytecode(invokeNode.getToyExpressionNodes()[0], bytecode);
-                    stackTraceElements.put(functionName, null);
+//                    stackTraceElements.put(functionName, null);
                     bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
                 } else {
                     bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
