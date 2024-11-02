@@ -14,9 +14,6 @@ public enum Opcode {
     OP_COMPARE((byte) 0x06),
     // Binary values
     OP_NOT((byte) 0x30),
-    OP_NULL((byte) 0x0D),
-    OP_TRUE((byte) 0x0E),
-    OP_FALSE((byte) 0x0F),
     // Binary operations
     OP_ADD((byte) 0x10),
     OP_SUB((byte) 0x11),

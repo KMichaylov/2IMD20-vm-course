@@ -114,10 +114,6 @@ private static Object evalStream(CharStream charStream) {
     Map<String, RootCallTarget> allFunctions = factory.getAllFunctions();
     if (!allFunctions.isEmpty() && allFunctions.containsKey("main")) {
         RootCallTarget mainFunction = allFunctions.get("main");
-        // TODO register builtins, initialize global scope, ...
-        // TODO ME: Maybe check if here you can do the buildins or leave them as they are.
-        // TODO ME: Basically, we should always start with the main function, see how to be able to check other functions.
-
         for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
             // here, we add the global scope for functions and then create the bytecode for each function.
             globalScope.registerFunction(entry.getKey(), entry.getValue());

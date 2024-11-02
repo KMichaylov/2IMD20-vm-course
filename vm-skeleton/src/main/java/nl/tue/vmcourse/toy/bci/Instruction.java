@@ -10,6 +10,11 @@ public class Instruction {
     private final Integer frameSlot;
     private final Boolean newVariable;
 
+    /**
+     * Constructor for the instruction which create a new instruction with the opcode and operand.
+     * @param opcode the opcode of the command
+     * @param operand index which points to the constant pool
+     */
     public Instruction(Opcode opcode, Integer operand) {
         this.opcode = opcode;
         this.operand = operand;
@@ -17,8 +22,14 @@ public class Instruction {
         this.frameSlot = null;
         this.newVariable = null;
     }
-
-    // The following constructor is solely for variables and other structures which keep track of frameSlot and name.
+    /**
+     * Constructor for the instruction.
+     * @param opcode the opcode of the command
+     * @param operand index which points to the constant pool, in many cases it has the same value as the frame slot
+     * @param variableName the name of the variable if it exists
+     * @param frameSlot points to the constant pool, in many cases it has the same value as the operand
+     * @param newVariable indicates if the variable is newly defined, or already exists
+     */
     public Instruction(Opcode opcode, Integer operand, String variableName, Integer frameSlot, Boolean newVariable) {
         this.opcode = opcode;
         this.operand = operand;
