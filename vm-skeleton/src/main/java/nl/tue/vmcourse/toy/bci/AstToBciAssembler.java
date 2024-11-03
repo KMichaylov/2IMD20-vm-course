@@ -13,7 +13,6 @@ public class AstToBciAssembler {
     private static boolean isArgument = false;
     private static boolean isEval = false;
 
-    // Todo add as an optimization the ability to scan the file to see if there is any stacktrace in the source.
     private static final Map<String, Object> stackTraceElements = new LinkedHashMap<>();
     private static final Map<String, Opcode> BUILTIN_FUNCTIONS = Map.ofEntries(
             Map.entry("println", Opcode.OP_PRINT),
@@ -39,9 +38,7 @@ public class AstToBciAssembler {
      * @return the result of the execution of bytecode commands
      */
     public static ToyAbstractFunctionBody build(ToyStatementNode methodBlock, String functionName) {
-//        System.out.println("Function name: " + functionName);
         Bytecode bytecode = compileAst(methodBlock);
-        // TODO code is one argument; depending in impl other arguments might be needed (e.g., constant pool?)
         return new ToyBciLoop(bytecode, stackTraceElements, isEval);
     }
 
@@ -52,7 +49,6 @@ public class AstToBciAssembler {
      * @return
      */
     private static Bytecode compileAst(ToyStatementNode methodBlock) {
-        // TODO should explore AST and produce BC instructions.
         Bytecode bytecode = new Bytecode();
         generateBytecode(methodBlock, bytecode);
         return bytecode;
@@ -65,7 +61,6 @@ public class AstToBciAssembler {
      * @param node     The node for which we traverse the tree
      * @param bytecode The bytecode placeholder
      */
-    // TODO: Refactor the whole tree. Continue with it even later.
     private static void generateBytecode(ToyNode node, Bytecode bytecode) {
         if (node instanceof ToyBlockNode) {
             ToyBlockNode blockNode = (ToyBlockNode) node;
@@ -81,8 +76,8 @@ public class AstToBciAssembler {
                 variableName = null;
             }
 
-            if(bytecode.getInstruction(bytecode.getSize() - 1).getOpcode() == Opcode.OP_READ_ARGUMENT){
-                bytecode.updateInstruction( bytecode.getSize() - 1, variableName);
+            if (bytecode.getInstruction(bytecode.getSize() - 1).getOpcode() == Opcode.OP_READ_ARGUMENT) {
+                bytecode.updateInstruction(bytecode.getSize() - 1, variableName);
             }
 
             if (writeNode.getValueNode() instanceof ToyReadArgumentNode) {
@@ -133,8 +128,7 @@ public class AstToBciAssembler {
         } else if (node instanceof ToyLongLiteralNode) {
             ToyLongLiteralNode literalNode = (ToyLongLiteralNode) node;
             long value = literalNode.getValue();
-            final long LONG_UPPERBOUND = 2147483647;
-            if (value < LONG_UPPERBOUND) {
+            if (value < Integer.MAX_VALUE) {
                 literalNodeHelper(literalNode.getValue(), Opcode.OP_LITERAL_LONG, bytecode);
 
             } else {
@@ -177,15 +171,11 @@ public class AstToBciAssembler {
             ToyParenExpressionNode parenExpressionNode = (ToyParenExpressionNode) node;
             generateBytecode(parenExpressionNode.getExpressionNode(), bytecode);
             bytecode.addInstruction(Opcode.OP_NOP, 0);
-        }
-
-//            TODO: Redesign and think of other approaches regarding where to store variables. Main priority for today
-        else if (node instanceof ToyInvokeNode) {
+        } else if (node instanceof ToyInvokeNode) {
             ToyInvokeNode invokeNode = (ToyInvokeNode) node;
             if (invokeNode.getFunctionNode() instanceof ToyFunctionLiteralNode) {
                 ToyFunctionLiteralNode functionNode = (ToyFunctionLiteralNode) invokeNode.getFunctionNode();
                 String functionName = functionNode.getName();
-                // TODO This is for support of objects
                 if (functionName.equals("new")) {
                     bytecode.addInstruction(Opcode.OP_NEW, 0);
                     // WE do not interpret this command as a function call, thus we exit the invoke method.
@@ -195,8 +185,6 @@ public class AstToBciAssembler {
                     // Here, we add the function name, so that the function can be executed.
                     int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
                     bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
-//                    stackTraceElements.put(functionName, null);
-
                 }
             }
             for (ToyExpressionNode expression : invokeNode.getToyExpressionNodes()) {
@@ -209,7 +197,7 @@ public class AstToBciAssembler {
                 addFunctionToBytecode(bytecode, invokeNode, functionName);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadLocalVariableNode) {
                 int frameIndex = ((ToyReadLocalVariableNode) invokeNode.getFunctionNode()).getFrameSlot();
-                bytecode.addVariableInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length,null, frameIndex, false);
+                bytecode.addVariableInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length, null, frameIndex, false);
             } else if (invokeNode.getFunctionNode() instanceof ToyReadPropertyNode) {
                 ToyReadPropertyNode readPropertyNode = (ToyReadPropertyNode) invokeNode.getFunctionNode();
                 generateBytecode(readPropertyNode.getReceiverNode(), bytecode);
@@ -222,11 +210,10 @@ public class AstToBciAssembler {
                 int propertyIndex = bytecode.addToConstantPool(propertyName);
                 generateBytecode(readPropertyNode.getNameNode(), bytecode);
                 bytecode.addInstruction(Opcode.OP_GET_PROPERTY, propertyIndex);
-                // TODO: If removed, this makes ToyLangIsObjectOriented pass
                 bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
             } else {
                 generateBytecode(invokeNode.getFunctionNode(), bytecode);
-                if(invokeNode.getToyExpressionNodes().length == 0)
+                if (invokeNode.getToyExpressionNodes().length == 0)
                     bytecode.addInstruction(Opcode.OP_CALL, 0);
             }
 
@@ -241,11 +228,6 @@ public class AstToBciAssembler {
             String functionName = functionLiteralNode.getName();
             if (!isBuiltInFunctionForTypeChecking(functionName)) {
                 literalNodeHelper(functionLiteralNode.getName(), Opcode.OP_FUNCTION_NAME, bytecode);
-
-                // If we do not pass the literal as an argument, we do not need to call it.
-                // TODO: Think of a better approach to this. BY removing this, we kill the Object and Object, object dynamic.
-//                if (!isArgument)
-//                    bytecode.addInstruction(Opcode.OP_CALL, 0);
             }
 
             if (isArgument && isBuiltInFunctionForTypeChecking(functionName)) {
@@ -298,8 +280,6 @@ public class AstToBciAssembler {
             ToyUnboxNode unboxNode = (ToyUnboxNode) node;
             generateBytecode(unboxNode.getLeftNode(), bytecode);
         }
-
-
     }
 
     private static void addFunctionToBytecode(Bytecode bytecode, ToyInvokeNode invokeNode, String functionName) {
@@ -312,38 +292,34 @@ public class AstToBciAssembler {
             case "isInstance" -> bytecode.addInstruction(Opcode.OP_IS_INSTANCE, 0);
             case "nanoTime" -> bytecode.addInstruction(Opcode.OP_NANO_TIME, 0);
             case "eval" -> {
-                if(invokeNode.getToyExpressionNodes().length > 1){
+                if (invokeNode.getToyExpressionNodes().length > 1) {
                     ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[1];
                     generateBytecode(codeData, bytecode);
                     bytecode.addInstruction(Opcode.OP_EVAL, 0);
                     isEval = true;
-                }
-                else {
+                } else {
                     bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
-//                    generateBytecode(invokeNode.getToyExpressionNodes()[0], bytecode);
                 }
             }
             case "defineFunction" -> {
                 // Handles the case when we have defineFunction("Hello world"), since we see defineFunction as built-in which is not in this case.
                 Object flag = null;
-                if(invokeNode.getToyExpressionNodes().length == 0)
+                if (invokeNode.getToyExpressionNodes().length == 0)
                     flag = true;
-               else if(invokeNode.getFunctionNode().toString().contains("defineFunction") && invokeNode.getToyExpressionNodes()[0].toString().contains("Hello world"))
+                else if (invokeNode.getFunctionNode().toString().contains("defineFunction") && invokeNode.getToyExpressionNodes()[0].toString().contains("Hello world"))
                     flag = false;
-                else if(invokeNode.getToyExpressionNodes()[0].toString().contains("function")){
+                else if (invokeNode.getToyExpressionNodes()[0].toString().contains("function")) {
                     flag = true;
                 }
                 if (invokeNode.getToyExpressionNodes().length >= 1 && flag == null) {
                     ToyExpressionNode codeData = invokeNode.getToyExpressionNodes()[0];
                     generateBytecode(codeData, bytecode);
                     bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
-                } else if(invokeNode.getToyExpressionNodes().length >= 1 && !(Boolean) flag) {
-                    // TODO: This should be generated in the InvokeFunction and not here, that's why the TypeError 06 and 07 fail.
+                } else if (invokeNode.getToyExpressionNodes().length >= 1 && !(Boolean) flag) {
                     ToyFunctionLiteralNode functionNode = (ToyFunctionLiteralNode) invokeNode.getFunctionNode();
                     int functionNameIndex = bytecode.addToConstantPool(functionNode.getName());
                     bytecode.addInstruction(Opcode.OP_FUNCTION_NAME, functionNameIndex);
                     generateBytecode(invokeNode.getToyExpressionNodes()[0], bytecode);
-//                    stackTraceElements.put(functionName, null);
                     bytecode.addInstruction(Opcode.OP_CALL, invokeNode.getToyExpressionNodes().length);
                 } else {
                     bytecode.addInstruction(Opcode.OP_DEFINE_FUNCTION, 0);
@@ -430,7 +406,8 @@ public class AstToBciAssembler {
         switch (functionName) {
             case "println", "typeOf", "isInstance", "nanoTime", "eval", "defineFunction", "getSize", "stacktrace",
                  "new", "exit",
-                 "hasSize", "subString", "hasProperty", "deleteProperty", "helloEqualsWorld", "isExecutable" -> result = true;
+                 "hasSize", "subString", "hasProperty", "deleteProperty", "helloEqualsWorld", "isExecutable" ->
+                    result = true;
             default -> result = false;
         }
         return result;
