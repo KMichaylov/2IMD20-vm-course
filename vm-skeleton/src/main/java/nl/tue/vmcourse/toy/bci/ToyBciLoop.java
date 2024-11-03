@@ -53,7 +53,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     }
 
     /**
-     * Add the function arguments
+     * The following method adds the function arguments.
      *
      * @param extractedArgument the argument to be extracted
      * @return the value of the argument
@@ -72,10 +72,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     }
 
     /**
-     * The following function executes the bytecode which is stored on the frame
+     * The following function executes the bytecode which is stored on the frame.
      *
      * @param frame place where bytecode is stored
-     * @return TODO
+     * @return part of the accumulated answers
      */
     public Object execute(VirtualFrame frame) {
         Stack<Object> stack = new Stack<>();
@@ -98,14 +98,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 globalScope.setFunctionToNumberOfArguments(currentFunctionName, globalScope.getNumberOfArgumentsForFunction(currentFunctionName));
             }
         }
-//        bytecode.printBytecode();
         while (pc < bytecode.getSize()) {
             Instruction instr = bytecode.getInstruction(pc);
             Opcode opcode = instr.getOpcode();
             Integer frameSlot = instr.getFrameSlot();
             int operand = instr.getOperand();
-            // TODO: refactor the switch statement. Export common logic into separate methods, after the general structure is there
-            // TODO: Fix throwing of errors with something else
             switch (opcode) {
                 case OP_LITERAL_STRING -> {
                     if (ROPES_ENABLED) {
@@ -137,7 +134,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 case OP_READ_ARGUMENT -> {
                     if (locals.get(currentDepth).isEmpty()) {
-//                        globalScope.increaseFunctionToNumberOfArguments(currentFunctionName);
                         if (globalScope.getNumberOfArgumentsForFunction(currentFunctionName) >= 0) {
                             if(!isEval) {
                                 stack.push("NULL");
@@ -178,7 +174,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 stackTraceElements.replace(instr.getVariableName(), list);
                             }
 
-//                            stackTraceElements.put(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
                             stackTracePerFunction.put(currentFunctionName, stackTraceElements);
                         } else {
                             stackTraceElements.replace(instr.getVariableName(), locals.get(currentDepth).get(frameSlot));
@@ -193,7 +188,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_MUL -> performArithmeticOperations(stack, "MUL");
 
                 case OP_LOGICAL_AND -> {
-//                    if (!stack.contains(false) || !stack.contains(true)) {
 
                     if (stack.isEmpty()) {
                         stack.push(false);
@@ -333,7 +327,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 } else {
                                     Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
                                     if (propertyValue instanceof String && globalScope.getFunction((String) propertyValue) != null) {
-                                        RootCallTarget function = globalScope.getFunction((String) propertyValue);
                                         int numberOfArguments = 0;
                                         if (globalScope.getNumberOfArgumentsForFunction((String) propertyValue) != null) {
                                             numberOfArguments = globalScope.getNumberOfArgumentsForFunction((String) propertyValue);
@@ -392,7 +385,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (!((Boolean) stack.peek())) {
                         pc += operand;
                     }
-//                    stack.pop();
                 }
                 case OP_JUMP_IF_TRUE_BOOLEAN -> {
                     if (!(stack.peek() instanceof Boolean)) {
@@ -401,12 +393,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if ((Boolean) stack.peek()) {
                         pc += operand;
                     }
-//                    stack.pop();
                 }
 
                 case OP_JUMP_IF_FALSE -> {
                     if (!(stack.peek() instanceof Boolean)) {
-                        // TODO: Since I use the same thing for loops and if statements, I should somehow get the operator.
                         consoleMessages.append(errorMessages.generateTypeError(stack.peek(), "if"));
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
@@ -464,19 +454,13 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             consoleMessages.append("Object").append("\n");
                             break;
                         }
-                        if (currentFunctionName.equals("main")) {
-                            System.out.println(valueToPrint);
-                        } else {
-                            System.out.println(valueToPrint);
-                        }
+                        System.out.println(valueToPrint);
 
                     } else {
                         if (currentFunctionName.equals("main")) {
-//                            System.out.println("NULL");
                             break;
                         }
                         System.out.println("NULL");
-                        break;
                     }
 
                 }
@@ -500,7 +484,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     // No clue how to handle otherwise this test
                     if (stack.contains("Type: ")) {
                         stack.push("[foreign object]");
-                        break;
                     } else if (valueToCheckTypeOf == null || valueToCheckTypeOf.equals("NULL")) {
                         stack.push("NULL");
                     } else if (valueToCheckTypeOf.equals("Number")) {
@@ -530,7 +513,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 }
 
                 case OP_STACKTRACE -> {
-                    // TODO: Implement this
                     String stackTrace = generateStackTrace(currentFunctionName);
                     stack.push(stackTrace);
                 }
@@ -639,7 +621,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(answer);
                 }
 
-                // TODO: Since we go back to the AST, we lose the prints. Also, we don't need to evaluate a function but simply redefine it.
                 case OP_DEFINE_FUNCTION -> {
                     if (stack.isEmpty()) {
                         consoleMessages.append("Type error: operation \"defineFunction\" not defined for NULL\n");
@@ -675,7 +656,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             case 3 -> lessThanOrEqualComparison(left, right);   // for <=
                             case 4 -> greaterThanComparison(left, right);       // for >
                             case 5 -> greaterThanOrEqualComparison(left, right);// for >=
-                            // TODO: Check later what exactly to do with default, what error to throw
                             default -> throw new RuntimeException("Unknown comparison type");
                         };
                         stack.push(result);
@@ -756,10 +736,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (function == null) {
                         throw new RuntimeException("Function not found: " + functionName);
                     }
-
-//                    globalScope.setFunctionToNumberOfArguments(functionName, numberOfFunctionArguments);
-
-                    // TODO Error here which throws an error, logic should be overall correct.
                     currentFunctionName = functionName;
                     if (stackTracePerFunction.containsKey(currentFunctionName)) {
                         stackTracePerFunction.remove(currentFunctionName);
@@ -801,7 +777,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                 }
                 default -> {
-                    // TODO throw corresponding error:
                     throw new RuntimeException("TODO");
                 }
 
@@ -809,7 +784,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             pc++;
 
         }
-        // TODO: decide what to return in the end;
         return consoleMessages.toString().trim();
     }
 
@@ -1086,20 +1060,15 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 return ((BigInteger) left).compareTo((BigInteger) right);
             } else if (right instanceof Long || right instanceof Integer) {
                 return ((BigInteger) left).compareTo(BigInteger.valueOf(right.longValue()));
-            } else {
-                // TODO
             }
         } else if (left instanceof Long || left instanceof Integer) {
             if (right instanceof BigInteger) {
                 return -((BigInteger) right).compareTo(BigInteger.valueOf(left.longValue()));
             } else if (right instanceof Long || right instanceof Integer) {
                 return Long.compare(left.longValue(), right.longValue());
-            } else {
-                // TODO
             }
         } else {
             if (left == null || right == null) {
-                // TODO: later add custom logic here
                 System.out.println("Cannot compare if one or two are null values");
             }
             return Long.compare(left.longValue(), right.longValue());
@@ -1121,22 +1090,14 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 return left.equals(right);
             } else if (right instanceof Long || right instanceof Integer) {
                 return left.equals(BigInteger.valueOf(right.longValue()));
-            } else {
-                //TODO
-
             }
         } else if (left instanceof Long) {
             if (right instanceof BigInteger) {
                 return BigInteger.valueOf((Long) left).equals(right);
             } else if (right instanceof Long) {
                 return left.longValue() == right.longValue();
-            } else {
-//                Todo
             }
         } else {
-            if (left == null || right == null) {
-                // TODO
-            }
             return left.longValue() == right.longValue();
         }
         return left.longValue() == right.longValue();
