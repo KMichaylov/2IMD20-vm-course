@@ -135,7 +135,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_READ_ARGUMENT -> {
                     if (locals.get(currentDepth).isEmpty()) {
                         if (globalScope.getNumberOfArgumentsForFunction(currentFunctionName) >= 0) {
-                            if(!isEval) {
+                            if (!isEval) {
                                 stack.push("NULL");
                                 locals.get(currentDepth).add("NULL");
                             }
@@ -163,7 +163,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
                         tableWithVariables.put(instr.getVariableName(), frameSlot);
                         if (currentFunctionName.equals(previousFunctionName)) {
-                            if(stackTraceElements.get(instr.getVariableName()) instanceof List){
+                            if (stackTraceElements.get(instr.getVariableName()) instanceof List) {
                                 List<Object> list = (List<Object>) stackTraceElements.get(instr.getVariableName());
                                 list.add(locals.get(currentDepth).get(frameSlot));
                                 stackTraceElements.replace(instr.getVariableName(), list);
@@ -269,7 +269,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                             propertyName = stack.pop();
                         }
                     } else {
-                        System.out.println("Here");
                         propertyName = stack.pop();
                     }
 
@@ -284,7 +283,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     Object value = stack.pop();
                     Object receiver = stack.pop();
-                    if (receiver instanceof Map && ((propertyName instanceof String) || (propertyName instanceof Number) || (propertyName instanceof Object))) {
+                    if (receiver instanceof Map && ((propertyName != null))) {
                         ((Map<Object, Object>) receiver).put(propertyName, value);
                     } else {
                         System.err.println("Element is not a valid array.");
@@ -359,8 +358,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                 }
                                 stack.push(propertyValue);
                             }
-                        } else {
-                            System.out.println("Something with the getter of the object property went wrong...");
                         }
                     } else {
                         String propertyName = (String) stack.pop();
@@ -690,7 +687,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     while (index >= 0 && !(stack.get(index) instanceof String)) {
                         index--;
                     }
-                    if(index > 0 && stack.get(index).equals("")){
+                    if (index > 0 && stack.get(index).equals("")) {
                         index = -1;
                     }
                     if (index >= 0) {
@@ -751,7 +748,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     // Create a new frame with the arguments
                     VirtualFrame newFrame = new VirtualFrame(args);
-                    if(!isEval)
+                    if (!isEval)
                         currentDepth++;
 
                     // Use the stack overflow error
@@ -763,7 +760,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     // Invoke the function and push the return value onto the stack
                     Object returnValue = function.invoke(new ArrayList<>(), newFrame);
                     stack.push(returnValue);
-                    if(currentDepth > 0 && !isEval)
+                    if (currentDepth > 0 && !isEval)
                         currentDepth--;
                     stackTracePerFunction.remove(functionName);
                 }
@@ -969,7 +966,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             return left == right;
         } else if (left.equals("null") || right.equals("null")) {
             return left == right;
-        } else if(left.equals("None") || right.equals("None")) {
+        } else if (left.equals("None") || right.equals("None")) {
             return left == right;
         }
         consoleMessages.append(errorMessages.generateTypeError(left, right, "=="));
@@ -1159,10 +1156,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             RootCallTarget functionToEvaluate = allFunctions.values().iterator().next();
             String name = null;
             for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
-            name = entry.getKey();
+                name = entry.getKey();
             }
             Object ans = functionToEvaluate.invoke(new ArrayList<>(), globalScope);
-            if(ans == null || ans.equals(""))
+            if (ans == null || ans.equals(""))
                 return name;
             return ans;
         }
@@ -1219,8 +1216,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 sb.append("Frame: root ").append(functionName).append(", ").append(stackTraceElements.entrySet().iterator().next().getKey()).append("=").append(stackTraceList.get(i)).append("\n");
             }
             sb.append("Frame: root ").append("main");
-        }
-            else {
+        } else {
             sb.append("Frame: root ").append(functionName);
             for (Map.Entry<String, Object> entry : stackTraceElements.entrySet()) {
                 String varName = entry.getKey();
