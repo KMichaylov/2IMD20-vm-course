@@ -839,7 +839,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             System.exit(1);
         }
         if (left instanceof Number && right instanceof Number && !(left instanceof BigInteger) && !(right instanceof BigInteger)) {
-            return (long) (((Long) left).intValue() + ((Long) right).intValue());
+            // Can also get Integer, so we cast for safety to Long
+            long leftValue = (left instanceof Long) ? (Long) left : ((Number) left).longValue();
+            long rightValue = (right instanceof Long) ? (Long) right : ((Number) right).longValue();
+            return leftValue + rightValue;
         } else if (left instanceof BigInteger && right instanceof BigInteger) {
             return ((BigInteger) left).add((BigInteger) right);
         } else if (left instanceof BigInteger && right instanceof Long) {
