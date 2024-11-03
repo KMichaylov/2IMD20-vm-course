@@ -652,7 +652,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         }
                     }
                 }
-                // TODO: Check how to handle function
                 case OP_CALL -> {
                     int numberOfFunctionArguments = operand;
                     previousFunctionName = currentFunctionName;
@@ -696,7 +695,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         if (globalScope.getFunction(functionName) == null) {
                             functionName = null;
                         }
-                    } else if (functionName == null) {
+                    } else {
                         if (!stack.isEmpty()) {
                             String message = errorMessages.generateUndefinedFunction(String.valueOf(stack.pop()));
                             consoleMessages.append(message);
@@ -751,12 +750,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (!stack.isEmpty()) {
                         return stack.pop();
                     } else {
-//                        System.out.println("Stack is empty");
                         return null;
                     }
-                }
-                default -> {
-                    throw new RuntimeException("TODO");
                 }
 
             }
@@ -1108,7 +1103,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      *
      * @param value to be checked
      */
-    // TODO: Extract this logic
     private String checkValueType(Object value) {
         if (value == null || value.equals("NULL")) {
             return "NULL";
@@ -1125,8 +1119,6 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         }
         return "NULL";
     }
-
-    // TODO Change the place of this!
 
     /**
      * It applies the eval function on this code.
@@ -1197,7 +1189,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
 
     /**
-     * Generates the string represantation of the stack trace
+     * Generates the string representation of the stack trace
      *
      * @param functionName the name of the current function in the frame scope
      * @return the string representation
