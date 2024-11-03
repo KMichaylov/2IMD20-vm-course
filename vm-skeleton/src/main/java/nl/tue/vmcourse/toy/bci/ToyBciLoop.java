@@ -336,8 +336,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                             args[i] = stack.pop();
                                         }
                                         stack.push(propertyValue);
-                                        for (int i = 0; i < args.length; i++) {
-                                            stack.push(args[i]);
+                                        for (Object arg : args) {
+                                            stack.push(arg);
                                         }
                                     } else if (propertyValue == null) {
                                         consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
@@ -410,18 +410,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     }
                     stack.pop();
                 }
-                // TODO Extract the logic into separate method
                 case OP_PRINT -> {
-                    if (globalScope.getFunction("println") != null) {
-                        RootCallTarget function = globalScope.getFunction("println");
-                        Object returnValue = function.invoke(new ArrayList<>(), globalScope);
-                        if (returnValue.equals("")) {
-                            stack.push("NULL");
-                        } else {
-                            stack.push(returnValue);
-                        }
-                        break;
-                    }
+                    if (checkIfBuiltin(stack, "println")) break;
                     if (!stack.isEmpty()) {
                         Object valueToPrint = stack.pop();
                         if (operand > 1) {
@@ -514,15 +504,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     stack.push(stackTrace);
                 }
                 case OP_NANO_TIME -> {
-                    if (globalScope.getFunction("nanoTime") != null) {
-                        RootCallTarget function = globalScope.getFunction("nanoTime");
-                        Object returnValue = function.invoke(new ArrayList<>(), globalScope);
-                        if (returnValue.equals("")) {
-                            stack.push("NULL");
-                        } else {
-                            stack.push(returnValue);
-                        }
-                    } else {
+                    if (!checkIfBuiltin(stack, "nanoTime")) {
                         stack.push(System.nanoTime());
                     }
                 }
@@ -782,6 +764,26 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
         }
         return consoleMessages.toString().trim();
+    }
+
+    /**
+     * The following method checks if the built-in is redefined.
+     * @param stack where we store the values
+     * @param name the name of the built-in function
+     * @return true if we redefine, false otherwise
+     */
+    private static boolean checkIfBuiltin(Stack<Object> stack, String name) {
+        if (globalScope.getFunction(name) != null) {
+            RootCallTarget function = globalScope.getFunction(name);
+            Object returnValue = function.invoke(new ArrayList<>(), globalScope);
+            if (returnValue.equals("")) {
+                stack.push("NULL");
+            } else {
+                stack.push(returnValue);
+            }
+            return true;
+        }
+        return false;
     }
 
 
