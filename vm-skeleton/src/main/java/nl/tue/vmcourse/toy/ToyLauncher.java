@@ -14,62 +14,64 @@ import java.util.Map;
 
 public class ToyLauncher {
 
-//    public static final boolean JIT_ENABLED = System.getProperty("toy.Jit") != null;
-//    public static final boolean IC_ENABLED;
-//    public static final boolean ROPES_ENABLED;
-//    public static final boolean ARRAYS_ENABLED;
-//
-//    static {
-//        // In your final submission, you want to remove this (otherwise, tests may fail!)
-//        if (JIT_ENABLED) {
+    public static final boolean JIT_ENABLED = System.getProperty("toy.Jit") != null;
+    public static final boolean IC_ENABLED;
+    public static final boolean ROPES_ENABLED;
+    public static final boolean ARRAYS_ENABLED;
+    public static boolean JIT_IS_ENABLED = false;
+    public static boolean IC_IS_ENABLED = false;
+    public static boolean ROPES_IS_ENABLED = false;
+    public static boolean ARRAYS_IS_ENABLED = false;
+
+    static {
+        // In your final submission, you want to remove this (otherwise, tests may fail!)
+        if (JIT_ENABLED) {
 //            System.out.println("Toy Jit enabled -- all other optimizations are enabled by default");
-//            IC_ENABLED = true;
-//            ROPES_ENABLED = true;
-//            ARRAYS_ENABLED = true;
-//        } else {
-//            IC_ENABLED = System.getProperty("toy.InlineCaches") != null;
-//            ROPES_ENABLED = System.getProperty("toy.StringRopes") != null;
-//            ARRAYS_ENABLED = System.getProperty("toy.ArrayStrategies") != null;
-//
-//            if (IC_ENABLED) {
-//                System.out.println("Toy Inline Caches enabled");
-//            }
-//            if (ROPES_ENABLED) {
-//                System.out.println("Toy String Ropes enabled");
-//            }
-//            if (ARRAYS_ENABLED) {
-//                System.out.println("Toy Array Strategies enabled");
-//            }
-//        }
-//    }
+            System.out.println("Optimization not supported");
+            System.exit(1);
+            IC_ENABLED = true;
+            ROPES_ENABLED = true;
+            ARRAYS_ENABLED = true;
+        } else {
+            IC_ENABLED = System.getProperty("toy.InlineCaches") != null;
+            ROPES_ENABLED = System.getProperty("toy.StringRopes") != null;
+            ARRAYS_ENABLED = System.getProperty("toy.ArrayStrategies") != null;
+
+            if (IC_ENABLED) {
+                System.out.println("Optimization not supported");
+                System.exit(1);
+                System.out.println("Toy Inline Caches enabled");
+            }
+            if (ROPES_ENABLED) {
+                ROPES_IS_ENABLED = true;
+                System.out.println("Toy String Ropes enabled");
+            }
+            if (ARRAYS_ENABLED) {
+                System.out.println("Optimization not supported");
+                System.exit(1);
+                System.out.println("Toy Array Strategies enabled");
+            }
+        }
+    }
 
     private static final GlobalScope globalScope = new GlobalScope();
-    public static boolean JIT_ENABLED = false;
-    public static boolean IC_ENABLED = false;
-    public static boolean ROPES_ENABLED = false;
-    public static boolean ARRAYS_ENABLED = false;
+
 
     private static boolean isOptimizationSupported(String[] args) {
         boolean optimizationSupported = false;
 
+        label:
         for (String arg : args) {
-            if (arg.equals("-jit")) {
-                System.out.println("Optimization not supported");
-                System.exit(1);
+            switch (arg) {
+                case "-jit", "-inline-caches", "-array-strategies":
+                    System.out.println("Optimization not supported");
+                    System.exit(1);
+                case "-string-ropes":
+                    ROPES_IS_ENABLED = true;
+//                    System.out.println("Enabled!");
+                    optimizationSupported = true;
+                    break label;
             }
-            if (arg.equals("-string-ropes")) {
-                ROPES_ENABLED = true;
-                optimizationSupported = true;
-                break;
-            }
-//            if (arg.equals("-inline-caches")) {
-//                IC_ENABLED = true;
-//                optimizationSupported = true;
-//            }
-//            if (arg.equals("-array-strategies")) {
-//                ARRAYS_ENABLED = true;
-//                optimizationSupported = true;
-//            }
         }
         return optimizationSupported;
     }

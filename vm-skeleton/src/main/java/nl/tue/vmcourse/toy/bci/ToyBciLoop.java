@@ -16,7 +16,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import java.math.BigInteger;
 import java.util.*;
 
-import static nl.tue.vmcourse.toy.ToyLauncher.ROPES_ENABLED;
+import static nl.tue.vmcourse.toy.ToyLauncher.ROPES_IS_ENABLED;
 
 public class ToyBciLoop extends ToyAbstractFunctionBody {
     public static final int STACKOVERFLOW_THRESHOLD = 255;
@@ -105,7 +105,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             int operand = instr.getOperand();
             switch (opcode) {
                 case OP_LITERAL_STRING -> {
-                    if (ROPES_ENABLED) {
+                    if (ROPES_IS_ENABLED) {
                         pushLiteralToStack(bytecode, operand, stack, StringRopes.class);
                     } else {
                         pushLiteralToStack(bytecode, operand, stack, String.class);
