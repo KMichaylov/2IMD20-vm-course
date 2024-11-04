@@ -36,7 +36,6 @@ public class ToyLauncher {
             IC_ENABLED = System.getProperty("toy.InlineCaches") != null;
             ROPES_ENABLED = System.getProperty("toy.StringRopes") != null;
             ARRAYS_ENABLED = System.getProperty("toy.ArrayStrategies") != null;
-
             if (IC_ENABLED) {
                 System.out.println("Optimization not supported");
                 System.exit(1);
