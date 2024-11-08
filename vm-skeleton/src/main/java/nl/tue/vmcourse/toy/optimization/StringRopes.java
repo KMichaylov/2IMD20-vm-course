@@ -1,4 +1,4 @@
-package nl.tue.vmcourse.toy.optimization.ropes;
+package nl.tue.vmcourse.toy.optimization;
 
 /**
  * The main class for the StringRopes implementation.
