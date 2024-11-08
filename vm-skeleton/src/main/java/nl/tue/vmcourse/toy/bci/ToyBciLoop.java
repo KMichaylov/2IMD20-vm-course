@@ -848,8 +848,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 //                StringRopes rightRope = new StringRopes(right.toString());
 //                return leftRope.concatenation(rightRope).toString();
 
-                OptimizedStringRopes leftRope = new OptimizedStringRopes(left.toString());
-                OptimizedStringRopes rightRope = new OptimizedStringRopes(right.toString());
+                StringRopes leftRope = new StringRopes(left.toString());
+                StringRopes rightRope = new StringRopes(right.toString());
                 return leftRope.concatenation(rightRope).toString();
 
                 // TODO: Fastest so far!
