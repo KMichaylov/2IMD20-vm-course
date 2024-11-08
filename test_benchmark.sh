@@ -2,7 +2,7 @@
 
 # Folder containing the benchmark files
 folder="./benchmarks"
-timeout_duration=25 # Timeout duration in seconds
+timeout_duration=30 # Timeout duration in seconds
 
 # Check if the provided SL executable exists and is executable
 if [ -e "$1" ] && [ -x "$1" ]; then

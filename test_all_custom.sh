@@ -34,7 +34,7 @@ echo "" > suspicious.log
 rm -f *.tmp
 
 # Iterate over all .sl files in the folder
-for file in $(find $folder -type f -name "*.sl"); do
+for file in $(find "$folder" -type f -name "*.sl"); do
   # Skip if it's not a regular file
   [ -f "$file" ] || continue
   file="${file%.*}"
@@ -51,7 +51,7 @@ for file in $(find $folder -type f -name "*.sl"); do
   tmpfile=$(mktemp)
 
   # Execute the sl command with a timeout of 5 seconds and capture output and error
-  timeout $timeout_limit $sl "$file.sl" &> "$tmpfile"
+  timeout "$timeout_limit" "$sl" "$file.sl" &> "$tmpfile"
   exit_code=$?
 
   # Check if the command timed out
@@ -80,7 +80,7 @@ for file in $(find $folder -type f -name "*.sl"); do
         echo "--- Expected ---"
         cat "$output_file"
         echo "--- Diff ---"
-        diff -y "$tmpfile" "$output_file"
+        diff -y <(sed 's/\r$//' "$tmpfile") <(sed 's/\r$//' "$output_file")
       fi
     else
       echo "!!!! FATAL !!!! Output file $output_file not found for $file."
@@ -88,7 +88,7 @@ for file in $(find $folder -type f -name "*.sl"); do
       ((fatals++))
     fi
   else
-    # For failed execution, compare with the .output.error file
+    # For failed execution, compare with the .output.error file, if it exists
     if [ -f "$error_file" ]; then
       diff <(sed 's/\r$//' "$tmpfile" | sed '/^$/d') <(sed 's/\r$//' "$error_file" | sed '/^$/d') > /dev/null
       if [ $? -eq 0 ]; then
@@ -103,7 +103,7 @@ for file in $(find $folder -type f -name "*.sl"); do
         echo "--- Expected ---"
         cat "$error_file"
         echo "--- Diff ---"
-        diff -y "$tmpfile" "$error_file"
+        diff -y <(sed 's/\r$//' "$tmpfile") <(sed 's/\r$//' "$error_file")
       fi
     else
       echo "!!!! FATAL !!!! Error file $error_file not found for $file."
