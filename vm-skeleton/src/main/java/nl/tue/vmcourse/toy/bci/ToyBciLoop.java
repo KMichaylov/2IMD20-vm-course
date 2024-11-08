@@ -6,7 +6,6 @@ import nl.tue.vmcourse.toy.interpreter.ToySyntaxErrorException;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
 import nl.tue.vmcourse.toy.optimization.ropes.OptimizedStringRopes;
-import nl.tue.vmcourse.toy.optimization.ropes.PooledCharBuffer;
 import nl.tue.vmcourse.toy.optimization.ropes.StringRopes;
 import nl.tue.vmcourse.toy.parser.ToyLangLexer;
 import nl.tue.vmcourse.toy.parser.ToyLangParser;
@@ -515,9 +514,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push(((Map<?, ?>) obj).size());
                     } else if (obj instanceof String) {
                         stack.push(((String) obj).length());
-                    } else if (obj instanceof StringRopes) {
-                        stack.push(((StringRopes) obj).getSizeOfRope());
-                    } else {
+                    }  else {
                         System.err.println("Element is not a valid array.");
                         System.exit(1);
                         return consoleMessages;
@@ -561,11 +558,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         int start = Math.toIntExact((Long) startObj);
                         int end = Math.toIntExact((Long) endObj);
                         stack.push(((String) strObj).substring(start, end));
-                    } else if (strObj instanceof StringRopes && startObj instanceof Long && endObj instanceof Long) {
-                        int start = Math.toIntExact((Long) startObj);
-                        int end = Math.toIntExact((Long) endObj);
-                        stack.push(((StringRopes) strObj).substring(start, end));
-                    } else {
+                    }  else {
                         consoleMessages.append("Not a string: cannot substring");
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
