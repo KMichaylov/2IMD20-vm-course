@@ -5,6 +5,8 @@ import nl.tue.vmcourse.toy.interpreter.ToyNodeFactory;
 import nl.tue.vmcourse.toy.interpreter.ToySyntaxErrorException;
 import nl.tue.vmcourse.toy.lang.RootCallTarget;
 import nl.tue.vmcourse.toy.lang.VirtualFrame;
+import nl.tue.vmcourse.toy.optimization.ropes.OptimizedStringRopes;
+import nl.tue.vmcourse.toy.optimization.ropes.PooledCharBuffer;
 import nl.tue.vmcourse.toy.optimization.ropes.StringRopes;
 import nl.tue.vmcourse.toy.parser.ToyLangLexer;
 import nl.tue.vmcourse.toy.parser.ToyLangParser;
@@ -105,11 +107,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             int operand = instr.getOperand();
             switch (opcode) {
                 case OP_LITERAL_STRING -> {
-                    if (ROPES_IS_ENABLED) {
-                        pushLiteralToStack(bytecode, operand, stack, StringRopes.class);
-                    } else {
                         pushLiteralToStack(bytecode, operand, stack, String.class);
-                    }
                 }
                 case OP_LITERAL_LONG -> pushLiteralToStack(bytecode, operand, stack, Long.class);
                 case OP_LITERAL_BOOLEAN -> pushLiteralToStack(bytecode, operand, stack, Boolean.class);
@@ -414,6 +412,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (checkIfBuiltin(stack, "println")) break;
                     if (!stack.isEmpty()) {
                         Object valueToPrint = stack.pop();
+                        if(ROPES_IS_ENABLED && !(valueToPrint instanceof Map))
+                            valueToPrint = String.valueOf(valueToPrint);
                         if (operand > 1) {
                             valueToPrint = stack.pop();
                             stack.push("NULL");
@@ -792,12 +792,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      * @param <T>      the generic which allows for type casting
      */
     private <T> void pushLiteralToStack(Bytecode bytecode, int operand, Stack<Object> stack, Class<T> type) {
-        if (type.equals(StringRopes.class)) {
-            stack.push(new StringRopes(bytecode.getElementFromConstantPool(operand).toString()));
-        } else {
+
             T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
             stack.push(literalValue);
-        }
     }
 
 
@@ -852,6 +849,24 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
         } else if ((left instanceof String || right instanceof String)) {
             if (right == null) {
                 right = "NULL";
+            }
+            if(ROPES_IS_ENABLED){
+//                StringRopes leftRope = new StringRopes(left.toString());
+//                StringRopes rightRope = new StringRopes(right.toString());
+//                return leftRope.concatenation(rightRope).toString();
+
+                OptimizedStringRopes leftRope = new OptimizedStringRopes(left.toString());
+                OptimizedStringRopes rightRope = new OptimizedStringRopes(right.toString());
+                return leftRope.concatenation(rightRope).toString();
+
+                // TODO: Fastest so far!
+//                return PooledCharBuffer.concatenate(left.toString(), right.toString());
+
+                // TODO: This is the main problem, see how to make it more efficient
+//                return String.valueOf(leftRope.concatenation(rightRope));
+//                return leftRope.concatenation(rightRope).convertToString();
+//                return CharBufferConcat.concatenate(left.toString(), right.toString());
+
             }
             return left.toString() + right.toString();
         } else {
