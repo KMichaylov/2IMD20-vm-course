@@ -7,9 +7,14 @@ public class ParentNode extends Node {
         Node left;
         Node right;
 
-        public ParentNode(Node left, Node right) {
+    /**
+     * Constructor for the parent node.
+     * @param left child of the parent node
+     * @param right child of the parent node
+     */
+    public ParentNode(Node left, Node right) {
             this.left = left;
             this.right = right;
-            this.weight = left.length();  // Internal node's weight is the length of the left subtree
+            this.stringLength = left.length();
         }
 }
