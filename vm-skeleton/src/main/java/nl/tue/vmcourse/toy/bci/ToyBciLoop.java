@@ -37,7 +37,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
     /**
      * Bytecode are the bytecode instructions from the generator and locals are all the elements for the local scope
      *
-     * @param bytecode
+     * @param bytecode instructions to be executed
      */
     public ToyBciLoop(Bytecode bytecode, Map<String, Object> stackTraceElements, boolean isEval) {
         this.bytecode = bytecode;
@@ -105,7 +105,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             int operand = instr.getOperand();
             switch (opcode) {
                 case OP_LITERAL_STRING -> {
-                        pushLiteralToStack(bytecode, operand, stack, String.class);
+                    pushLiteralToStack(bytecode, operand, stack, String.class);
                 }
                 case OP_LITERAL_LONG -> pushLiteralToStack(bytecode, operand, stack, Long.class);
                 case OP_LITERAL_BOOLEAN -> pushLiteralToStack(bytecode, operand, stack, Boolean.class);
@@ -410,7 +410,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                     if (checkIfBuiltin(stack, "println")) break;
                     if (!stack.isEmpty()) {
                         Object valueToPrint = stack.pop();
-                        if(ROPES_IS_ENABLED && !(valueToPrint instanceof Map))
+                        if (ROPES_IS_ENABLED && !(valueToPrint instanceof Map))
                             valueToPrint = String.valueOf(valueToPrint);
                         if (operand > 1) {
                             valueToPrint = stack.pop();
@@ -453,7 +453,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_BUILTIN -> {
                     stack.push("Function");
                 }
-                // TODO: Extract some logic into separate method
+
                 case OP_TYPEOF -> {
                     if (globalScope.getFunction("typeOf") != null) {
                         RootCallTarget function = globalScope.getFunction("typeOf");
@@ -466,7 +466,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         break;
                     }
                     Object valueToCheckTypeOf = stack.pop();
-                    // No clue how to handle otherwise this test
+                    // No clue how to handle this test, otherwise
                     if (stack.contains("Type: ")) {
                         stack.push("[foreign object]");
                     } else if (valueToCheckTypeOf == null || valueToCheckTypeOf.equals("NULL")) {
@@ -513,7 +513,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         stack.push(((Map<?, ?>) obj).size());
                     } else if (obj instanceof String) {
                         stack.push(((String) obj).length());
-                    }  else {
+                    } else {
                         System.err.println("Element is not a valid array.");
                         System.exit(1);
                         return consoleMessages;
@@ -557,7 +557,7 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                         int start = Math.toIntExact((Long) startObj);
                         int end = Math.toIntExact((Long) endObj);
                         stack.push(((String) strObj).substring(start, end));
-                    }  else {
+                    } else {
                         consoleMessages.append("Not a string: cannot substring");
                         System.err.println(consoleMessages.toString());
                         System.exit(1);
@@ -755,8 +755,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
     /**
      * The following method checks if the built-in is redefined.
+     *
      * @param stack where we store the values
-     * @param name the name of the built-in function
+     * @param name  the name of the built-in function
      * @return true if we redefine, false otherwise
      */
     private static boolean checkIfBuiltin(Stack<Object> stack, String name) {
@@ -785,8 +786,8 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
      */
     private <T> void pushLiteralToStack(Bytecode bytecode, int operand, Stack<Object> stack, Class<T> type) {
 
-            T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
-            stack.push(literalValue);
+        T literalValue = type.cast(bytecode.getElementFromConstantPool(operand));
+        stack.push(literalValue);
     }
 
 
@@ -842,23 +843,10 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
             if (right == null) {
                 right = "NULL";
             }
-            if(ROPES_IS_ENABLED){
-//                StringRopes leftRope = new StringRopes(left.toString());
-//                StringRopes rightRope = new StringRopes(right.toString());
-//                return leftRope.concatenation(rightRope).toString();
-
+            if (ROPES_IS_ENABLED) {
                 StringRopes leftRope = new StringRopes(left.toString());
                 StringRopes rightRope = new StringRopes(right.toString());
                 return leftRope.concatenation(rightRope).toString();
-
-                // TODO: Fastest so far!
-//                return PooledCharBuffer.concatenate(left.toString(), right.toString());
-
-                // TODO: This is the main problem, see how to make it more efficient
-//                return String.valueOf(leftRope.concatenation(rightRope));
-//                return leftRope.concatenation(rightRope).convertToString();
-//                return CharBufferConcat.concatenate(left.toString(), right.toString());
-
             }
             return left.toString() + right.toString();
         } else {
