@@ -20,15 +20,6 @@ public class Bytecode {
     }
 
     /**
-     * Get the size of the constant pool, used for the object creation.
-     *
-     * @return the size of the constant pool.
-     */
-    public int getConstantPoolSize() {
-        return constantPool.size();
-    }
-
-    /**
      * Add an instruction to the bytecode, this is for non-variable instructions.
      *
      * @param opcode  the opcode of the instruction
@@ -106,16 +97,6 @@ public class Bytecode {
     }
 
     /**
-     * Replace the element at the index with the object
-     *
-     * @param operand index of the element
-     * @param element object to replace the element
-     */
-    public void replaceConstantPoolElement(int operand, Object element) {
-        constantPool.set(operand, element);
-    }
-
-    /**
      * Get an element from the constant pool.
      *
      * @param index of the element
@@ -169,15 +150,6 @@ public class Bytecode {
             updateInstruction(index, target - index - 1);
         }
         breakJumps.clear();
-    }
-
-    /**
-     * Simply prints the bytecode.
-     */
-    public void printBytecode() {
-        for (Instruction instr : instructions) {
-            System.out.println(instr);
-        }
     }
 
 }

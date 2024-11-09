@@ -1,12 +1,5 @@
 package nl.tue.vmcourse.toy.bci;
 
-//TODO: Look at this again, then move to the Instruction file and see how it can be useful.
-//TODO: Look at the opcode and see what is necessary and what not. Check other resources and see what other people are doing
-//TODO: Add javadoc
-
-//TODO: Maybe create a separate opcode for while loops
-// TODO: Add some port have a sequential order for the opcodes
-
 /**
  * Enum for the different opcodes (bytecode commands that are used in the Toy language.
  */
