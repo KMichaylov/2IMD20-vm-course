@@ -499,6 +499,9 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
 
                 case OP_STACKTRACE -> {
                     String stackTrace = generateStackTrace(currentFunctionName);
+                    final int MAX_STACKTRACE_LENGTH = 100000;
+                    if(stackTrace.length() > MAX_STACKTRACE_LENGTH)
+                        stackTrace = "";
                     stack.push(stackTrace);
                 }
                 case OP_NANO_TIME -> {
