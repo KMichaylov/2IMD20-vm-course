@@ -321,6 +321,17 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                                     stack.push(returnValue);
                                 } else {
                                     Object propertyValue = ((Map<?, ?>) receiver).get(propertyName);
+                                    if(propertyValue == null && !((Map<?, ?>) receiver).isEmpty()) {
+                                        try {
+                                            Object strNum = Long.parseLong((String) propertyName);
+                                            propertyValue = ((Map<?, ?>) receiver).get(strNum);
+                                        } catch (NumberFormatException nfe) {
+                                            consoleMessages.append(errorMessages.generateUndefinedObjectProperty(propertyName.toString()));
+                                            System.err.println(consoleMessages.toString());
+                                            System.exit(1);
+                                            return consoleMessages;
+                                        }
+                                    }
                                     if (propertyValue instanceof String && globalScope.getFunction((String) propertyValue) != null) {
                                         int numberOfArguments = 0;
                                         if (globalScope.getNumberOfArgumentsForFunction((String) propertyValue) != null) {
@@ -513,9 +524,11 @@ public class ToyBciLoop extends ToyAbstractFunctionBody {
                 case OP_GET_SIZE -> {
                     Object obj = stack.pop();
                     if (obj instanceof Map<?, ?>) {
-                        stack.push(((Map<?, ?>) obj).size());
+                        Long size = (long) ((Map<?, ?>) obj).size();
+                        stack.push(size);
                     } else if (obj instanceof String) {
-                        stack.push(((String) obj).length());
+                        Long size = (long) ((String) obj).length();
+                        stack.push(size);
                     } else {
                         System.err.println("Element is not a valid array.");
                         System.exit(1);

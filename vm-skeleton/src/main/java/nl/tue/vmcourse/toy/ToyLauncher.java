@@ -18,7 +18,7 @@ public class ToyLauncher {
     public static final boolean IC_ENABLED;
     public static final boolean ROPES_ENABLED;
     public static final boolean ARRAYS_ENABLED;
-    public static boolean ROPES_IS_ENABLED = false;
+    public static boolean ROPES_IS_ENABLED = true;
 
     static {
         if (JIT_ENABLED) {
