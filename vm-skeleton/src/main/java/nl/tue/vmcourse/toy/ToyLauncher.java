@@ -18,13 +18,9 @@ public class ToyLauncher {
     public static final boolean IC_ENABLED;
     public static final boolean ROPES_ENABLED;
     public static final boolean ARRAYS_ENABLED;
-    public static boolean JIT_IS_ENABLED = false;
-    public static boolean IC_IS_ENABLED = false;
     public static boolean ROPES_IS_ENABLED = false;
-    public static boolean ARRAYS_IS_ENABLED = false;
 
     static {
-        // In your final submission, you want to remove this (otherwise, tests may fail!)
         if (JIT_ENABLED) {
             System.out.println("Optimization not supported");
             System.exit(1);
@@ -93,7 +89,7 @@ public class ToyLauncher {
         if (!allFunctions.isEmpty() && allFunctions.containsKey("main")) {
             RootCallTarget mainFunction = allFunctions.get("main");
             for (Map.Entry<String, RootCallTarget> entry : allFunctions.entrySet()) {
-                // here, we add the global scope for functions and then create the bytecode for each function.
+                // here, we register the functions in the global scope.
                 globalScope.registerFunction(entry.getKey(), entry.getValue());
                 globalScope.setFunctionToNumberOfArguments(entry.getKey(), factory.getFunctionParameterCount(entry.getKey()));
             }
